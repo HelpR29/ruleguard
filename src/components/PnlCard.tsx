@@ -14,6 +14,7 @@ type PnlCardProps = {
   date?: string;
   className?: string;
   variant?: 'card' | 'tile';
+  sparkline?: number[]; // optional small chart values
 };
 
 export default function PnlCard({
@@ -64,6 +65,28 @@ export default function PnlCard({
         <div className={`mt-3 text-3xl font-extrabold ${isGain ? 'text-emerald-600' : 'text-rose-600'}`}>{`${isGain ? '+' : '-'}$${Math.abs(pnl).toLocaleString()}`}</div>
         {typeof rr === 'number' && rr > 0 && (
           <div className={`inline-flex items-center mt-2 px-2 py-0.5 rounded-full text-[11px] border ${pillColor}`}>Avg R:R 1:{rr.toFixed(2)}</div>
+        )}
+        {/* Tiny sparkline */}
+        {Array.isArray(sparkline) && sparkline.length > 1 && (
+          <svg viewBox="0 0 100 24" className="mt-3 w-full h-6">
+            {(() => {
+              const vals = sparkline as number[];
+              const min = Math.min(...vals);
+              const max = Math.max(...vals);
+              const range = max - min || 1;
+              const points = vals.map((v, i) => {
+                const x = (i / (vals.length - 1)) * 100;
+                const y = 24 - ((v - min) / range) * 20 - 2; // padding top/bottom
+                return `${x},${y}`;
+              }).join(' ');
+              const color = isGain ? '#10b981' : '#ef4444';
+              return (
+                <>
+                  <polyline points={points} fill="none" stroke={color} strokeWidth="2" />
+                </>
+              );
+            })()}
+          </svg>
         )}
       </div>
     );
