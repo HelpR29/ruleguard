@@ -18,8 +18,22 @@ interface UserProgress {
 interface UserContextType {
   settings: UserSettings;
   progress: UserProgress;
+  rules: UserRule[];
   updateSettings: (settings: Partial<UserSettings>) => void;
   updateProgress: (progress: Partial<UserProgress>) => void;
+  addRule: (text: string) => void;
+  editRule: (id: string, text: string) => void;
+  deleteRule: (id: string) => void;
+  toggleRuleActive: (id: string) => void;
+  recordViolation: (id: string) => void;
+}
+
+export interface UserRule {
+  id: string;
+  text: string;
+  active: boolean;
+  violations: number;
+  lastViolation: string | null;
 }
 
 const defaultSettings: UserSettings = {
@@ -47,6 +61,25 @@ export function UserProvider({ children }: { children: ReactNode }) {
     } catch {}
     return defaultSettings;
   });
+
+  const [rules, setRules] = useState<UserRule[]>(() => {
+    try {
+      const raw = localStorage.getItem('user_rules');
+      if (raw) return JSON.parse(raw) as UserRule[];
+      // seed from onboarding settings.rules if present
+      const seeded = (settings.rules || []).map<UserRule>((text, idx) => ({
+        id: `seed-${idx}-${Date.now()}`,
+        text,
+        active: true,
+        violations: 0,
+        lastViolation: null,
+      }));
+      if (seeded.length) localStorage.setItem('user_rules', JSON.stringify(seeded));
+      return seeded;
+    } catch {
+      return [];
+    }
+  });
   const [progress, setProgress] = useState<UserProgress>(() => {
     try {
       const raw = localStorage.getItem('user_progress');
@@ -72,7 +105,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <UserContext.Provider value={{ settings, progress, updateSettings, updateProgress }}>
+    <UserContext.Provider value={{ settings, progress, rules, updateSettings, updateProgress, addRule, editRule, deleteRule, toggleRuleActive, recordViolation }}>
       {children}
     </UserContext.Provider>
   );
