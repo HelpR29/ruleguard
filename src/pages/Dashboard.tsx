@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, TrendingUp, Target, Calendar, Share2, Crown, Star } from 'lucide-react';
 import { useUser } from '../context/UserContext';
-import AnimatedProgressIcon from '../components/AnimatedProgressIcon';
+import AnimatedProgressIcon, { ProgressGrid } from '../components/AnimatedProgressIcon';
 import CompoundingChart from '../components/CompoundingChart';
 import QuickActions from '../components/QuickActions';
 import RecentActivity from '../components/RecentActivity';
@@ -9,6 +9,7 @@ import RecentActivity from '../components/RecentActivity';
 export default function Dashboard() {
   const { settings, progress, updateProgress } = useUser();
   const [showAddCompletion, setShowAddCompletion] = useState(false);
+  const [progressView, setProgressView] = useState<'icon'|'grid'>('icon');
 
   const targetBalance = settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, settings.targetCompletions);
   const progressPercent = (progress.completions / settings.targetCompletions) * 100;
@@ -83,44 +84,53 @@ export default function Dashboard() {
             <div className="rounded-2xl p-6 shadow-sm card-surface">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">Progress Tracker</h3>
-                <button
-                  onClick={() => setShowAddCompletion(true)}
-                  className="flex items-center gap-2 accent-btn"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Completion
-                </button>
-              </div>
-              
-              {/* Animated Progress Icon */}
-              <div className="flex flex-col items-center space-y-8">
-                <AnimatedProgressIcon 
-                  size="xl"
-                  onComplete={addCompletion}
-                  onViolation={addViolation}
-                />
-                
-                {/* Clean Progress Summary */}
-                <div className="text-center space-y-4">
-                  <div className="rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-600 card-surface">
-                    <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                      {progress.completions}/{settings.targetCompletions}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-3">
-                      {Math.max(0, settings.targetCompletions - progress.completions)} {settings.progressObject}s remaining
-                    </p>
-                    <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                      <div
-                        className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${(progress.completions / settings.targetCompletions) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Click to add completion • Double-click for violation
-                  </p>
+                <div className="flex items-center gap-2">
+                  <button className="text-xs accent-outline" onClick={() => setProgressView(v => v === 'icon' ? 'grid' : 'icon')}>Switch View</button>
+                  <button
+                    onClick={() => setShowAddCompletion(true)}
+                    className="flex items-center gap-2 accent-btn"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Completion
+                  </button>
                 </div>
               </div>
+              
+              {progressView === 'icon' ? (
+                <div className="flex flex-col items-center space-y-8">
+                  <AnimatedProgressIcon 
+                    size="xl"
+                    onComplete={addCompletion}
+                    onViolation={addViolation}
+                  />
+                  <div className="text-center space-y-4">
+                    <div className="rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-600 card-surface">
+                      <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                        {progress.completions}/{settings.targetCompletions}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-3">
+                        {Math.max(0, settings.targetCompletions - progress.completions)} {settings.progressObject}s remaining
+                      </p>
+                      <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-500"
+                          style={{ width: `${(progress.completions / settings.targetCompletions) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Click to add completion • Double-click for violation
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center space-y-4">
+                  <ProgressGrid onComplete={addCompletion} onViolation={addViolation} />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Click next item for completion • Click completed item for violation
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Compounding Growth Chart */}
