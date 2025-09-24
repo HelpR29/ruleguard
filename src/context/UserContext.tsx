@@ -23,6 +23,7 @@ interface UserContextType {
   updateProgress: (progress: Partial<UserProgress>) => void;
   addRule: (text: string, tags?: string[]) => void;
   editRule: (id: string, text: string) => void;
+  updateRuleMeta: (id: string, data: Partial<UserRule>) => void;
   deleteRule: (id: string) => void;
   toggleRuleActive: (id: string) => void;
   recordViolation: (id: string) => void;
@@ -123,8 +124,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   const editRule = (id: string, text: string) => {
+    updateRuleMeta(id, { text: text.trim() });
+  };
+
+  const updateRuleMeta = (id: string, data: Partial<UserRule>) => {
     setRules(prev => {
-      const next = prev.map(r => (r.id === id ? { ...r, text: text.trim() } : r));
+      const next = prev.map(r => (r.id === id ? { ...r, ...data } : r));
       persistRules(next);
       return next;
     });
@@ -208,7 +213,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <UserContext.Provider value={{ settings, progress, rules, updateSettings, updateProgress, addRule, editRule, deleteRule, toggleRuleActive, recordViolation, recordCompletion, markCompliance }}>
+    <UserContext.Provider value={{ settings, progress, rules, updateSettings, updateProgress, addRule, editRule, updateRuleMeta, deleteRule, toggleRuleActive, recordViolation, recordCompletion, markCompliance }}>
       {children}
     </UserContext.Provider>
   );
