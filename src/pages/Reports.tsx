@@ -5,6 +5,8 @@ import { useUser } from '../context/UserContext';
 
 export default function Reports() {
   const [activeReport, setActiveReport] = useState('weekly');
+  const [showPlan, setShowPlan] = useState(false);
+  const [planItems, setPlanItems] = useState<string[]>([]);
   const { progress, rules } = useUser();
 
   const weeklyData = useMemo(() => {
@@ -81,6 +83,19 @@ export default function Reports() {
 
     return { perRuleData: perRule, hourlyData: hourly, heatmap: heat, tagStats: tagAgg };
   }, [rules]);
+
+  // Top risky hours from heatmap
+  const topRiskyHours = useMemo(() => {
+    const entries: Array<{ day: string; hour: number; count: number }> = [];
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    for (let d = 0; d < 7; d++) {
+      for (let h = 0; h < 24; h++) {
+        const c = heatmap?.[d]?.[h] || 0;
+        if (c > 0) entries.push({ day: days[d], hour: h, count: c });
+      }
+    }
+    return entries.sort((a,b)=>b.count-a.count).slice(0,5);
+  }, [heatmap]);
 
   // AI-style analysis to detect weaknesses and propose actions
   const { weaknesses, recommendations } = useMemo(() => {
@@ -367,7 +382,7 @@ export default function Reports() {
               </div>
             </div>
 
-            {/* Weekday x Hour Heatmap */}
+            {/* Weekday x Hour Heatmap */
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Weekly Heatmap (Violations)</h3>
               <div className="overflow-x-auto">
@@ -391,9 +406,66 @@ export default function Reports() {
                   ))}
                 </div>
               </div>
-              <div className="mt-3 text-xs text-gray-500">Darker cells indicate more violations. Aim to avoid high-risk hours or add extra checks.</div>
+              <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div className="text-xs text-gray-500">
+                  <span className="font-medium">Legend:</span> lighter = fewer, darker = more violations. Focus risk controls on dark cells.
+                </div>
+                <div className="text-xs text-gray-600">
+                  <span className="font-medium">Top Risky Hours:</span> {topRiskyHours.length ? topRiskyHours.map((e,i)=>`${e.day} ${e.hour}:00 (${e.count})`).join(', ') : 'None yet'}
+                </div>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  onClick={() => {
+                    // Build a short, actionable weekly plan based on tags and risky hours
+                    const items: string[] = [];
+                    const riskHeavy = Object.keys(tagStats||{}).some(k=>k.includes('risk'));
+                    const mindsetHeavy = Object.keys(tagStats||{}).some(k=>k.includes('mindset'));
+                    if (riskHeavy) {
+                      items.push('Adopt fixed risk cap of 0.5–1.0R per trade for the next 5 sessions.');
+                      items.push('Predefine size ladders and enforce stop-to-breakeven at +1R.');
+                    }
+                    if (mindsetHeavy) {
+                      items.push('Use a 2–5 minute cooldown after losses before any new order.');
+                      items.push('Complete a 3-question micro-journal after each trade.');
+                    }
+                    if (topRiskyHours.length) {
+                      const hours = topRiskyHours.slice(0,3).map(e=>`${e.day} ${e.hour}:00`).join(', ');
+                      items.push(`Avoid first 15 minutes during peak hours (${hours}); trade only retests with full checklist.`);
+                    }
+                    if (!items.length) items.push('Maintain current routine; keep logging emotions and reasons pre-trade.');
+                    setPlanItems(items);
+                    setShowPlan(true);
+                  }}
+                >
+                  Generate 1-Week Plan
+                </button>
+              </div>
             </div>
           </>
+        )}
+
+        {/* Plan Modal */}
+        {showPlan && (
+          <div className="fixed inset-0 z-50">
+            <div className="absolute inset-0 bg-black/40" onClick={() => setShowPlan(false)}></div>
+            <div className="absolute inset-0 m-auto bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg h-fit">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xl font-bold">1-Week Discipline Plan</h3>
+                <button className="text-gray-500 hover:text-gray-700" onClick={() => setShowPlan(false)}>×</button>
+              </div>
+              <p className="text-gray-600 mb-4">Follow this checklist over your next 5 sessions.</p>
+              <ol className="list-decimal pl-6 space-y-2 text-gray-800">
+                {planItems.map((it, idx) => (
+                  <li key={idx}>{it}</li>
+                ))}
+              </ol>
+              <div className="mt-4 flex justify-end">
+                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onClick={() => setShowPlan(false)}>Got it</button>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Monthly Report Placeholder */}
