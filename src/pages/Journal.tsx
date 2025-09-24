@@ -140,6 +140,12 @@ export default function Journal() {
   const [showNewEntry, setShowNewEntry] = useState(false);
   const { addToast } = useToast();
   const { recordCompletion } = useUser();
+  const [premiumStatus, setPremiumStatus] = useState<string>(() => {
+    try { return localStorage.getItem('premium_status') || 'none'; } catch { return 'none'; }
+  });
+  const [achievements, setAchievements] = useState<string[]>(() => {
+    try { const a = JSON.parse(localStorage.getItem('user_achievements') || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
+  });
 
   const mockTrades: Trade[] = [
     {
@@ -546,24 +552,30 @@ export default function Journal() {
                     }`}>
                       {trade.ruleCompliant ? 'Rule Compliant' : 'Rule Violation'}
                     </span>
-                    <button
-                      className="text-xs px-2 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50"
-                      onClick={async () => {
-                        if (!confirm('Delete this entry? This will remove its attachments.')) return;
-                        // cleanup attachments
-                        try {
-                          if (Array.isArray(trade.imageIds)) {
-                            for (const id of trade.imageIds) {
-                              await deleteAttachment(id);
-                            }
-                          }
-                        } catch {}
-                        setTrades(prev => prev.filter(t => t.id !== trade.id));
-                        addToast('success', 'Entry deleted.');
-                      }}
-                    >
-                      Delete
-                    </button>
+                    {(() => {
+                      const allowed = premiumStatus === 'premium' || achievements.includes('champion');
+                      if (!allowed) return null;
+                      return (
+                        <button
+                          className="text-xs px-2 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50"
+                          onClick={async () => {
+                            if (!confirm('Delete this entry? This will remove its attachments.')) return;
+                            // cleanup attachments
+                            try {
+                              if (Array.isArray(trade.imageIds)) {
+                                for (const id of trade.imageIds) {
+                                  await deleteAttachment(id);
+                                }
+                              }
+                            } catch {}
+                            setTrades(prev => prev.filter(t => t.id !== trade.id));
+                            addToast('success', 'Entry deleted.');
+                          }}
+                        >
+                          Delete
+                        </button>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}
