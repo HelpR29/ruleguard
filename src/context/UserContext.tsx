@@ -21,7 +21,7 @@ interface UserContextType {
   rules: UserRule[];
   updateSettings: (settings: Partial<UserSettings>) => void;
   updateProgress: (progress: Partial<UserProgress>) => void;
-  addRule: (text: string) => void;
+  addRule: (text: string, tags?: string[]) => void;
   editRule: (id: string, text: string) => void;
   deleteRule: (id: string) => void;
   toggleRuleActive: (id: string) => void;
@@ -36,6 +36,7 @@ export interface UserRule {
   active: boolean;
   violations: number;
   lastViolation: string | null;
+  tags?: string[];
 }
 
 const defaultSettings: UserSettings = {
@@ -111,11 +112,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem('user_rules', JSON.stringify(next)); } catch {}
   };
 
-  const addRule = (text: string) => {
+  const addRule = (text: string, tags?: string[]) => {
     const trimmed = text.trim();
     if (!trimmed) return;
     setRules(prev => {
-      const next = [...prev, { id: `${Date.now()}`, text: trimmed, active: true, violations: 0, lastViolation: null }];
+      const next = [...prev, { id: `${Date.now()}`, text: trimmed, active: true, violations: 0, lastViolation: null, tags: tags && tags.length ? tags : [] }];
       persistRules(next);
       return next;
     });
@@ -160,6 +161,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
       today.violations += 1;
       stats[key] = today;
       localStorage.setItem('daily_stats', JSON.stringify(stats));
+      // activity log
+      const log = JSON.parse(localStorage.getItem('activity_log') || '[]');
+      log.push({ ts: Date.now(), type: 'violation', ruleId: id });
+      localStorage.setItem('activity_log', JSON.stringify(log));
     } catch {}
   };
 
@@ -183,6 +188,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
       today.completions += 1;
       stats[key] = today;
       localStorage.setItem('daily_stats', JSON.stringify(stats));
+      const log = JSON.parse(localStorage.getItem('activity_log') || '[]');
+      log.push({ ts: Date.now(), type: 'completion' });
+      localStorage.setItem('activity_log', JSON.stringify(log));
     } catch {}
   };
 

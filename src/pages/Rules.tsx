@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Plus, Edit, Trash2, Shield, CheckCircle, XCircle } from 'lucide-react';
 import { useUser } from '../context/UserContext';
+import { useToast } from '../context/ToastContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function Rules() {
   const { progress, rules, addRule, editRule, deleteRule, toggleRuleActive, recordViolation, markCompliance } = useUser();
@@ -8,6 +10,20 @@ export default function Rules() {
   const [newRule, setNewRule] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [newTags, setNewTags] = useState('');
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const { addToast } = useToast();
+  const navigate = useNavigate();
+
+  const isPremiumOrChampion = useMemo(() => {
+    try {
+      const ps = localStorage.getItem('premium_status') || 'none';
+      const ach = JSON.parse(localStorage.getItem('user_achievements') || '[]');
+      return ps === 'premium' || (Array.isArray(ach) && ach.includes('champion'));
+    } catch {
+      return false;
+    }
+  }, []);
 
   const activeCount = rules.filter(r => r.active).length;
   const totalViolations = rules.reduce((sum, r) => sum + r.violations, 0);
@@ -53,6 +69,25 @@ export default function Rules() {
           </div>
         </div>
 
+        {/* Filters */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm text-gray-700 font-medium mr-2">Filters:</span>
+            {Array.from(new Set(rules.flatMap(r => r.tags || []))).map((tag) => (
+              <button
+                key={tag}
+                onClick={() => setActiveFilters(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])}
+                className={`px-2 py-1 rounded-full text-xs border ${activeFilters.includes(tag) ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'}`}
+              >
+                {tag}
+              </button>
+            ))}
+            {activeFilters.length > 0 && (
+              <button className="ml-2 text-sm text-gray-600 hover:text-gray-900" onClick={() => setActiveFilters([])}>Clear</button>
+            )}
+          </div>
+        </div>
+
         {/* Rules List */}
         <div className="space-y-4">
           {rules.length === 0 && (
@@ -60,7 +95,9 @@ export default function Rules() {
               No rules yet. Click "Add Rule" to create your first trading rule.
             </div>
           )}
-          {rules.map((rule) => (
+          {rules
+            .filter(r => activeFilters.length === 0 || (r.tags || []).some(t => activeFilters.includes(t)))
+            .map((rule) => (
             <div key={rule.id} className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -76,7 +113,14 @@ export default function Rules() {
                       <h3 className="text-lg font-semibold text-gray-900">{rule.text}</h3>
                     )}
                     <button
-                      onClick={() => toggleRuleActive(rule.id)}
+                      onClick={() => {
+                        if (!isPremiumOrChampion) {
+                          addToast('warning', 'Editing rules requires Premium or Champion.', 'Upgrade', () => navigate('/premium'));
+                          return;
+                        }
+                        toggleRuleActive(rule.id);
+                        addToast('success', `Rule marked as ${rule.active ? 'Inactive' : 'Active'}.`);
+                      }}
                       className={`px-2 py-1 rounded-full text-xs font-medium border transition-colors ${
                         rule.active
                           ? 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200'
@@ -109,6 +153,13 @@ export default function Rules() {
                       </div>
                     )}
                   </div>
+                  {(rule.tags && rule.tags.length > 0) && (
+                    <div className="mt-3 flex items-center gap-2 flex-wrap">
+                      {rule.tags.map((tag) => (
+                        <span key={tag} className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700 border border-gray-200">{tag}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex items-center gap-2">
@@ -117,9 +168,14 @@ export default function Rules() {
                       <button
                         className="px-3 py-1 text-white bg-blue-600 rounded-lg hover:bg-blue-700 text-sm"
                         onClick={() => {
+                          if (!isPremiumOrChampion) {
+                            addToast('warning', 'Saving requires Premium or Champion.', 'Upgrade', () => navigate('/premium'));
+                            return;
+                          }
                           editRule(rule.id, editingText);
                           setEditingId(null);
                           setEditingText('');
+                          addToast('success', 'Rule saved.');
                         }}
                       >
                         Save
@@ -134,7 +190,13 @@ export default function Rules() {
                   ) : (
                     <button
                       className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                      onClick={() => { setEditingId(rule.id); setEditingText(rule.text); }}
+                      onClick={() => { 
+                        if (!isPremiumOrChampion) {
+                          addToast('warning', 'Editing rules requires Premium or Champion.', 'Upgrade', () => navigate('/premium'));
+                          return;
+                        }
+                        setEditingId(rule.id); setEditingText(rule.text); 
+                      }}
                       title="Edit rule"
                     >
                       <Edit className="h-4 w-4" />
@@ -143,7 +205,11 @@ export default function Rules() {
                   <button
                     className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                     onClick={() => {
-                      if (confirm('Delete this rule?')) deleteRule(rule.id);
+                      if (!isPremiumOrChampion) {
+                        addToast('warning', 'Deleting rules requires Premium or Champion.', 'Upgrade', () => navigate('/premium'));
+                        return;
+                      }
+                      if (confirm('Delete this rule?')) { deleteRule(rule.id); addToast('success', 'Rule deleted.'); }
                     }}
                     title="Delete rule"
                   >
@@ -229,6 +295,18 @@ export default function Rules() {
                   placeholder="e.g., Never risk more than 2% per trade"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tags (comma-separated)
+                </label>
+                <input
+                  type="text"
+                  value={newTags}
+                  onChange={(e) => setNewTags(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Risk, Mindset, Entry, Exit"
+                />
+              </div>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowAddRule(false)}
@@ -239,9 +317,12 @@ export default function Rules() {
                 <button
                   onClick={() => {
                     if (newRule.trim()) {
-                      addRule(newRule);
+                      const tags = newTags.split(',').map(t => t.trim()).filter(Boolean);
+                      addRule(newRule, tags);
                       setNewRule('');
+                      setNewTags('');
                       setShowAddRule(false);
+                      addToast('success', 'Rule added.');
                     }
                   }}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"

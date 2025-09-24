@@ -5,15 +5,29 @@ import { useUser } from '../context/UserContext';
 
 export default function Reports() {
   const [activeReport, setActiveReport] = useState('weekly');
-  const { progress } = useUser();
+  const { progress, rules } = useUser();
 
-  const weeklyData = [
-    { day: 'Mon', completions: 2, violations: 0, pnl: 450 },
-    { day: 'Tue', completions: 1, violations: 1, pnl: -120 },
-    { day: 'Wed', completions: 3, violations: 0, pnl: 680 },
-    { day: 'Thu', completions: 0, violations: 2, pnl: -250 },
-    { day: 'Fri', completions: 2, violations: 0, pnl: 320 },
-  ];
+  const weeklyData = useMemo(() => {
+    // Build last 7 days from localStorage.daily_stats
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const today = new Date();
+    let stats: Record<string, { completions: number; violations: number }>; 
+    try {
+      stats = JSON.parse(localStorage.getItem('daily_stats') || '{}');
+    } catch {
+      stats = {};
+    }
+    const data = [] as Array<{ day: string; completions: number; violations: number; pnl: number }>;
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = d.toISOString().slice(0,10);
+      const entry = stats[key] || { completions: 0, violations: 0 };
+      const pnl = Math.round((entry.completions - entry.violations) * 160); // simple proxy
+      data.push({ day: dayNames[d.getDay()], completions: entry.completions, violations: entry.violations, pnl });
+    }
+    return data;
+  }, []);
 
   const emotionData = [
     { name: 'Confident', value: 40, color: '#10b981' },
@@ -21,6 +35,39 @@ export default function Reports() {
     { name: 'Fear', value: 20, color: '#ef4444' },
     { name: 'Neutral', value: 15, color: '#6b7280' },
   ];
+
+  // Per-rule and time-of-day analytics from activity_log
+  const { perRuleData, hourlyData } = useMemo(() => {
+    let log: Array<{ ts: number; type: 'violation' | 'completion'; ruleId?: string }> = [];
+    try {
+      log = JSON.parse(localStorage.getItem('activity_log') || '[]');
+    } catch {}
+
+    const ruleNameById = new Map<string, string>();
+    rules.forEach(r => ruleNameById.set(r.id, r.text));
+
+    const perRuleMap = new Map<string, number>();
+    const hourly = Array.from({ length: 24 }, (_, h) => ({ hour: h, violations: 0, completions: 0 }));
+
+    for (const item of log) {
+      const d = new Date(item.ts);
+      const h = d.getHours();
+      if (h >= 0 && h < 24) {
+        if (item.type === 'violation') hourly[h].violations += 1;
+        if (item.type === 'completion') hourly[h].completions += 1;
+      }
+      if (item.type === 'violation' && item.ruleId) {
+        const name = ruleNameById.get(item.ruleId) || 'Unknown Rule';
+        perRuleMap.set(name, (perRuleMap.get(name) || 0) + 1);
+      }
+    }
+
+    const perRule = Array.from(perRuleMap.entries()).map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 7);
+
+    return { perRuleData: perRule, hourlyData: hourly };
+  }, [rules]);
 
   // AI-style analysis to detect weaknesses and propose actions
   const { weaknesses, recommendations } = useMemo(() => {
@@ -256,6 +303,40 @@ export default function Reports() {
                     ))}
                   </ol>
                 </div>
+              </div>
+            </div>
+
+            {/* Per-Rule Violations */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Most Violated Rules</h3>
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={perRuleData} layout="vertical" margin={{ left: 40 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis type="number" stroke="#666" />
+                    <YAxis dataKey="name" type="category" stroke="#666" width={220} />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#ef4444" name="Violations" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Time-of-Day Patterns */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Time-of-Day Patterns</h3>
+              <p className="text-sm text-gray-600 mb-3">Distribution of completions and violations by hour (0–23)</p>
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={hourlyData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="hour" stroke="#666" />
+                    <YAxis stroke="#666" />
+                    <Tooltip />
+                    <Bar dataKey="completions" fill="#10b981" name="Completions" />
+                    <Bar dataKey="violations" fill="#ef4444" name="Violations" />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </>
