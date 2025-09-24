@@ -285,20 +285,20 @@ export default function Reports() {
     const brand = dn ? `RuleGuard • ${dn}` : 'RuleGuard';
     ctx.fillText(brand, 110, 80);
     ctx.fillStyle = '#111827';
-    ctx.font = 'bold 42px Inter, system-ui, -apple-system, Segoe UI, Roboto';
+    ctx.font = '700 44px Inter, system-ui, -apple-system, Segoe UI, Roboto';
     ctx.fillText('RuleGuard Weekly Report', 70, 140);
     // Discipline & Avg R:R
     ctx.font = '600 28px Inter';
-    ctx.fillText(`Discipline Score: ${progress.disciplineScore}%`, 70, 190);
+    ctx.fillText(`Discipline Score: ${progress.disciplineScore}%`, 70, 200);
     if (averageRR > 0) {
-      ctx.fillText(`Avg R:R: 1:${averageRR.toFixed(2)}`, 520, 190);
+      ctx.fillText(`Avg R:R: 1:${averageRR.toFixed(2)}`, 650, 200);
     }
 
-    // Big PnL figure
+    // Big PnL figure (larger but spaced to avoid overlap)
     const pnlText = `${isGain ? '+' : '−'}$${Math.abs(totalPnl).toLocaleString()}`;
-    ctx.font = 'bold 86px Inter, system-ui';
+    ctx.font = '800 72px Inter, system-ui';
     ctx.fillStyle = isGain ? '#10b981' : '#ef4444';
-    ctx.fillText(pnlText, 70, 260);
+    ctx.fillText(pnlText, 70, 290);
 
     // Character avatar on right with glow (for free users use avatar)
     try {
@@ -331,17 +331,22 @@ export default function Reports() {
         }
       }
     } catch {}
+    // Section separator
+    ctx.strokeStyle = 'rgba(17,24,39,0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(70, 310); ctx.lineTo(width-70, 310); ctx.stroke();
+
     // Top risky hours
-    ctx.font = 'bold 24px Inter'; ctx.fillText('Top Risky Hours', 70, 250);
-    ctx.font = '400 22px Inter';
+    ctx.font = '700 24px Inter'; ctx.fillStyle = '#111827'; ctx.fillText('Top Risky Hours', 70, 350);
+    ctx.font = '400 20px Inter'; ctx.fillStyle = '#1f2937';
     topRiskyHours.slice(0,3).forEach((e, i) => {
-      ctx.fillText(`${i+1}. ${e.day} ${e.hour}:00 (${e.count})`, 70, 285 + i*30);
+      ctx.fillText(`${i+1}. ${e.day} ${e.hour}:00 (${e.count})`, 70, 380 + i*28);
     });
     // Top tags
-    ctx.font = 'bold 24px Inter'; ctx.fillText('Top Tags', 520, 250);
-    ctx.font = '400 22px Inter';
+    ctx.font = '700 24px Inter'; ctx.fillStyle = '#111827'; ctx.fillText('Top Tags', 650, 350);
+    ctx.font = '400 20px Inter'; ctx.fillStyle = '#1f2937';
     topTags.slice(0,3).forEach(([tag, cnt], i) => {
-      ctx.fillText(`${i+1}. ${tag} (${cnt})`, 520, 285 + i*30);
+      ctx.fillText(`${i+1}. ${tag} (${cnt})`, 650, 380 + i*28);
     });
     // Footer
     ctx.font = '400 18px Inter';
