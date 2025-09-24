@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Settings as SettingsIcon, User, Bell, Shield, Palette, Download, Lock } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useTheme } from '../context/ThemeContext';
@@ -31,6 +31,24 @@ export default function Settings() {
     try { localStorage.setItem('accent_color', accent); } catch {}
     try { document.documentElement.setAttribute('data-accent', accent); } catch {}
   }, [accent]);
+
+  // Density: compact | comfortable | cozy
+  const [density, setDensity] = useState<string>(() => {
+    try { return localStorage.getItem('ui_density') || 'comfortable'; } catch { return 'comfortable'; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('ui_density', density); } catch {}
+    try { document.documentElement.setAttribute('data-density', density); } catch {}
+  }, [density]);
+
+  // Card style: standard | outlined | filled
+  const [cardStyle, setCardStyle] = useState<string>(() => {
+    try { return localStorage.getItem('ui_card') || 'standard'; } catch { return 'standard'; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('ui_card', cardStyle); } catch {}
+    try { document.documentElement.setAttribute('data-card', cardStyle); } catch {}
+  }, [cardStyle]);
 
   const progressObjects = [
     { value: 'beer', emoji: '🍺', label: 'Beer' },
@@ -269,6 +287,38 @@ export default function Settings() {
                             c==='blue'? '#3b82f6' : c==='purple'? '#8b5cf6' : c==='emerald'? '#10b981' : c==='amber'? '#f59e0b' : '#f43f5e' }}
                           title={c}
                         />
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-2">Density</p>
+                    <div className="flex items-center gap-2">
+                      {['compact','comfortable','cozy'].map(d => (
+                        <button
+                          key={d}
+                          onClick={() => setDensity(d)}
+                          className={`px-3 py-2 rounded-lg border capitalize ${density===d ? 'bg-blue-50 text-blue-700 border-blue-200' : 'border-gray-300 hover:bg-gray-50'}`}
+                        >
+                          {d}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-2">Card Style</p>
+                    <div className="flex items-center gap-2">
+                      {[
+                        {k:'standard', label:'Standard'},
+                        {k:'outlined', label:'Outlined'},
+                        {k:'filled', label:'Filled'}
+                      ].map(opt => (
+                        <button
+                          key={opt.k}
+                          onClick={() => setCardStyle(opt.k)}
+                          className={`px-3 py-2 rounded-lg border ${cardStyle===opt.k ? 'bg-blue-50 text-blue-700 border-blue-200' : 'border-gray-300 hover:bg-gray-50'}`}
+                        >
+                          {opt.label}
+                        </button>
                       ))}
                     </div>
                   </div>

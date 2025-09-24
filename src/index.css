@@ -2,6 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theming variables */
+:root {
+  --accent: #3b82f6; /* blue */
+  --card-bg: #ffffff;
+  --card-border: 1px solid #e5e7eb;
+  --card-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  --pad-scale: 1; /* density multiplier */
+}
+
+[data-accent="blue"] { --accent: #3b82f6; }
+[data-accent="purple"] { --accent: #8b5cf6; }
+[data-accent="emerald"] { --accent: #10b981; }
+[data-accent="amber"] { --accent: #f59e0b; }
+[data-accent="rose"] { --accent: #f43f5e; }
+
+[data-card="standard"] { --card-bg: #ffffff; --card-border: 1px solid #e5e7eb; --card-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+[data-card="outlined"] { --card-bg: #ffffff; --card-border: 1px solid #e5e7eb; --card-shadow: none; }
+[data-card="filled"] { --card-bg: #f8fafc; --card-border: 1px solid #e5e7eb; --card-shadow: none; }
+
+[data-density="compact"] { --pad-scale: 0.92; }
+[data-density="comfortable"] { --pad-scale: 1; }
+[data-density="cozy"] { --pad-scale: 1.07; }
+
+/* Utilities driven by variables */
+.accent-btn {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 0.75rem;
+  padding: calc(0.5rem * var(--pad-scale)) calc(1rem * var(--pad-scale));
+  transition: filter 150ms ease, opacity 150ms ease;
+}
+.accent-btn:hover { filter: brightness(0.95); }
+
+.accent-outline {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: calc(0.5rem * var(--pad-scale)) calc(1rem * var(--pad-scale));
+  transition: background-color 150ms ease, color 150ms ease, opacity 150ms ease;
+}
+.accent-outline:hover { background: color-mix(in srgb, var(--accent) 8%, white); }
+
+.chip { 
+  border: 1px solid #e5e7eb; 
+  background: #f3f4f6; 
+  color: #374151; 
+}
+.chip:hover { background: #e5e7eb; }
+
+.accent-chip-selected {
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, #e5e7eb);
+  background: color-mix(in srgb, var(--accent) 15%, white);
+  color: color-mix(in srgb, var(--accent) 85%, #111827);
+}
+
+.card-surface {
+  background: var(--card-bg);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-5px); }
