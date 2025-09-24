@@ -157,12 +157,13 @@ export default function Journal() {
     size: '',
     emotion: 'Neutral',
     notes: '',
+    tags: '',
     ruleCompliant: true,
   });
 
   const resetForm = () => setForm({
     date: new Date().toISOString().slice(0,10),
-    symbol: '', type: 'Long', entry: '', exit: '', target: '', stop: '', size: '', emotion: 'Neutral', notes: '', ruleCompliant: true,
+    symbol: '', type: 'Long', entry: '', exit: '', target: '', stop: '', size: '', emotion: 'Neutral', notes: '', tags: '', ruleCompliant: true,
   });
 
   const saveEntry = () => {
@@ -207,6 +208,7 @@ export default function Journal() {
       pnl,
       emotion: form.emotion,
       notes: form.notes,
+      tags: form.tags.split(',').map(t=>t.trim()).filter(Boolean),
       ruleCompliant: form.ruleCompliant,
     };
     setTrades(prev => [newTrade, ...prev]);
@@ -437,6 +439,10 @@ export default function Journal() {
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
                 <textarea rows={4} value={form.notes} onChange={(e)=>setForm({...form, notes: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="What happened? What did you learn?" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Strategy / Tags (comma-separated)</label>
+                <input value={form.tags} onChange={(e)=>setForm({...form, tags: e.target.value})} placeholder="Breakout, Risk, Momentum" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
               </div>
               <div className="flex items-center gap-2 md:col-span-2">
                 <input id="rc" type="checkbox" checked={form.ruleCompliant} onChange={(e)=>setForm({...form, ruleCompliant: e.target.checked})} />
