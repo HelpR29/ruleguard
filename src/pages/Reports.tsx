@@ -35,15 +35,18 @@ export default function Reports() {
   }, [trades]);
 
   const weeklyData = useMemo(() => {
-    // Build last 7 days from localStorage.daily_stats
+    // Build last 7 days; PnL from journal_trades if present for the day, else proxy fallback from daily_stats
     const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const today = new Date();
     let stats: Record<string, { completions: number; violations: number }>; 
+    try { stats = JSON.parse(localStorage.getItem('daily_stats') || '{}'); } catch { stats = {}; }
+    let trades: Array<{ date: string; pnl: number }>; 
     try {
-      stats = JSON.parse(localStorage.getItem('daily_stats') || '{}');
-    } catch {
-      stats = {};
-    }
+      const raw = localStorage.getItem('journal_trades');
+      const arr = raw ? JSON.parse(raw) : [];
+      trades = Array.isArray(arr) ? arr.map((t:any)=>({ date: (t.date||'').slice(0,10), pnl: Number(t.pnl)||0 })) : [];
+    } catch { trades = []; }
+    const pnlByDate = trades.reduce((m: Record<string, number>, t) => { if (t.date) m[t.date] = (m[t.date]||0) + t.pnl; return m; }, {} as Record<string, number>);
 
     const data = [] as Array<{ day: string; completions: number; violations: number; pnl: number }>;
     for (let i = 6; i >= 0; i--) {
@@ -51,7 +54,9 @@ export default function Reports() {
       d.setDate(today.getDate() - i);
       const key = d.toISOString().slice(0,10);
       const entry = stats[key] || { completions: 0, violations: 0 };
-      const pnl = Math.round((entry.completions - entry.violations) * 160); // simple proxy
+      const hasTrades = Object.prototype.hasOwnProperty.call(pnlByDate, key);
+      const fallbackPnl = Math.round((entry.completions - entry.violations) * 160);
+      const pnl = hasTrades ? Math.round(pnlByDate[key]) : fallbackPnl;
       data.push({ day: dayNames[d.getDay()], completions: entry.completions, violations: entry.violations, pnl });
     }
     return data;
@@ -458,6 +463,7 @@ export default function Reports() {
                   rr={averageRR || undefined}
                   avatar={avatar || undefined}
                   timeframe="This Week"
+                  variant="tile"
                 />
               </div>
 
