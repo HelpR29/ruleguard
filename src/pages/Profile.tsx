@@ -90,6 +90,11 @@ export default function Profile() {
     if (stats.daysActive >= 30) badges.push({ name: 'Veteran', icon: '🎖️', description: '30+ days active', category: 'special' });
     if (stats.daysActive >= 100) badges.push({ name: 'Master Trader', icon: '🥇', description: '100+ days active', category: 'special' });
     
+    // Leaderboard Achievements
+    if (achievements.includes('gold_champion')) badges.push({ name: 'Monthly Champion', icon: '🥇', description: 'Ranked #1 on leaderboard', category: 'leaderboard' });
+    if (achievements.includes('silver_champion')) badges.push({ name: 'Monthly Runner-up', icon: '🥈', description: 'Ranked #2 on leaderboard', category: 'leaderboard' });
+    if (achievements.includes('bronze_champion')) badges.push({ name: 'Monthly Third Place', icon: '🥉', description: 'Ranked #3 on leaderboard', category: 'leaderboard' });
+    
     return badges;
   }, [progress, stats, premiumStatus, achievements]);
 
@@ -335,7 +340,8 @@ export default function Profile() {
                     streaks: 'from-orange-50 to-red-100 border-orange-200 dark:from-orange-900/20 dark:to-red-800/20 dark:border-orange-700',
                     discipline: 'from-purple-50 to-purple-100 border-purple-200 dark:from-purple-900/20 dark:to-purple-800/20 dark:border-purple-700',
                     growth: 'from-emerald-50 to-emerald-100 border-emerald-200 dark:from-emerald-900/20 dark:to-emerald-800/20 dark:border-emerald-700',
-                    special: 'from-yellow-50 to-yellow-100 border-yellow-200 dark:from-yellow-900/20 dark:to-yellow-800/20 dark:border-yellow-700'
+                    special: 'from-yellow-50 to-yellow-100 border-yellow-200 dark:from-yellow-900/20 dark:to-yellow-800/20 dark:border-yellow-700',
+                    leaderboard: 'from-rose-50 to-pink-100 border-rose-200 dark:from-rose-900/20 dark:to-pink-800/20 dark:border-rose-700'
                   };
                   
                   return (

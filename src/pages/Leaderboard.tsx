@@ -13,6 +13,8 @@ interface LeaderboardUser {
   isPremium: boolean;
   rank: number;
   totalGrowth: number;
+  leaderboardBadges?: string[];
+  lastMonthRank?: number;
 }
 
 const mockLeaderboardData: LeaderboardUser[] = [
@@ -78,6 +80,57 @@ export default function Leaderboard() {
   const { progress } = useUser();
   const [activeTab, setActiveTab] = useState<'global' | 'friends' | 'objects'>('global');
   const [timeframe, setTimeframe] = useState<'weekly' | 'monthly' | 'alltime'>('weekly');
+  const [lastReset, setLastReset] = useState(() => {
+    try {
+      return localStorage.getItem('leaderboard_last_reset') || new Date().toISOString();
+    } catch {
+      return new Date().toISOString();
+    }
+  });
+
+  // Check if leaderboard should reset (30 days)
+  const checkLeaderboardReset = () => {
+    const now = new Date();
+    const lastResetDate = new Date(lastReset);
+    const daysSinceReset = Math.floor((now.getTime() - lastResetDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysSinceReset >= 30) {
+      // Award badges to top 3 before reset
+      awardLeaderboardBadges();
+      
+      // Reset leaderboard
+      try {
+        localStorage.setItem('leaderboard_last_reset', now.toISOString());
+        localStorage.removeItem('monthly_leaderboard_data');
+        setLastReset(now.toISOString());
+      } catch {}
+    }
+  };
+
+  // Award badges to top 3 performers
+  const awardLeaderboardBadges = () => {
+    try {
+      const currentAchievements = JSON.parse(localStorage.getItem('user_achievements') || '[]');
+      // In real app, get actual user rank from API/state
+      const userRank: number = 4; // Mock user rank
+      
+      if (userRank === 1 && !currentAchievements.includes('gold_champion')) {
+        currentAchievements.push('gold_champion');
+        localStorage.setItem('user_achievements', JSON.stringify(currentAchievements));
+      } else if (userRank === 2 && !currentAchievements.includes('silver_champion')) {
+        currentAchievements.push('silver_champion');
+        localStorage.setItem('user_achievements', JSON.stringify(currentAchievements));
+      } else if (userRank === 3 && !currentAchievements.includes('bronze_champion')) {
+        currentAchievements.push('bronze_champion');
+        localStorage.setItem('user_achievements', JSON.stringify(currentAchievements));
+      }
+    } catch {}
+  };
+
+  // Check for reset on component mount
+  React.useEffect(() => {
+    checkLeaderboardReset();
+  }, []);
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="h-6 w-6 text-yellow-500" />;
@@ -91,6 +144,27 @@ export default function Leaderboard() {
     if (rank === 2) return 'bg-gradient-to-r from-gray-300 to-gray-500';
     if (rank === 3) return 'bg-gradient-to-r from-amber-400 to-amber-600';
     return 'bg-gradient-to-r from-blue-500 to-blue-600';
+  };
+
+  const getLeaderboardBadges = (user: LeaderboardUser) => {
+    const badges = [];
+    if (user.leaderboardBadges?.includes('gold_champion')) {
+      badges.push({ icon: '🥇', title: 'Monthly Champion', color: 'text-yellow-500' });
+    }
+    if (user.leaderboardBadges?.includes('silver_champion')) {
+      badges.push({ icon: '🥈', title: 'Monthly Runner-up', color: 'text-gray-400' });
+    }
+    if (user.leaderboardBadges?.includes('bronze_champion')) {
+      badges.push({ icon: '🥉', title: 'Monthly Third Place', color: 'text-amber-600' });
+    }
+    return badges;
+  };
+
+  const getDaysUntilReset = () => {
+    const now = new Date();
+    const lastResetDate = new Date(lastReset);
+    const daysSinceReset = Math.floor((now.getTime() - lastResetDate.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.max(0, 30 - daysSinceReset);
   };
 
   return (
