@@ -120,7 +120,7 @@ export default function CompoundingChart() {
         <div className="bg-green-50 rounded-xl p-4">
           <p className="text-sm text-green-600 mb-1">Current</p>
           <p className="text-lg font-bold text-green-700">
-            ${progress.currentBalance.toFixed(2)}
+            ${(settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, progress.completions)).toFixed(2)}
           </p>
         </div>
         <div className="bg-blue-50 rounded-xl p-4">
