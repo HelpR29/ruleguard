@@ -11,13 +11,6 @@ export default function Reports() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [shareUrl, setShareUrl] = useState<string>('');
   const { progress, rules, settings } = useUser() as any;
-  const [progressMode, setProgressMode] = useState<'percent'|'counts'>('percent');
-  const [premiumStatus] = useState<string>(() => {
-    try { return localStorage.getItem('premium_status') || 'none'; } catch { return 'none'; }
-  });
-  const [achievements] = useState<string[]>(() => {
-    try { const a = JSON.parse(localStorage.getItem('user_achievements') || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
-  });
 
   // Load trades from Journal for R:R and tag analytics
   const trades = useMemo(() => {
@@ -445,46 +438,15 @@ export default function Reports() {
             </div>
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-              {/* Progress Tracker */}
               <div className="rounded-2xl p-6 card-surface">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <Award className="h-8 w-8 text-green-500" />
-                    <div>
-                      <p className="text-gray-600 text-sm">Progress</p>
-                      <p className="text-xs text-gray-500">This Week</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button className="text-xs accent-outline" onClick={() => setProgressMode(m => m==='percent'?'counts':'percent')}>Switch View</button>
-                    {(() => {
-                      const allowed = premiumStatus === 'premium' || achievements.includes('champion');
-                      if (allowed) {
-                        return <a href="/settings" className="text-xs accent-btn">Edit Goal</a>;
-                      }
-                      return <a href="/premium" title="Editing weekly goal requires Premium or Champion" className="text-[11px] chip rounded-full px-2 py-0.5">Premium to edit</a>;
-                    })()}
+                <div className="flex items-center gap-3 mb-2">
+                  <Award className="h-8 w-8 text-green-500" />
+                  <div>
+                    <p className="text-gray-600 text-sm">Completions</p>
+                    <p className="text-2xl font-bold text-gray-900">8</p>
                   </div>
                 </div>
-                {(() => {
-                  const weekCompletions = weeklyData.reduce((s,d)=>s+d.completions,0);
-                  const goal = (settings && settings.targetCompletions) ? Number(settings.targetCompletions) : 10;
-                  const remaining = Math.max(0, goal - weekCompletions);
-                  if (progressMode === 'percent') {
-                    return (
-                      <div>
-                        <p className="text-2xl font-bold text-gray-900">{progress.disciplineScore}%</p>
-                        <p className="text-green-600 text-sm mt-1">Discipline</p>
-                      </div>
-                    );
-                  }
-                  return (
-                    <div>
-                      <p className="text-2xl font-bold text-gray-900">{weekCompletions} / {goal}</p>
-                      <p className="text-sm text-gray-600 mt-1">{remaining} more to reach weekly goal</p>
-                    </div>
-                  );
-                })()}
+                <p className="text-green-600 text-sm">↑ 2 from last week</p>
               </div>
 
               <div className="rounded-2xl p-6 card-surface">
