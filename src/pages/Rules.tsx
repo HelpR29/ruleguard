@@ -5,11 +5,14 @@ import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function Rules() {
-  const { progress, rules, addRule, editRule, deleteRule, toggleRuleActive, recordViolation, markCompliance } = useUser();
+  const { progress, rules, addRule, editRule, updateRuleMeta, deleteRule, toggleRuleActive, recordViolation, markCompliance } = useUser();
   const [showAddRule, setShowAddRule] = useState(false);
   const [newRule, setNewRule] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [editingTags, setEditingTags] = useState('');
+  const [showEditDrawer, setShowEditDrawer] = useState(false);
+  const [showRestrictionInfo, setShowRestrictionInfo] = useState(false);
   const [newTags, setNewTags] = useState('');
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const { addToast } = useToast();
@@ -85,6 +88,90 @@ export default function Rules() {
             {activeFilters.length > 0 && (
               <button className="ml-2 text-sm text-gray-600 hover:text-gray-900" onClick={() => setActiveFilters([])}>Clear</button>
             )}
+
+      {/* Edit Drawer */}
+      {showEditDrawer && editingId && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowEditDrawer(false)}></div>
+          <div className="absolute top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl p-6 overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold">Edit Rule</h3>
+              <button className="text-gray-500 hover:text-gray-700" onClick={() => setShowEditDrawer(false)}>×</button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Rule Text</label>
+                <textarea
+                  value={editingText}
+                  onChange={(e) => setEditingText(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Tags (comma-separated)</label>
+                <input
+                  type="text"
+                  value={editingTags}
+                  onChange={(e) => setEditingTags(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Risk, Mindset, Entry, Exit"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex items-center justify-between">
+              <button
+                className="text-sm text-gray-600 hover:text-gray-900 underline"
+                onClick={() => setShowRestrictionInfo(true)}
+              >
+                Why restricted?
+              </button>
+              <div className="flex gap-3">
+                <button
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  onClick={() => setShowEditDrawer(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  onClick={() => {
+                    updateRuleMeta(editingId, { text: editingText.trim(), tags: editingTags.split(',').map(t=>t.trim()).filter(Boolean) });
+                    addToast('success', 'Rule saved.');
+                    setShowEditDrawer(false);
+                  }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Why Restricted Modal */}
+      {showRestrictionInfo && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowRestrictionInfo(false)}></div>
+          <div className="absolute inset-0 m-auto bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg h-fit">
+            <h3 className="text-xl font-bold mb-2">Why is editing restricted?</h3>
+            <p className="text-gray-700 mb-4">
+              Editing, deleting, and toggling rules are Premium features to protect discipline frameworks and prevent accidental changes.
+              Upgrade to unlock:
+            </p>
+            <ul className="list-disc pl-5 space-y-1 text-gray-700 mb-4">
+              <li>Rule version history and rollback</li>
+              <li>Advanced tag analytics and custom dashboards</li>
+              <li>Premium avatars and exclusive achievements</li>
+              <li>Priority support and early feature access</li>
+            </ul>
+            <div className="flex justify-end gap-3">
+              <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50" onClick={() => setShowRestrictionInfo(false)}>Close</button>
+              <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700" onClick={() => { setShowRestrictionInfo(false); navigate('/premium'); }}>Upgrade to Premium</button>
+            </div>
+          </div>
+        </div>
+      )}
           </div>
         </div>
 
@@ -103,15 +190,7 @@ export default function Rules() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
                     <div className={`w-3 h-3 rounded-full ${rule.active ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                    {editingId === rule.id ? (
-                      <input
-                        value={editingText}
-                        onChange={(e) => setEditingText(e.target.value)}
-                        className="px-2 py-1 border border-gray-300 rounded-lg text-sm w-full max-w-md"
-                      />
-                    ) : (
-                      <h3 className="text-lg font-semibold text-gray-900">{rule.text}</h3>
-                    )}
+                    <h3 className="text-lg font-semibold text-gray-900">{rule.text}</h3>
                     <button
                       onClick={() => {
                         if (!isPremiumOrChampion) {
@@ -134,7 +213,7 @@ export default function Rules() {
                   <div className="flex items-center gap-6 text-sm text-gray-600">
                     <button
                       className="flex items-center gap-1 hover:text-red-600"
-                      onClick={() => recordViolation(rule.id)}
+                      onClick={() => { recordViolation(rule.id); addToast('warning', 'Violation recorded.'); }}
                       title="Record a violation for this rule"
                     >
                       <XCircle className="h-4 w-4 text-red-500" />
@@ -142,7 +221,7 @@ export default function Rules() {
                     </button>
                     <button
                       className="text-green-700 hover:text-green-800"
-                      onClick={() => markCompliance(rule.id)}
+                      onClick={() => { markCompliance(rule.id); addToast('success', 'Compliance marked.'); }}
                       title="Mark compliance (reduce violations)"
                     >
                       <span className="inline-flex items-center gap-1"><CheckCircle className="h-4 w-4" /> Mark Compliance</span>
@@ -163,45 +242,22 @@ export default function Rules() {
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  {editingId === rule.id ? (
-                    <>
-                      <button
-                        className="px-3 py-1 text-white bg-blue-600 rounded-lg hover:bg-blue-700 text-sm"
-                        onClick={() => {
-                          if (!isPremiumOrChampion) {
-                            addToast('warning', 'Saving requires Premium or Champion.', 'Upgrade', () => navigate('/premium'));
-                            return;
-                          }
-                          editRule(rule.id, editingText);
-                          setEditingId(null);
-                          setEditingText('');
-                          addToast('success', 'Rule saved.');
-                        }}
-                      >
-                        Save
-                      </button>
-                      <button
-                        className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
-                        onClick={() => { setEditingId(null); setEditingText(''); }}
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                      onClick={() => { 
-                        if (!isPremiumOrChampion) {
-                          addToast('warning', 'Editing rules requires Premium or Champion.', 'Upgrade', () => navigate('/premium'));
-                          return;
-                        }
-                        setEditingId(rule.id); setEditingText(rule.text); 
-                      }}
-                      title="Edit rule"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                  )}
+                  <button
+                    className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                    onClick={() => { 
+                      if (!isPremiumOrChampion) {
+                        setShowRestrictionInfo(true);
+                        return;
+                      }
+                      setEditingId(rule.id); 
+                      setEditingText(rule.text); 
+                      setEditingTags((rule.tags || []).join(', '));
+                      setShowEditDrawer(true);
+                    }}
+                    title="Edit rule"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </button>
                   <button
                     className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                     onClick={() => {
