@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
+import Logo from '../components/Logo';
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -29,12 +30,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       description: 'Your trading discipline companion',
       content: (
         <div className="text-center space-y-6">
-          <div className="w-32 h-32 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 rounded-3xl mx-auto flex items-center justify-center shadow-2xl border-2 border-blue-500/20">
-            <div className="relative">
-              <span className="text-white font-bold text-4xl tracking-tight">RG</span>
-              <div className="absolute -top-2 -right-2 w-4 h-4 bg-green-400 rounded-full animate-pulse shadow-lg"></div>
-              <div className="absolute inset-0 bg-white/10 rounded-2xl animate-pulse"></div>
-            </div>
+          <div className="mx-auto flex items-center justify-center">
+            <Logo size={96} showText subtitle="Your trading discipline companion" />
           </div>
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to RuleGuard</h2>
