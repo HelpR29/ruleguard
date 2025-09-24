@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useUser } from '../context/UserContext';
@@ -91,7 +91,7 @@ function LiveTradeChart({ entry, exit, target, stop }: { entry: string; exit: st
 }
 
 // Resolve image IDs to object URLs and render a grid
-function TradeImages({ ids }: { ids: number[] }) {
+function TradeImages({ ids, onRemove }: { ids: number[]; onRemove?: (idx: number) => void }) {
   const [urls, setUrls] = useState<string[]>([]);
   useEffect(() => {
     let active = true;
@@ -117,7 +117,19 @@ function TradeImages({ ids }: { ids: number[] }) {
   return (
     <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2">
       {urls.map((src, idx) => (
-        <img key={idx} src={src} alt={`img-${idx}`} className="w-full h-24 object-cover rounded border" />
+        <div key={idx} className="relative group overflow-hidden rounded border">
+          <img src={src} alt={`img-${idx}`} className="w-full h-24 object-cover transition-transform duration-200 group-hover:scale-[1.02]" />
+          {onRemove && (
+            <button
+              type="button"
+              aria-label="Remove image"
+              onClick={() => onRemove(idx)}
+              className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white text-gray-700 border border-gray-300 rounded-full w-6 h-6 grid place-items-center text-xs"
+            >
+              ×
+            </button>
+          )}
+        </div>
       ))}
     </div>
   );
@@ -228,6 +240,24 @@ export default function Journal() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // One-time cleanup: strip any leftover base64 images arrays from trades to slim localStorage
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('journal_cleanup_images_v1') === 'true') return;
+      let changed = false;
+      const next = (trades as any[]).map(t => {
+        if (t && 'images' in t) { const { images, ...rest } = t; changed = true; return rest; }
+        return t;
+      });
+      if (changed) {
+        setTrades(next as Trade[]);
+        try { localStorage.setItem('journal_trades', JSON.stringify(next)); } catch {}
+      }
+      localStorage.setItem('journal_cleanup_images_v1', 'true');
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     try { localStorage.setItem('journal_trades', JSON.stringify(trades)); } catch {}
   }, [trades]);
@@ -253,11 +283,14 @@ export default function Journal() {
     imagePreviews: [] as string[],
   });
 
-  const resetForm = () => setForm({
-    date: new Date().toISOString().slice(0,10),
-    symbol: '', type: 'Long', entry: '', exit: '', target: '', stop: '', size: '', emotion: 'Neutral', notes: '', tags: '', ruleCompliant: true,
-    imageIds: [], imagePreviews: [],
-  });
+  const resetForm = () => {
+    try { form.imagePreviews.forEach(u => URL.revokeObjectURL(u)); } catch {}
+    setForm({
+      date: new Date().toISOString().slice(0,10),
+      symbol: '', type: 'Long', entry: '', exit: '', target: '', stop: '', size: '', emotion: 'Neutral', notes: '', tags: '', ruleCompliant: true,
+      imageIds: [], imagePreviews: [],
+    });
+  };
 
   // Attachments handlers
   const handleImageFiles = async (files: FileList | null) => {
@@ -488,7 +521,21 @@ export default function Journal() {
 
                   {/* Attachments */}
                   {Array.isArray(trade.imageIds) && trade.imageIds.length > 0 && (
-                    <TradeImages ids={trade.imageIds} />
+                    <TradeImages
+                      ids={trade.imageIds}
+                      onRemove={async (idx) => {
+                        try {
+                          const id = trade.imageIds?.[idx];
+                          if (typeof id === 'number') await deleteAttachment(id);
+                        } catch {}
+                        setTrades(prev => prev.map(t => {
+                          if (t.id !== trade.id) return t;
+                          const ids = (t.imageIds || []).filter((_, i) => i !== idx);
+                          return { ...t, imageIds: ids };
+                        }));
+                        addToast('success', 'Image removed.');
+                      }}
+                    />
                   )}
 
                   <div className="mt-3 flex justify-between items-center">
@@ -717,7 +764,17 @@ export default function Journal() {
               </div>
             </div>
             <div className="mt-6 flex gap-3">
-              <button onClick={()=>setShowNewEntry(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
+              <button
+                onClick={async ()=>{
+                  // cleanup unsaved attachments and previews
+                  try { for (const id of form.imageIds) { await deleteAttachment(id); } } catch {}
+                  resetForm();
+                  setShowNewEntry(false);
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
               <button onClick={saveEntry} className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Save Entry</button>
             </div>
           </div>
