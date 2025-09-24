@@ -5,16 +5,16 @@ interface Trade {
   id: number;
   date: string;
   symbol: string;
-  type: 'Long' | 'Short';
+  type: 'Long' | 'Short' | string;
   entry: number;
   exit: number;
-  target?: number;
-  stop?: number;
+  target?: number | null;
+  stop?: number | null;
   size: number;
   pnl: number;
   emotion: string;
   notes: string;
-  tags: string;
+  tags?: string | string[] | undefined;
   ruleCompliant: boolean;
 }
 

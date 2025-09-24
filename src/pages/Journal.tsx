@@ -649,6 +649,16 @@ export default function Journal() {
               ))}
             </div>
           )}
+
+          {/* AI Insights Tab */}
+          {activeTab === 'insights' && (
+            <div className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <AIInsights trades={trades} period="weekly" />
+                <AIInsights trades={trades} period="monthly" />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

@@ -15,6 +15,11 @@ export default function Dashboard() {
   const progressPercent = (progress.completions / settings.targetCompletions) * 100;
 
   const addCompletion = () => {
+    // Don't allow completions beyond target
+    if (progress.completions >= settings.targetCompletions) {
+      return;
+    }
+    
     const rate = settings.growthPerCompletion / 100;
     const newCompletions = Math.min(progress.completions + 1, settings.targetCompletions);
     const newBalance = progress.currentBalance * (1 + rate);
@@ -164,7 +169,16 @@ export default function Dashboard() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600 dark:text-gray-300">Remaining</span>
-                  <span className="font-bold text-gray-900 dark:text-white">{settings.targetCompletions - progress.completions} completions</span>
+                  <span className={`font-bold ${
+                    progress.completions >= settings.targetCompletions 
+                      ? 'text-green-600' 
+                      : 'text-gray-900 dark:text-white'
+                  }`}>
+                    {progress.completions >= settings.targetCompletions 
+                      ? 'Goal Achieved! 🎉' 
+                      : `${settings.targetCompletions - progress.completions} completions`
+                    }
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3">
                   <div
@@ -172,7 +186,16 @@ export default function Dashboard() {
                     style={{ width: `${Math.min(progressPercent, 100)}%` }}
                   ></div>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-300">{progressPercent.toFixed(1)}% complete</p>
+                <p className={`text-sm ${
+                  progress.completions >= settings.targetCompletions
+                    ? 'text-green-600 font-semibold'
+                    : 'text-gray-600 dark:text-gray-300'
+                }`}>
+                  {progress.completions >= settings.targetCompletions
+                    ? 'Congratulations! You\'ve reached your goal!'
+                    : `${progressPercent.toFixed(1)}% complete`
+                  }
+                </p>
               </div>
             </div>
 
