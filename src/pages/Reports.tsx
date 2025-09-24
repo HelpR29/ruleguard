@@ -275,11 +275,11 @@ export default function Reports() {
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 26px Inter, system-ui, -apple-system, Segoe UI, Roboto';
     const dn = (localStorage.getItem('display_name') || '').trim();
-    const brand = dn ? `RuleGuard • ${dn}` : 'RuleGuard';
+    const brand = dn ? `LockIn • ${dn}` : 'LockIn';
     ctx.fillText(brand, 110, 80);
     ctx.fillStyle = '#111827';
     ctx.font = '700 44px Inter, system-ui, -apple-system, Segoe UI, Roboto';
-    ctx.fillText('RuleGuard Weekly Report', 70, 140);
+    ctx.fillText('LockIn Weekly Report', 70, 140);
     // Discipline & Avg R:R
     ctx.font = '600 28px Inter';
     ctx.fillText(`Discipline Score: ${progress.disciplineScore}%`, 70, 200);
@@ -344,13 +344,13 @@ export default function Reports() {
     // Footer
     ctx.font = '400 18px Inter';
     ctx.fillStyle = '#374151';
-    ctx.fillText('ruleguard.app • Share your discipline progress', 70, height-70);
+    ctx.fillText('lockin.app • Share your discipline progress', 70, height-70);
     const url = canvas.toDataURL('image/png');
     setShareUrl(url);
     if (forPrint) {
       const w = window.open('about:blank', '_blank');
       if (w) {
-        w.document.write(`<html><head><title>RuleGuard Report</title><style>body{margin:0;display:grid;place-items:center;background:#fff}</style></head><body><img src="${url}" style="max-width:100%;height:auto" onload="window.print(); setTimeout(()=>window.close(), 300);"/></body></html>`);
+        w.document.write(`<html><head><title>LockIn Report</title><style>body{margin:0;display:grid;place-items:center;background:#fff}</style></head><body><img src="${url}" style="max-width:100%;height:auto" onload="window.print(); setTimeout(()=>window.close(), 300);"/></body></html>`);
         w.document.close();
       }
       return;
@@ -360,9 +360,9 @@ export default function Reports() {
         // Attempt Web Share with data URL converted to blob
         const res = await fetch(url);
         const blob = await res.blob();
-        const file = new File([blob], 'ruleguard-report.png', { type: 'image/png' });
+        const file = new File([blob], 'lockin-report.png', { type: 'image/png' });
         if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], text: 'My RuleGuard Weekly Report' });
+          await navigator.share({ files: [file], text: 'My LockIn Weekly Report' });
         }
       }
     } catch {}

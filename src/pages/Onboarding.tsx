@@ -26,7 +26,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
   const steps = [
     {
-      title: 'Welcome to RuleGuard',
+      title: 'Welcome to LockIn',
       description: 'Your trading discipline companion',
       content: (
         <div className="text-center space-y-6">
@@ -34,7 +34,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             <Logo size={96} showText subtitle="Your trading discipline companion" />
           </div>
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to RuleGuard</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to LockIn</h2>
             <p className="text-gray-600 text-lg max-w-md mx-auto">
               Build unbreakable trading discipline with AI-powered rule tracking, gamified progress, 
               and compounding growth visualization.
@@ -268,7 +268,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-4">You're Ready to Start!</h2>
             <p className="text-gray-600 text-lg max-w-md mx-auto">
-              Your RuleGuard is configured and ready to help you build unbreakable trading discipline.
+              Your LockIn is configured and ready to help you build unbreakable trading discipline.
             </p>
           </div>
 

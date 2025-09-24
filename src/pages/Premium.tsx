@@ -84,7 +84,7 @@ export default function Premium() {
           <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
             <Crown className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Upgrade to RuleGuard Pro</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Upgrade to LockIn Pro</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Unlock advanced features, detailed analytics, and exclusive tools to master your trading discipline
           </p>
@@ -127,7 +127,7 @@ export default function Premium() {
             <div className="text-center mb-6">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Star className="h-6 w-6 text-purple-600" />
-                <h3 className="text-2xl font-bold text-gray-900">RuleGuard Pro</h3>
+                <h3 className="text-2xl font-bold text-gray-900">LockIn Pro</h3>
               </div>
               <div className="flex items-baseline justify-center gap-1">
                 <span className="text-5xl font-bold text-purple-600">${plans[selectedPlan].price}</span>
@@ -223,7 +223,7 @@ export default function Premium() {
                 </div>
               </div>
               <p className="text-gray-700 italic">
-                "RuleGuard Pro transformed my trading. The AI insights helped me identify my emotional patterns and improve my discipline by 40%."
+                "LockIn Pro transformed my trading. The AI insights helped me identify my emotional patterns and improve my discipline by 40%."
               </p>
             </div>
             

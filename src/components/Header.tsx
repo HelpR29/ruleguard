@@ -32,7 +32,7 @@ export default function Header() {
   const [displayName, setDisplayName] = useState('Trading Pro');
   const [premiumStatus, setPremiumStatus] = useState<'none' | 'premium' | 'discount_25' | 'discount_50' | 'free_monthly'>('none');
   const [achievements, setAchievements] = useState<string[]>([]);
-  const pageName = pageNames[location.pathname] || 'RuleGuard';
+  const pageName = pageNames[location.pathname] || 'LockIn';
 
   useEffect(() => {
     try {
