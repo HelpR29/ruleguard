@@ -26,6 +26,7 @@ export default function Header() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [userAvatar, setUserAvatar] = useState('👤');
   const [isProfileLocked, setIsProfileLocked] = useState(false);
   const [premiumStatus, setPremiumStatus] = useState<'none' | 'premium' | 'discount_25' | 'discount_50' | 'free_monthly'>('none');
@@ -47,6 +48,21 @@ export default function Header() {
 
   const mappedPremiumStatus: 'none' | 'discount_25' | 'discount_50' | 'free_monthly' =
     premiumStatus === 'premium' ? 'free_monthly' : premiumStatus;
+
+  const handleLogout = () => {
+    try {
+      const keys = [
+        'user_settings','user_progress','user_rules','daily_stats','activity_log',
+        'user_avatar','profile_locked','user_achievements','premium_status',
+        'journal_trades','journal_notes','onboarding_complete'
+      ];
+      keys.forEach(k => localStorage.removeItem(k));
+    } catch {}
+    setShowProfileMenu(false);
+    navigate('/');
+    // force a refresh so App re-checks onboarding
+    setTimeout(() => window.location.reload(), 50);
+  };
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
@@ -128,15 +144,8 @@ export default function Header() {
           </button>
           
           <button 
-            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            onClick={() => {
-              const allowed = !isProfileLocked || premiumStatus === 'premium' || achievements.includes('champion');
-              if (allowed) {
-                setShowAvatarModal(true);
-              } else {
-                setShowUpgradeModal(true);
-              }
-            }}
+            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
+            onClick={() => setShowProfileMenu(prev => !prev)}
           >
             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
               {userAvatar.startsWith('data:') ? (
@@ -148,6 +157,43 @@ export default function Header() {
               )}
             </div>
           </button>
+          {showProfileMenu && (
+            <div className="absolute right-4 top-14 bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 w-56 z-40">
+              <button
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  const allowed = !isProfileLocked || premiumStatus === 'premium' || achievements.includes('champion');
+                  if (allowed) {
+                    setShowAvatarModal(true);
+                  } else {
+                    setShowUpgradeModal(true);
+                  }
+                }}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+              >
+                Edit Profile
+              </button>
+              <button
+                onClick={() => { setShowProfileMenu(false); navigate('/settings'); }}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+              >
+                Settings
+              </button>
+              <button
+                onClick={() => { setShowProfileMenu(false); navigate('/premium'); }}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+              >
+                Premium
+              </button>
+              <div className="h-px bg-gray-200 dark:bg-gray-700 my-1" />
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-red-600"
+              >
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
       

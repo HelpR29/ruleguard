@@ -180,6 +180,19 @@ export default function Journal() {
       addToast('warning', 'Entry, Exit, Size (and optional Target/Stop) must be numbers.');
       return;
     }
+    // Basic sanity checks for planned target/stop if provided
+    if (targetNum !== undefined && stopNum !== undefined) {
+      if (form.type === 'Long') {
+        if (targetNum <= entryNum) addToast('warning', 'Target should be greater than Entry for a Long.');
+        if (stopNum >= entryNum) addToast('warning', 'Stop should be less than Entry for a Long.');
+      } else {
+        if (targetNum >= entryNum) addToast('warning', 'Target should be less than Entry for a Short.');
+        if (stopNum <= entryNum) addToast('warning', 'Stop should be greater than Entry for a Short.');
+      }
+    }
+    if (targetNum !== undefined && targetNum === exitNum) {
+      addToast('info', 'Note: Exit equals Target — treating Exit as the actual filled price and Target as your planned TP.');
+    }
     const pnl = Number(((exitNum - entryNum) * sizeNum).toFixed(2));
     const newTrade = {
       id: Date.now(),
@@ -428,6 +441,21 @@ export default function Journal() {
               <div className="flex items-center gap-2 md:col-span-2">
                 <input id="rc" type="checkbox" checked={form.ruleCompliant} onChange={(e)=>setForm({...form, ruleCompliant: e.target.checked})} />
                 <label htmlFor="rc" className="text-sm text-gray-700">Rule Compliant</label>
+              </div>
+              {/* R:R Preview */}
+              <div className="md:col-span-2 text-sm text-gray-700">
+                {(() => {
+                  const e = Number(form.entry), t = Number(form.target), s = Number(form.stop);
+                  if (!Number.isNaN(e) && !Number.isNaN(t) && !Number.isNaN(s)) {
+                    const risk = form.type === 'Long' ? e - s : s - e;
+                    const reward = form.type === 'Long' ? t - e : e - t;
+                    if (risk > 0 && reward > 0) {
+                      const rr = (reward / risk).toFixed(2);
+                      return <p>Planned R:R = <span className="font-semibold">1:{rr}</span> • Risk ${risk.toFixed(2)} • Reward ${reward.toFixed(2)} per share</p>;
+                    }
+                  }
+                  return <p className="text-gray-500">Provide Entry, Target, and Stop to preview R:R.</p>;
+                })()}
               </div>
               {/* Live Chart Preview */}
               <div className="md:col-span-2">
