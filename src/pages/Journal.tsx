@@ -800,11 +800,17 @@ export default function Journal() {
                         setForm(prev => ({ ...prev, entry: price.toString() }));
                       } else if (!form.exit) {
                         setForm(prev => ({ ...prev, exit: price.toString() }));
+                      } else if (!form.target) {
+                        setForm(prev => ({ ...prev, target: price.toString() }));
+                      } else if (!form.stop) {
+                        setForm(prev => ({ ...prev, stop: price.toString() }));
                       }
                     }}
-                    showEntryExit={true}
+                    showLevels={true}
                     entryPrice={form.entry ? parseFloat(form.entry) : undefined}
                     exitPrice={form.exit ? parseFloat(form.exit) : undefined}
+                    targetPrice={form.target ? parseFloat(form.target) : undefined}
+                    stopPrice={form.stop ? parseFloat(form.stop) : undefined}
                   />
                 ) : (
                   <LiveTradeChart entry={form.entry} exit={form.exit} target={form.target} stop={form.stop} />

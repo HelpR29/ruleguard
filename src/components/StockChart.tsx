@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { TrendingUp, TrendingDown, Loader2, AlertCircle } from 'lucide-react';
 
 interface StockChartProps {
   symbol: string;
   onPriceSelect?: (price: number, timestamp: string) => void;
-  showEntryExit?: boolean;
+  showLevels?: boolean;
   entryPrice?: number;
   exitPrice?: number;
-  entryTime?: string;
-  exitTime?: string;
+  targetPrice?: number;
+  stopPrice?: number;
 }
 
 interface ChartData {
@@ -24,11 +24,11 @@ const ALPHA_VANTAGE_API_KEY = 'XEJGZXHTJT53OD85';
 export default function StockChart({ 
   symbol, 
   onPriceSelect, 
-  showEntryExit = false,
+  showLevels = false,
   entryPrice,
   exitPrice,
-  entryTime,
-  exitTime
+  targetPrice,
+  stopPrice
 }: StockChartProps) {
   const [data, setData] = useState<ChartData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -231,25 +231,41 @@ export default function StockChart({
                 activeDot={{ r: 4, stroke: 'var(--accent)', strokeWidth: 2 }}
               />
               
-              {/* Entry/Exit markers if provided */}
-              {showEntryExit && entryPrice && (
-                <Line 
-                  type="monotone" 
-                  dataKey={() => entryPrice} 
-                  stroke="#10b981" 
+              {/* Trade Level Markers */}
+              {showLevels && entryPrice && (
+                <ReferenceLine 
+                  y={entryPrice} 
+                  stroke="#3b82f6" 
                   strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={false}
+                  strokeDasharray="8 4"
+                  label={{ value: `Entry: $${entryPrice.toFixed(2)}`, fill: '#3b82f6', fontSize: 12 }}
                 />
               )}
-              {showEntryExit && exitPrice && (
-                <Line 
-                  type="monotone" 
-                  dataKey={() => exitPrice} 
+              {showLevels && exitPrice && (
+                <ReferenceLine 
+                  y={exitPrice} 
+                  stroke="#8b5cf6" 
+                  strokeWidth={2}
+                  strokeDasharray="8 4"
+                  label={{ value: `Exit: $${exitPrice.toFixed(2)}`, fill: '#8b5cf6', fontSize: 12 }}
+                />
+              )}
+              {showLevels && targetPrice && (
+                <ReferenceLine 
+                  y={targetPrice} 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  strokeDasharray="4 4"
+                  label={{ value: `Target: $${targetPrice.toFixed(2)}`, fill: '#10b981', fontSize: 12 }}
+                />
+              )}
+              {showLevels && stopPrice && (
+                <ReferenceLine 
+                  y={stopPrice} 
                   stroke="#ef4444" 
                   strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={false}
+                  strokeDasharray="4 4"
+                  label={{ value: `Stop: $${stopPrice.toFixed(2)}`, fill: '#ef4444', fontSize: 12 }}
                 />
               )}
             </LineChart>
@@ -257,12 +273,42 @@ export default function StockChart({
         </div>
       )}
 
-      {/* Click instruction */}
-      {onPriceSelect && data.length > 0 && (
-        <p className="text-xs text-gray-500 mt-2 text-center">
-          Click on the chart to select entry/exit prices
-        </p>
-      )}
+      {/* Instructions and Legend */}
+      <div className="mt-3 space-y-2">
+        {onPriceSelect && data.length > 0 && (
+          <p className="text-xs text-gray-500 text-center">
+            Click on the chart to select entry/exit prices
+          </p>
+        )}
+        {showLevels && (entryPrice || exitPrice || targetPrice || stopPrice) && (
+          <div className="flex flex-wrap justify-center gap-4 text-xs">
+            {entryPrice && (
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-0.5 bg-blue-500 border-dashed border-t-2 border-blue-500"></div>
+                <span className="text-blue-600">Entry</span>
+              </div>
+            )}
+            {exitPrice && (
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-0.5 bg-purple-500 border-dashed border-t-2 border-purple-500"></div>
+                <span className="text-purple-600">Exit</span>
+              </div>
+            )}
+            {targetPrice && (
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-0.5 bg-green-500 border-dashed border-t-2 border-green-500"></div>
+                <span className="text-green-600">Target</span>
+              </div>
+            )}
+            {stopPrice && (
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-0.5 bg-red-500 border-dashed border-t-2 border-red-500"></div>
+                <span className="text-red-600">Stop</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
