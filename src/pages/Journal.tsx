@@ -3,6 +3,23 @@ import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown } from 'lucide-react
 import { useToast } from '../context/ToastContext';
 import { useUser } from '../context/UserContext';
 
+type Trade = {
+  id: number;
+  date: string;
+  symbol: string;
+  type: 'Long' | 'Short' | string;
+  entry: number;
+  exit: number;
+  size: number;
+  pnl: number;
+  emotion: string;
+  notes: string;
+  ruleCompliant: boolean;
+  target: number | null;
+  stop: number | null;
+  tags?: string[];
+};
+
 function LiveTradeChart({ entry, exit, target, stop }: { entry: string; exit: string; target?: string; stop?: string }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   useEffect(() => {
@@ -77,7 +94,7 @@ export default function Journal() {
   const { addToast } = useToast();
   const { recordCompletion } = useUser();
 
-  const mockTrades = [
+  const mockTrades: Trade[] = [
     {
       id: 1,
       date: '2024-01-15',
@@ -89,7 +106,10 @@ export default function Journal() {
       pnl: 250,
       emotion: 'Confident',
       notes: 'Clean breakout above resistance. Followed rules perfectly.',
-      ruleCompliant: true
+      ruleCompliant: true,
+      target: null,
+      stop: null,
+      tags: ['breakout','trend']
     },
     {
       id: 2,
@@ -102,7 +122,10 @@ export default function Journal() {
       pnl: -120,
       emotion: 'FOMO',
       notes: 'Entered without proper setup. Should have waited.',
-      ruleCompliant: false
+      ruleCompliant: false,
+      target: null,
+      stop: null,
+      tags: ['momentum','reversal']
     }
   ];
 
@@ -123,7 +146,7 @@ export default function Journal() {
     }
   ];
 
-  const [trades, setTrades] = useState<typeof mockTrades>(() => {
+  const [trades, setTrades] = useState<Trade[]>(() => {
     try {
       const raw = localStorage.getItem('journal_trades');
       if (raw) return JSON.parse(raw);
