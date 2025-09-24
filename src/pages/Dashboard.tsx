@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Plus, TrendingUp, Target, Calendar, Share2, Crown, Star, CheckCircle } from 'lucide-react';
 import { useUser } from '../context/UserContext';
+import { useToast } from '../context/ToastContext';
 import AnimatedProgressIcon, { ProgressGrid } from '../components/AnimatedProgressIcon';
 import CompoundingChart from '../components/CompoundingChart';
 import QuickActions from '../components/QuickActions';
 import RecentActivity from '../components/RecentActivity';
 
 export default function Dashboard() {
-  const { settings, progress, updateProgress } = useUser();
+  const { settings, progress, updateProgress, updateSettings } = useUser();
+  const { addToast } = useToast();
   const [showAddCompletion, setShowAddCompletion] = useState(false);
   const [progressView, setProgressView] = useState<'icon'|'grid'>('icon');
   const [showCelebration, setShowCelebration] = useState(false);
@@ -313,6 +315,145 @@ export default function Dashboard() {
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 Continue Viewing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Next Goal Modal */}
+      {showNextGoal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-lg w-full">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Set Your Next Goal</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              Congratulations on completing your goal! What would you like to achieve next?
+            </p>
+            
+            <div className="space-y-4 mb-6">
+              <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                <label className="flex items-center gap-3">
+                  <input 
+                    type="radio" 
+                    name="goalType" 
+                    value="same"
+                    checked={nextGoalType === 'same'}
+                    onChange={(e) => setNextGoalType(e.target.value as any)}
+                    className="accent-radio"
+                  />
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Same Goal Again</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {settings.targetCompletions} {settings.progressObject}s with {settings.growthPerCompletion}% growth
+                    </p>
+                  </div>
+                </label>
+              </div>
+              
+              <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                <label className="flex items-center gap-3">
+                  <input 
+                    type="radio" 
+                    name="goalType" 
+                    value="increase"
+                    checked={nextGoalType === 'increase'}
+                    onChange={(e) => setNextGoalType(e.target.value as any)}
+                    className="accent-radio"
+                  />
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Increase Challenge</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {Math.floor(settings.targetCompletions * 1.5)} {settings.progressObject}s with {settings.growthPerCompletion + 2}% growth
+                    </p>
+                  </div>
+                </label>
+              </div>
+              
+              <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                <label className="flex items-center gap-3">
+                  <input 
+                    type="radio" 
+                    name="goalType" 
+                    value="custom"
+                    checked={nextGoalType === 'custom'}
+                    onChange={(e) => setNextGoalType(e.target.value as any)}
+                    className="accent-radio"
+                  />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Custom Goal</h3>
+                    <div className="grid grid-cols-2 gap-3 mt-2">
+                      <div>
+                        <label className="text-xs text-gray-600 dark:text-gray-300">Target</label>
+                        <input 
+                          type="number" 
+                          value={customTarget}
+                          onChange={(e) => setCustomTarget(Number(e.target.value))}
+                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm"
+                          disabled={nextGoalType !== 'custom'}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-600 dark:text-gray-300">Growth %</label>
+                        <input 
+                          type="number" 
+                          value={customGrowth}
+                          onChange={(e) => setCustomGrowth(Number(e.target.value))}
+                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm"
+                          disabled={nextGoalType !== 'custom'}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <button 
+                onClick={() => {
+                  setShowNextGoal(false);
+                  setShowCelebration(true);
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                Back
+              </button>
+              <button 
+                onClick={() => {
+                  // Apply new goal settings
+                  let newTarget = settings.targetCompletions;
+                  let newGrowth = settings.growthPerCompletion;
+                  
+                  if (nextGoalType === 'increase') {
+                    newTarget = Math.floor(settings.targetCompletions * 1.5);
+                    newGrowth = settings.growthPerCompletion + 2;
+                  } else if (nextGoalType === 'custom') {
+                    newTarget = customTarget;
+                    newGrowth = customGrowth;
+                  }
+                  
+                  // Update settings
+                  updateSettings({
+                    ...settings,
+                    targetCompletions: newTarget,
+                    growthPerCompletion: newGrowth,
+                    startingPortfolio: targetBalance, // Use achieved balance as new starting point
+                  });
+                  
+                  // Reset progress
+                  updateProgress({
+                    completions: 0,
+                    currentBalance: targetBalance,
+                    disciplineScore: progress.disciplineScore,
+                    streak: progress.streak,
+                  });
+                  
+                  setShowNextGoal(false);
+                  addToast('success', `New goal set: ${newTarget} ${settings.progressObject}s with ${newGrowth}% growth!`);
+                }}
+                className="flex-1 accent-btn"
+              >
+                Start New Goal
               </button>
             </div>
           </div>

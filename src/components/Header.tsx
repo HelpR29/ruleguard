@@ -14,7 +14,8 @@ const pageNames: Record<string, string> = {
   '/reports': 'Reports & Insights',
   '/leaderboard': 'Leaderboard',
   '/premium': 'Premium Features',
-  '/settings': 'Settings'
+  '/settings': 'Settings',
+  '/profile': 'Profile'
 };
 
 export default function Header() {
@@ -166,6 +167,13 @@ export default function Header() {
           {showProfileMenu && (
             <div className="absolute right-4 top-14 bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 w-56 z-40">
               <button
+                onClick={() => { setShowProfileMenu(false); navigate('/profile'); }}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2"
+              >
+                <User className="h-4 w-4" />
+                View Profile
+              </button>
+              <button
                 onClick={() => {
                   setShowProfileMenu(false);
                   const allowed = !isProfileLocked || premiumStatus === 'premium' || achievements.includes('champion');
@@ -175,8 +183,9 @@ export default function Header() {
                     setShowUpgradeModal(true);
                   }
                 }}
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2"
               >
+                <Settings className="h-4 w-4" />
                 Edit Profile
               </button>
               <button

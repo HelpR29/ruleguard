@@ -1,17 +1,32 @@
 import React, { useState, useMemo } from 'react';
 import { User, Trophy, TrendingUp, Calendar, Target, Award, Star, Crown, Edit3, BarChart3, Brain } from 'lucide-react';
 import { useUser } from '../context/UserContext';
+import { useToast } from '../context/ToastContext';
 
 export default function Profile() {
   const { settings, progress } = useUser();
+  const { addToast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState(() => {
     try { return localStorage.getItem('display_name') || 'Trading Pro'; } catch { return 'Trading Pro'; }
   });
+  const [premiumStatus, setPremiumStatus] = useState(() => {
+    try { return localStorage.getItem('premium_status') || 'none'; } catch { return 'none'; }
+  });
+  const [achievements, setAchievements] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('user_achievements') || '[]'); } catch { return []; }
+  });
 
   const saveDisplayName = () => {
+    const canEdit = premiumStatus === 'premium' || achievements.includes('champion');
+    if (!canEdit) {
+      addToast('error', 'Premium required to edit profile name');
+      setIsEditing(false);
+      return;
+    }
     try { localStorage.setItem('display_name', displayName); } catch {}
     setIsEditing(false);
+    addToast('success', 'Profile name updated!');
   };
 
   // Calculate achievements and stats
@@ -35,22 +50,48 @@ export default function Profile() {
   }, [settings, progress]);
 
   // Achievement badges
-  const achievements = useMemo(() => {
+  const achievementBadges = useMemo(() => {
     const badges = [];
     
-    if (progress.completions >= 10) badges.push({ name: 'First Steps', icon: '🎯', description: 'Complete 10 actions' });
-    if (progress.completions >= 25) badges.push({ name: 'Quarter Master', icon: '🏆', description: 'Complete 25 actions' });
-    if (progress.completions >= 50) badges.push({ name: 'Goal Crusher', icon: '💎', description: 'Complete your first goal' });
-    if (progress.streak >= 7) badges.push({ name: 'Week Warrior', icon: '🔥', description: '7-day streak' });
-    if (progress.streak >= 30) badges.push({ name: 'Monthly Master', icon: '👑', description: '30-day streak' });
-    if (progress.disciplineScore >= 90) badges.push({ name: 'Discipline Demon', icon: '🧠', description: '90%+ discipline score' });
-    if (stats.totalGrowth >= 50) badges.push({ name: 'Growth Guru', icon: '📈', description: '50%+ portfolio growth' });
-    if (stats.goalsCompleted >= 1) badges.push({ name: 'Goal Getter', icon: '🎉', description: 'Complete a full goal' });
-    if (stats.goalsCompleted >= 3) badges.push({ name: 'Triple Threat', icon: '⭐', description: 'Complete 3 goals' });
-    if (stats.bestStreak >= 50) badges.push({ name: 'Streak Supreme', icon: '🌟', description: '50-day best streak' });
+    // Progress Milestones
+    if (progress.completions >= 10) badges.push({ name: 'First Steps', icon: '🎯', description: 'Complete 10 actions', category: 'progress' });
+    if (progress.completions >= 25) badges.push({ name: 'Quarter Master', icon: '🏆', description: 'Complete 25 actions', category: 'progress' });
+    if (progress.completions >= 50) badges.push({ name: 'Goal Crusher', icon: '💎', description: 'Complete your first goal', category: 'goals' });
+    if (progress.completions >= 100) badges.push({ name: 'Century Club', icon: '💯', description: 'Complete 100 actions', category: 'progress' });
+    
+    // Streak Achievements
+    if (progress.streak >= 7) badges.push({ name: 'Week Warrior', icon: '🔥', description: '7-day streak', category: 'streaks' });
+    if (progress.streak >= 14) badges.push({ name: 'Fortnight Fighter', icon: '⚡', description: '14-day streak', category: 'streaks' });
+    if (progress.streak >= 30) badges.push({ name: 'Monthly Master', icon: '👑', description: '30-day streak', category: 'streaks' });
+    if (stats.bestStreak >= 50) badges.push({ name: 'Streak Supreme', icon: '🌟', description: '50-day best streak', category: 'streaks' });
+    if (stats.bestStreak >= 100) badges.push({ name: 'Centurion', icon: '🏛️', description: '100-day best streak', category: 'streaks' });
+    
+    // Discipline & Performance
+    if (progress.disciplineScore >= 80) badges.push({ name: 'Disciplined', icon: '🧠', description: '80%+ discipline score', category: 'discipline' });
+    if (progress.disciplineScore >= 90) badges.push({ name: 'Discipline Demon', icon: '😈', description: '90%+ discipline score', category: 'discipline' });
+    if (progress.disciplineScore >= 95) badges.push({ name: 'Perfect Control', icon: '🎭', description: '95%+ discipline score', category: 'discipline' });
+    
+    // Growth Achievements
+    if (stats.totalGrowth >= 25) badges.push({ name: 'Growth Starter', icon: '🌱', description: '25%+ portfolio growth', category: 'growth' });
+    if (stats.totalGrowth >= 50) badges.push({ name: 'Growth Guru', icon: '📈', description: '50%+ portfolio growth', category: 'growth' });
+    if (stats.totalGrowth >= 100) badges.push({ name: 'Double Down', icon: '💰', description: '100%+ portfolio growth', category: 'growth' });
+    if (stats.totalGrowth >= 200) badges.push({ name: 'Triple Crown', icon: '👑', description: '200%+ portfolio growth', category: 'growth' });
+    
+    // Goal Completion Badges
+    if (stats.goalsCompleted >= 1) badges.push({ name: 'Goal Getter', icon: '🎉', description: 'Complete your first goal', category: 'goals' });
+    if (stats.goalsCompleted >= 2) badges.push({ name: 'Double Trouble', icon: '🎯', description: 'Complete 2 goals', category: 'goals' });
+    if (stats.goalsCompleted >= 3) badges.push({ name: 'Triple Threat', icon: '⭐', description: 'Complete 3 goals', category: 'goals' });
+    if (stats.goalsCompleted >= 5) badges.push({ name: 'Goal Machine', icon: '🚀', description: 'Complete 5 goals', category: 'goals' });
+    if (stats.goalsCompleted >= 10) badges.push({ name: 'Legend', icon: '🏆', description: 'Complete 10 goals', category: 'goals' });
+    
+    // Special Achievements
+    if (premiumStatus === 'premium') badges.push({ name: 'Premium Member', icon: '💎', description: 'Upgraded to Premium', category: 'special' });
+    if (achievements.includes('champion')) badges.push({ name: 'Champion', icon: '🏅', description: 'Elite trader status', category: 'special' });
+    if (stats.daysActive >= 30) badges.push({ name: 'Veteran', icon: '🎖️', description: '30+ days active', category: 'special' });
+    if (stats.daysActive >= 100) badges.push({ name: 'Master Trader', icon: '🥇', description: '100+ days active', category: 'special' });
     
     return badges;
-  }, [progress, stats]);
+  }, [progress, stats, premiumStatus, achievements]);
 
   // Milestones and next goals
   const milestones = useMemo(() => {
@@ -131,8 +172,20 @@ export default function Profile() {
                   <div className="flex items-center gap-2">
                     <h1 className="text-3xl font-bold">{displayName}</h1>
                     <button 
-                      onClick={() => setIsEditing(true)}
-                      className="bg-white/20 hover:bg-white/30 p-2 rounded-lg"
+                      onClick={() => {
+                        const canEdit = premiumStatus === 'premium' || achievements.includes('champion');
+                        if (canEdit) {
+                          setIsEditing(true);
+                        } else {
+                          addToast('error', 'Premium required to edit profile name');
+                        }
+                      }}
+                      className={`p-2 rounded-lg ${
+                        premiumStatus === 'premium' || achievements.includes('champion')
+                          ? 'bg-white/20 hover:bg-white/30'
+                          : 'bg-white/10 opacity-50 cursor-not-allowed'
+                      }`}
+                      title={premiumStatus === 'premium' || achievements.includes('champion') ? 'Edit name' : 'Premium required'}
                     >
                       <Edit3 className="h-4 w-4" />
                     </button>
@@ -275,16 +328,27 @@ export default function Profile() {
               </h3>
               
               <div className="grid grid-cols-2 gap-3">
-                {achievements.map((achievement, index) => (
-                  <div key={index} className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3 text-center">
-                    <div className="text-2xl mb-1">{achievement.icon}</div>
-                    <h4 className="font-semibold text-xs text-gray-900 dark:text-white">{achievement.name}</h4>
-                    <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">{achievement.description}</p>
-                  </div>
-                ))}
+                {achievementBadges.map((achievement, index) => {
+                  const categoryColors = {
+                    progress: 'from-blue-50 to-blue-100 border-blue-200 dark:from-blue-900/20 dark:to-blue-800/20 dark:border-blue-700',
+                    goals: 'from-green-50 to-green-100 border-green-200 dark:from-green-900/20 dark:to-green-800/20 dark:border-green-700',
+                    streaks: 'from-orange-50 to-red-100 border-orange-200 dark:from-orange-900/20 dark:to-red-800/20 dark:border-orange-700',
+                    discipline: 'from-purple-50 to-purple-100 border-purple-200 dark:from-purple-900/20 dark:to-purple-800/20 dark:border-purple-700',
+                    growth: 'from-emerald-50 to-emerald-100 border-emerald-200 dark:from-emerald-900/20 dark:to-emerald-800/20 dark:border-emerald-700',
+                    special: 'from-yellow-50 to-yellow-100 border-yellow-200 dark:from-yellow-900/20 dark:to-yellow-800/20 dark:border-yellow-700'
+                  };
+                  
+                  return (
+                    <div key={index} className={`bg-gradient-to-br ${categoryColors[achievement.category]} border rounded-lg p-3 text-center`}>
+                      <div className="text-2xl mb-1">{achievement.icon}</div>
+                      <h4 className="font-semibold text-xs text-gray-900 dark:text-white">{achievement.name}</h4>
+                      <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">{achievement.description}</p>
+                    </div>
+                  );
+                })}
               </div>
               
-              {achievements.length === 0 && (
+              {achievementBadges.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
                   <Trophy className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p>Start completing goals to earn achievements!</p>
