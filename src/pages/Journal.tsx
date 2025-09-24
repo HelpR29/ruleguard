@@ -18,6 +18,8 @@ type Trade = {
   target: number | null;
   stop: number | null;
   tags?: string[];
+  images?: string[];
+  audio?: string | null;
 };
 
 function LiveTradeChart({ entry, exit, target, stop }: { entry: string; exit: string; target?: string; stop?: string }) {
@@ -182,12 +184,42 @@ export default function Journal() {
     notes: '',
     tags: '',
     ruleCompliant: true,
+    images: [] as string[],
+    audio: '' as string,
   });
 
   const resetForm = () => setForm({
     date: new Date().toISOString().slice(0,10),
     symbol: '', type: 'Long', entry: '', exit: '', target: '', stop: '', size: '', emotion: 'Neutral', notes: '', tags: '', ruleCompliant: true,
+    images: [], audio: '',
   });
+
+  // Attachments handlers
+  const handleImageFiles = async (files: FileList | null) => {
+    if (!files) return;
+    const maxFiles = 4;
+    const allowed = ['image/png','image/jpeg','image/webp','image/gif'];
+    const selected = Array.from(files).slice(0, maxFiles);
+    const readers = await Promise.all(selected.map(f => new Promise<string>((resolve) => {
+      if (!allowed.includes(f.type)) return resolve('');
+      const fr = new FileReader();
+      fr.onload = () => resolve(String(fr.result || ''));
+      fr.onerror = () => resolve('');
+      fr.readAsDataURL(f);
+    })));
+    const imgs = readers.filter(Boolean);
+    setForm(prev => ({ ...prev, images: [...prev.images, ...imgs].slice(0, maxFiles) }));
+  };
+
+  const handleAudioFile = async (file: File | null) => {
+    if (!file) return;
+    const allowed = ['audio/mpeg','audio/mp3','audio/wav','audio/webm','audio/ogg'];
+    if (!allowed.includes(file.type)) return;
+    const fr = new FileReader();
+    fr.onload = () => setForm(prev => ({ ...prev, audio: String(fr.result || '') }));
+    fr.onerror = () => {};
+    fr.readAsDataURL(file);
+  };
 
   const saveEntry = () => {
     if (!form.symbol || !form.entry || !form.exit || !form.size) {
@@ -233,6 +265,8 @@ export default function Journal() {
       notes: form.notes,
       tags: form.tags.split(',').map(t=>t.trim()).filter(Boolean),
       ruleCompliant: form.ruleCompliant,
+      images: form.images,
+      audio: form.audio || null,
     };
     setTrades(prev => [newTrade, ...prev]);
     if (form.notes.trim()) {
@@ -482,6 +516,27 @@ export default function Journal() {
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
                 <textarea rows={4} value={form.notes} onChange={(e)=>setForm({...form, notes: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="What happened? What did you learn?" />
+              </div>
+              {/* Attachments */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Images (up to 4)</label>
+                <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple onChange={(e)=>handleImageFiles(e.target.files)} className="block w-full text-sm" />
+                {form.images.length > 0 && (
+                  <div className="mt-2 grid grid-cols-4 gap-2">
+                    {form.images.map((src, idx) => (
+                      <div key={idx} className="relative">
+                        <img src={src} alt={`img-${idx}`} className="w-full h-16 object-cover rounded border" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Audio (optional)</label>
+                <input type="file" accept="audio/*" onChange={(e)=>handleAudioFile(e.target.files?.[0] || null)} className="block w-full text-sm" />
+                {form.audio && (
+                  <audio controls src={form.audio} className="mt-2 w-full" />
+                )}
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Strategy / Tags (comma-separated)</label>
