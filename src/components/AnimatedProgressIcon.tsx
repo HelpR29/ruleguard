@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
+import { Check } from 'lucide-react';
 
 const progressObjects = {
   beer: { 
@@ -258,6 +259,104 @@ export default function AnimatedProgressIcon({ onComplete, onViolation, size = '
           {particle.emoji}
         </div>
       ))}
+    </div>
+  );
+}
+
+interface ProgressGridProps {
+  onComplete: () => void;
+  onViolation: () => void;
+}
+
+export function ProgressGrid({ onComplete, onViolation }: ProgressGridProps) {
+  const { settings, progress } = useUser();
+  const [animatingItems, setAnimatingItems] = useState<Set<number>>(new Set());
+
+  const object = progressObjects[settings.progressObject];
+  const total = settings.targetCompletions;
+  const completed = progress.completions;
+
+  const handleItemClick = (index: number) => {
+    const isDone = index < completed;
+    const isNext = index === completed;
+    
+    if (isNext || isDone) {
+      // Add breaking animation
+      setAnimatingItems(prev => new Set([...prev, index]));
+      
+      setTimeout(() => {
+        if (isNext) onComplete();
+        if (isDone) onViolation();
+        
+        // Remove animation after action
+        setTimeout(() => {
+          setAnimatingItems(prev => {
+            const next = new Set(prev);
+            next.delete(index);
+            return next;
+          });
+        }, 500);
+      }, 200);
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-10 gap-2 max-w-lg mx-auto">
+      {Array.from({ length: total }).map((_, i) => {
+        const isDone = i < completed;
+        const isNext = i === completed;
+        const isAnimating = animatingItems.has(i);
+        
+        return (
+          <button
+            key={i}
+            onClick={() => handleItemClick(i)}
+            className={`relative w-12 h-12 rounded-lg grid place-items-center text-3xl transition-all duration-200 ${
+              isDone ? 'bg-green-50 border-2 border-green-200' : 
+              isNext ? 'bg-blue-50 border-2 border-blue-300 hover:bg-blue-100' : 
+              'bg-gray-100 border-2 border-gray-200 opacity-50'
+            } ${
+              isAnimating ? (isDone ? 'animate-shake' : 'animate-bounce') : ''
+            }`}
+            title={isNext ? 'Add completion' : isDone ? 'Undo (violation)' : 'Not available yet'}
+            disabled={!isNext && !isDone}
+          >
+            <span className={`transition-all duration-300 ${
+              isDone ? 'opacity-40 scale-75' : 
+              isNext ? 'opacity-100 scale-100' : 
+              'opacity-30 scale-90'
+            } ${
+              isAnimating && isDone ? 'animate-pulse' : ''
+            }`}>
+              {object.emoji}
+            </span>
+            
+            {isDone && (
+              <div className="absolute inset-0 grid place-items-center">
+                <div className={`transition-all duration-300 ${
+                  isAnimating ? 'animate-ping' : ''
+                }`}>
+                  <Check className="h-8 w-8 text-green-600" />
+                </div>
+              </div>
+            )}
+            
+            {/* Breaking effect for violations */}
+            {isAnimating && isDone && (
+              <div className="absolute inset-0 grid place-items-center">
+                <div className="text-red-500 text-2xl animate-bounce">💥</div>
+              </div>
+            )}
+            
+            {/* Completion sparkles */}
+            {isAnimating && isNext && (
+              <div className="absolute inset-0 grid place-items-center">
+                <div className="text-yellow-400 text-xl animate-ping">✨</div>
+              </div>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }
