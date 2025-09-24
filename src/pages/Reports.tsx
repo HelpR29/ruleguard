@@ -11,6 +11,28 @@ export default function Reports() {
   const [shareUrl, setShareUrl] = useState<string>('');
   const { progress, rules } = useUser();
 
+  // Load trades from Journal for R:R and tag analytics
+  const trades = useMemo(() => {
+    try {
+      const raw = localStorage.getItem('journal_trades');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }, []);
+
+  const averageRR = useMemo(() => {
+    const items = (trades || []).filter((t: any) => typeof t.entry === 'number' && typeof t.target === 'number' && typeof t.stop === 'number');
+    if (!items.length) return 0;
+    let sum = 0, count = 0;
+    for (const t of items) {
+      const risk = t.type === 'Long' ? (t.entry - t.stop) : (t.stop - t.entry);
+      const reward = t.type === 'Long' ? (t.target - t.entry) : (t.entry - t.target);
+      if (risk > 0 && reward > 0) { sum += reward / risk; count++; }
+    }
+    return count ? sum / count : 0;
+  }, [trades]);
+
   const weeklyData = useMemo(() => {
     // Build last 7 days from localStorage.daily_stats
     const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -21,6 +43,19 @@ export default function Reports() {
     } catch {
       stats = {};
     }
+
+    // Merge in trade tags counts
+    try {
+      const rawTrades = localStorage.getItem('journal_trades');
+      const ts: any[] = rawTrades ? JSON.parse(rawTrades) : [];
+      for (const tr of ts) {
+        const tags: string[] = (tr.tags || []).map((t: string) => t.toLowerCase());
+        const include = selectedTags.length === 0 || tags.some(t => selectedTags.includes(t));
+        if (include) {
+          for (const t of tags) tagAgg[t] = (tagAgg[t] || 0) + 1;
+        }
+      }
+    } catch {}
     const data = [] as Array<{ day: string; completions: number; violations: number; pnl: number }>;
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today);
@@ -185,7 +220,16 @@ export default function Reports() {
     return { weaknesses: w, recommendations: r };
   }, [emotionData, weeklyData, progress.disciplineScore, tagStats]);
 
-  const allTags = useMemo(() => Array.from(new Set(rules.flatMap(r => (r.tags||[]).map(t=>t.toLowerCase())))), [rules]);
+  const allTags = useMemo(() => {
+    const ruleTags = rules.flatMap(r => (r.tags||[]).map(t=>t.toLowerCase()));
+    let tradeTags: string[] = [];
+    try {
+      const raw = localStorage.getItem('journal_trades');
+      const ts: any[] = raw ? JSON.parse(raw) : [];
+      tradeTags = ts.flatMap(t => (t.tags||[]).map((x: string)=>x.toLowerCase()));
+    } catch {}
+    return Array.from(new Set([...ruleTags, ...tradeTags]));
+  }, [rules, trades]);
 
   const toggleTag = (t: string) => {
     setSelectedTags(prev => prev.includes(t) ? prev.filter(x=>x!==t) : [...prev, t]);
@@ -226,9 +270,12 @@ export default function Reports() {
     ctx.fillStyle = '#111827';
     ctx.font = 'bold 42px Inter, system-ui, -apple-system, Segoe UI, Roboto';
     ctx.fillText('RuleGuard Weekly Report', 70, 140);
-    // Discipline
+    // Discipline & Avg R:R
     ctx.font = '600 28px Inter';
     ctx.fillText(`Discipline Score: ${progress.disciplineScore}%`, 70, 190);
+    if (averageRR > 0) {
+      ctx.fillText(`Avg R:R: 1:${averageRR.toFixed(2)}`, 520, 190);
+    }
     // Top risky hours
     ctx.font = 'bold 24px Inter'; ctx.fillText('Top Risky Hours', 70, 250);
     ctx.font = '400 22px Inter';
@@ -322,7 +369,7 @@ export default function Reports() {
               </div>
             </div>
             {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
               <div className="bg-white rounded-2xl p-6 shadow-sm">
                 <div className="flex items-center gap-3 mb-2">
                   <Award className="h-8 w-8 text-green-500" />
@@ -365,6 +412,18 @@ export default function Reports() {
                   </div>
                 </div>
                 <p className="text-green-600 text-sm">↑ $340 from last week</p>
+              </div>
+
+              {/* Avg R:R */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-2">
+                  <TrendingUp className="h-8 w-8 text-emerald-500" />
+                  <div>
+                    <p className="text-gray-600 text-sm">Average R:R</p>
+                    <p className="text-2xl font-bold text-gray-900">{averageRR > 0 ? `1:${averageRR.toFixed(2)}` : '—'}</p>
+                  </div>
+                </div>
+                <p className="text-gray-600 text-sm">Based on journal Target/Stop</p>
               </div>
             </div>
 
