@@ -20,9 +20,8 @@ export default function Dashboard() {
       return;
     }
     
-    const rate = settings.growthPerCompletion / 100;
     const newCompletions = Math.min(progress.completions + 1, settings.targetCompletions);
-    const newBalance = progress.currentBalance * (1 + rate);
+    const newBalance = settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, newCompletions);
     const newDiscipline = Math.min(100, progress.disciplineScore + 1);
     const newStreak = progress.streak + 1;
     updateProgress({
@@ -34,9 +33,8 @@ export default function Dashboard() {
   };
 
   const addViolation = () => {
-    const rate = settings.growthPerCompletion / 100;
     const newCompletions = Math.max(progress.completions - 1, 0);
-    const newBalance = progress.currentBalance / (1 + rate);
+    const newBalance = settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, newCompletions);
     const newDiscipline = Math.max(0, progress.disciplineScore - 2);
     updateProgress({
       completions: newCompletions,
@@ -72,7 +70,7 @@ export default function Dashboard() {
             </div>
             <div className="bg-blue-500/30 rounded-xl p-4">
               <p className="text-blue-100 text-sm">Portfolio</p>
-              <p className="text-2xl font-bold">${progress.currentBalance.toFixed(2)}</p>
+              <p className="text-2xl font-bold">${(settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, progress.completions)).toFixed(2)}</p>
             </div>
             <div className="bg-blue-500/30 rounded-xl p-4">
               <p className="text-blue-100 text-sm">Discipline</p>
