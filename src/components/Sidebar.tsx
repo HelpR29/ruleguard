@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, FileText, Users, Shield, BarChart3, Settings, X, Search, Tag, Filter } from 'lucide-react';
+import { Home, FileText, Users, Shield, BarChart3, Settings, X, Tag, Filter } from 'lucide-react';
 import Logo from './Logo';
 
 interface SidebarProps {
