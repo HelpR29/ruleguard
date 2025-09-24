@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, TrendingUp, Target, Calendar, Share2, Crown, Star } from 'lucide-react';
+import { Plus, TrendingUp, Target, Calendar, Share2, Crown, Star, CheckCircle } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import AnimatedProgressIcon, { ProgressGrid } from '../components/AnimatedProgressIcon';
 import CompoundingChart from '../components/CompoundingChart';
@@ -91,13 +91,20 @@ export default function Dashboard() {
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">Progress Tracker</h3>
                 <div className="flex items-center gap-2">
                   <button className="text-xs accent-outline" onClick={() => setProgressView(v => v === 'icon' ? 'grid' : 'icon')}>Switch View</button>
-                  <button
-                    onClick={() => setShowAddCompletion(true)}
-                    className="flex items-center gap-2 accent-btn"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Completion
-                  </button>
+                  {progress.completions < settings.targetCompletions ? (
+                    <button
+                      onClick={() => setShowAddCompletion(true)}
+                      className="flex items-center gap-2 accent-btn"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Completion
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-medium">
+                      <CheckCircle className="h-4 w-4" />
+                      Goal Completed!
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -108,20 +115,21 @@ export default function Dashboard() {
                     onComplete={addCompletion}
                     onViolation={addViolation}
                   />
-                  <div className="text-center space-y-4">
                     <div className="rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-600 card-surface">
                       <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                         {progress.completions}/{settings.targetCompletions}
                       </h3>
                       <p className="text-gray-600 dark:text-gray-300 mb-3">
-                        {Math.max(0, settings.targetCompletions - progress.completions)} {settings.progressObject}s remaining
+                        {progress.completions >= settings.targetCompletions 
+                          ? `All ${settings.progressObject}s completed! 🎉`
+                          : `${Math.max(0, settings.targetCompletions - progress.completions)} ${settings.progressObject}s remaining`
+                        }
                       </p>
                       <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                         <div
                           className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-500"
                           style={{ width: `${(progress.completions / settings.targetCompletions) * 100}%` }}
                         ></div>
-                      </div>
                     </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       Click to add completion • Double-click for violation
