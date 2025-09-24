@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { BarChart3, Download, TrendingUp, TrendingDown, Award, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { BarChart3, Download, TrendingUp, TrendingDown, Award, AlertTriangle, CheckCircle2, LineChart as LineChartIcon } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useUser } from '../context/UserContext';
 import PnlCard from '../components/PnlCard';
+import StockChart from '../components/StockChart';
 
 export default function Reports() {
   const [activeReport, setActiveReport] = useState('weekly');
@@ -494,6 +495,40 @@ export default function Reports() {
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm">Based on journal Target/Stop</p>
+              </div>
+            </div>
+
+            {/* Stock Analysis */}
+            <div className="rounded-2xl p-6 card-surface">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <LineChartIcon className="h-5 w-5" />
+                Stock Analysis
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Most traded symbols from journal */}
+                {(() => {
+                  const symbolCounts = trades.reduce((acc: Record<string, number>, trade: any) => {
+                    if (trade.symbol) acc[trade.symbol] = (acc[trade.symbol] || 0) + 1;
+                    return acc;
+                  }, {});
+                  const topSymbols = Object.entries(symbolCounts)
+                    .sort(([,a], [,b]) => (b as number) - (a as number))
+                    .slice(0, 4)
+                    .map(([symbol]) => symbol);
+                  
+                  if (topSymbols.length === 0) {
+                    return (
+                      <div className="md:col-span-2 text-center py-8 text-gray-500">
+                        <LineChartIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>Add trades in Journal to see stock charts</p>
+                      </div>
+                    );
+                  }
+                  
+                  return topSymbols.map(symbol => (
+                    <StockChart key={symbol} symbol={symbol} />
+                  ));
+                })()}
               </div>
             </div>
 

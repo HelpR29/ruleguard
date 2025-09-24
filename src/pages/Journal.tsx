@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown } from 'lucide-react';
+import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useUser } from '../context/UserContext';
 import { saveAttachment, getAttachment, deleteAttachment } from '../utils/db';
+import StockChart from '../components/StockChart';
 
 type Trade = {
   id: number;
@@ -288,6 +289,7 @@ export default function Journal() {
     imageIds: [] as number[],
     imagePreviews: [] as string[],
   });
+  const [showChart, setShowChart] = useState(false);
 
   const resetForm = () => {
     try { form.imagePreviews.forEach(u => URL.revokeObjectURL(u)); } catch {}
@@ -776,9 +778,37 @@ export default function Journal() {
                   return <p className="text-gray-500">Provide Entry, Target, and Stop to preview R:R.</p>;
                 })()}
               </div>
-              {/* Live Chart Preview */}
+              {/* Chart Toggle */}
               <div className="md:col-span-2">
-                <LiveTradeChart entry={form.entry} exit={form.exit} target={form.target} stop={form.stop} />
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">Chart Analysis</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowChart(!showChart)}
+                    className="flex items-center gap-2 text-xs accent-outline"
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    {showChart ? 'Hide Chart' : 'Show Chart'}
+                  </button>
+                </div>
+                {showChart ? (
+                  <StockChart 
+                    symbol={form.symbol}
+                    onPriceSelect={(price, timestamp) => {
+                      // Auto-fill entry or exit based on current state
+                      if (!form.entry) {
+                        setForm(prev => ({ ...prev, entry: price.toString() }));
+                      } else if (!form.exit) {
+                        setForm(prev => ({ ...prev, exit: price.toString() }));
+                      }
+                    }}
+                    showEntryExit={true}
+                    entryPrice={form.entry ? parseFloat(form.entry) : undefined}
+                    exitPrice={form.exit ? parseFloat(form.exit) : undefined}
+                  />
+                ) : (
+                  <LiveTradeChart entry={form.entry} exit={form.exit} target={form.target} stop={form.stop} />
+                )}
               </div>
             </div>
             <div className="mt-6 flex gap-3">
