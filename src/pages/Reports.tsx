@@ -260,17 +260,18 @@ export default function Reports() {
     // Brand strip
     ctx.fillStyle = '#111827';
     ctx.fillRect(40,40,width-80,60);
-    // Logo (best-effort rasterize from public/svg)
+    // Logo (best-effort rasterize from public asset)
     try {
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      img.src = '/logo-trade-game.svg';
+      img.src = '/lockin-logo.png';
       await new Promise<void>((resolve) => {
         img.onload = () => resolve();
         img.onerror = () => resolve();
       });
-      const logoSize = 44;
-      ctx.drawImage(img, 54, 48, logoSize, logoSize);
+      const logoW = 120; // widescreen logo
+      const logoH = 36;
+      ctx.drawImage(img, 54, 52, logoW, logoH);
     } catch {}
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 26px Inter, system-ui, -apple-system, Segoe UI, Roboto';

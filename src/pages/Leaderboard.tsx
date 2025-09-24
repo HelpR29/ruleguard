@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Trophy, Medal, Award, Crown, TrendingUp, Users, Star, Zap } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 
@@ -78,7 +78,7 @@ const progressObjects = {
 };
 
 export default function Leaderboard() {
-  const { progress } = useUser();
+  const { progress, settings } = useUser();
   const [activeTab, setActiveTab] = useState<'global' | 'friends' | 'objects'>('global');
   const [timeframe, setTimeframe] = useState<'weekly' | 'monthly' | 'alltime'>('weekly');
   const [lastReset, setLastReset] = useState(() => {
@@ -88,6 +88,67 @@ export default function Leaderboard() {
       return new Date().toISOString();
     }
   });
+
+  // Derived: current user's computed growth
+  const currentBalance = useMemo(() => {
+    try {
+      // Prefer progress.currentBalance if present
+      if (progress?.currentBalance != null) return progress.currentBalance;
+      return Number(
+        (
+          settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, progress.completions)
+        ).toFixed(2)
+      );
+    } catch {
+      return 0;
+    }
+  }, [progress, settings]);
+
+  const totalGrowthPct = useMemo(() => {
+    if (!settings?.startingPortfolio) return 0;
+    const delta = currentBalance - settings.startingPortfolio;
+    return Number(((delta / settings.startingPortfolio) * 100).toFixed(1));
+  }, [currentBalance, settings]);
+
+  const [users, setUsers] = useState<LeaderboardUser[]>([]);
+
+  // Build leaderboard from peers + current user and compute ranks
+  const buildLeaderboard = () => {
+    const dn = (localStorage.getItem('display_name') || 'You').trim() || 'You';
+    const you: LeaderboardUser = {
+      id: 'you',
+      name: dn,
+      avatar: '👤',
+      completions: progress.completions,
+      disciplineScore: progress.disciplineScore,
+      streak: progress.streak,
+      progressObject: 'beer',
+      isPremium: (localStorage.getItem('premium_status') || 'none') === 'premium',
+      rank: 0,
+      totalGrowth: totalGrowthPct,
+      leaderboardBadges: JSON.parse(localStorage.getItem('user_achievements') || '[]').filter((a: string)=>/_(champion)$/.test(a))
+    };
+
+    // Merge and compute ranks
+    const merged = [...mockLeaderboardData.filter(u=>u.id!=='you'), you];
+    merged.sort((a,b)=>{
+      // Primary: completions
+      if (b.completions !== a.completions) return b.completions - a.completions;
+      // Secondary: discipline
+      if (b.disciplineScore !== a.disciplineScore) return b.disciplineScore - a.disciplineScore;
+      // Tertiary: streak
+      if (b.streak !== a.streak) return b.streak - a.streak;
+      // Finally: growth
+      return (b.totalGrowth || 0) - (a.totalGrowth || 0);
+    });
+    const ranked = merged.map((u, idx)=> ({...u, rank: idx+1}));
+    setUsers(ranked);
+    try {
+      const yourRank = ranked.find(u=>u.id==='you' || u.name===dn)?.rank || ranked.length;
+      localStorage.setItem('current_user_rank', String(yourRank));
+      localStorage.setItem('monthly_leaderboard_data', JSON.stringify(ranked));
+    } catch {}
+  };
 
   // Check if leaderboard should reset (30 days)
   const checkLeaderboardReset = () => {
@@ -102,6 +163,13 @@ export default function Leaderboard() {
       // Reset leaderboard
       try {
         localStorage.setItem('leaderboard_last_reset', now.toISOString());
+        // Save month history snapshot
+        const snapshot = users.slice(0, 3).map(u => ({ id: u.id, name: u.name, rank: u.rank }));
+        const history = JSON.parse(localStorage.getItem('leaderboard_history') || '[]');
+        const monthLabel = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+        history.push({ month: monthLabel, top3: snapshot, yourRank: Number(localStorage.getItem('current_user_rank')||'0') });
+        localStorage.setItem('leaderboard_history', JSON.stringify(history));
+
         localStorage.removeItem('monthly_leaderboard_data');
         setLastReset(now.toISOString());
       } catch {}
@@ -112,8 +180,7 @@ export default function Leaderboard() {
   const awardLeaderboardBadges = () => {
     try {
       const currentAchievements = JSON.parse(localStorage.getItem('user_achievements') || '[]');
-      // In real app, get actual user rank from API/state
-      const userRank: number = 4; // Mock user rank
+      const userRank: number = Number(localStorage.getItem('current_user_rank') || '9999');
       
       if (userRank === 1 && !currentAchievements.includes('gold_champion')) {
         currentAchievements.push('gold_champion');
@@ -128,10 +195,13 @@ export default function Leaderboard() {
     } catch {}
   };
 
-  // Check for reset on component mount
-  React.useEffect(() => {
-    checkLeaderboardReset();
-  }, []);
+  // Initialize and check for reset
+  useEffect(() => {
+    buildLeaderboard();
+    // small delay to ensure state is ready
+    setTimeout(checkLeaderboardReset, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [progress.completions, progress.disciplineScore, progress.streak]);
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="h-6 w-6 text-yellow-500" />;
@@ -240,9 +310,9 @@ export default function Leaderboard() {
               <h3 className="text-lg font-bold mb-1">Your Current Rank</h3>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-3xl font-bold">#847</span>
+                  <span className="text-3xl font-bold">#{users.find(u=>u.id==='you' || /you/i.test(u.name||''))?.rank ?? '—'}</span>
                   <TrendingUp className="h-5 w-5 text-green-300" />
-                  <span className="text-green-300 text-sm">↑23</span>
+                  <span className="text-green-300 text-sm">Monthly</span>
                 </div>
                 <div className="text-blue-100">
                   <p className="text-sm">Discipline Score</p>
@@ -250,7 +320,7 @@ export default function Leaderboard() {
                 </div>
               </div>
             </div>
-            <div className="text-6xl">🍺</div>
+            <div className="text-6xl">{progressObjects.beer}</div>
           </div>
         </div>
 
@@ -302,7 +372,7 @@ export default function Leaderboard() {
             <h3 className="text-lg font-bold text-gray-900">Full Rankings</h3>
           </div>
           <div className="divide-y divide-gray-200">
-            {mockLeaderboardData.map((user, index) => (
+            {users.map((user, index) => (
               <div
                 key={user.id}
                 className={`p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors ${
