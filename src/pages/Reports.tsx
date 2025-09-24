@@ -36,29 +36,42 @@ export default function Reports() {
     { name: 'Neutral', value: 15, color: '#6b7280' },
   ];
 
-  // Per-rule and time-of-day analytics from activity_log
-  const { perRuleData, hourlyData } = useMemo(() => {
+  // Per-rule, time-of-day, and weekday-hour heatmap from activity_log
+  const { perRuleData, hourlyData, heatmap, tagStats } = useMemo(() => {
     let log: Array<{ ts: number; type: 'violation' | 'completion'; ruleId?: string }> = [];
     try {
       log = JSON.parse(localStorage.getItem('activity_log') || '[]');
     } catch {}
 
     const ruleNameById = new Map<string, string>();
+    const ruleTagsById = new Map<string, string[]>();
     rules.forEach(r => ruleNameById.set(r.id, r.text));
+    rules.forEach(r => ruleTagsById.set(r.id, r.tags || []));
 
     const perRuleMap = new Map<string, number>();
     const hourly = Array.from({ length: 24 }, (_, h) => ({ hour: h, violations: 0, completions: 0 }));
+    const heat = Array.from({ length: 7 }, () => Array.from({ length: 24 }, () => 0));
+    const tagAgg: Record<string, number> = {};
 
     for (const item of log) {
       const d = new Date(item.ts);
       const h = d.getHours();
+      const w = d.getDay(); // 0..6 (Sun..Sat)
       if (h >= 0 && h < 24) {
         if (item.type === 'violation') hourly[h].violations += 1;
         if (item.type === 'completion') hourly[h].completions += 1;
       }
+      if (w >= 0 && w < 7 && item.type === 'violation') {
+        heat[w][h] += 1;
+      }
       if (item.type === 'violation' && item.ruleId) {
         const name = ruleNameById.get(item.ruleId) || 'Unknown Rule';
         perRuleMap.set(name, (perRuleMap.get(name) || 0) + 1);
+        const tags = ruleTagsById.get(item.ruleId) || [];
+        for (const t of tags) {
+          const key = t.toLowerCase();
+          tagAgg[key] = (tagAgg[key] || 0) + 1;
+        }
       }
     }
 
@@ -66,7 +79,7 @@ export default function Reports() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 7);
 
-    return { perRuleData: perRule, hourlyData: hourly };
+    return { perRuleData: perRule, hourlyData: hourly, heatmap: heat, tagStats: tagAgg };
   }, [rules]);
 
   // AI-style analysis to detect weaknesses and propose actions
@@ -114,12 +127,26 @@ export default function Reports() {
       r.push('Pre-define take-profit partials; move stop to breakeven at +1R to protect winners.');
     }
 
+    // 5) Tag-aware suggestions
+    const tagEntries = Object.entries(tagStats || {}).sort((a,b) => b[1]-a[1]);
+    if (tagEntries.length) {
+      const top = tagEntries.slice(0, 3).map(([k]) => k);
+      if (top.some(t => t.includes('risk'))) {
+        w.push('High violation concentration on Risk-tagged rules');
+        r.push('Set fixed risk caps (e.g., 0.5–1.0R) and size ladders. Use a stop-to-breakeven playbook at +1R.');
+      }
+      if (top.some(t => t.includes('mindset'))) {
+        w.push('Mindset-related slippage detected');
+        r.push('Introduce a 2–5 minute cool-down timer after losses and add post-trade journaling prompts.');
+      }
+    }
+
     // Fallback
     if (!w.length) w.push('No critical weaknesses detected this period');
     if (!r.length) r.push('Maintain your current routine and keep journaling key lessons after each trade.');
 
     return { weaknesses: w, recommendations: r };
-  }, [emotionData, weeklyData, progress.disciplineScore]);
+  }, [emotionData, weeklyData, progress.disciplineScore, tagStats]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -338,6 +365,33 @@ export default function Reports() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+            </div>
+
+            {/* Weekday x Hour Heatmap */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Weekly Heatmap (Violations)</h3>
+              <div className="overflow-x-auto">
+                <div className="grid" style={{ gridTemplateColumns: `80px repeat(24, minmax(14px, 1fr))` }}>
+                  {/* Header Row */}
+                  <div></div>
+                  {Array.from({ length: 24 }, (_, h) => (
+                    <div key={h} className="text-[10px] text-gray-500 text-center">{h}</div>
+                  ))}
+                  {/* Rows */}
+                  {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((day, i) => (
+                    <>
+                      <div key={`${day}-label`} className="text-xs text-gray-600 flex items-center">{day}</div>
+                      {Array.from({ length: 24 }, (_, h) => {
+                        const v = heatmap?.[i]?.[h] || 0;
+                        const level = Math.min(1, v / 5);
+                        const bg = `rgba(239,68,68,${0.1 + level * 0.9})`;
+                        return <div key={`${day}-${h}`} className="h-5 border border-gray-100" style={{ backgroundColor: v ? bg : '#f9fafb' }} title={`${day} ${h}:00 — ${v} violations`} />;
+                      })}
+                    </>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-3 text-xs text-gray-500">Darker cells indicate more violations. Aim to avoid high-risk hours or add extra checks.</div>
             </div>
           </>
         )}
