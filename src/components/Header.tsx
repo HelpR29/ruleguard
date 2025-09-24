@@ -81,6 +81,7 @@ export default function Header() {
             <Link to="/rules" className={`px-3 py-1 rounded-lg ${location.pathname==='/rules'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Rules</Link>
             <Link to="/journal" className={`px-3 py-1 rounded-lg ${location.pathname==='/journal'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Journal</Link>
             <Link to="/reports" className={`px-3 py-1 rounded-lg ${location.pathname==='/reports'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Reports</Link>
+            <Link to="/friends" className={`px-3 py-1 rounded-lg ${location.pathname==='/friends'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Friends</Link>
             <Link to="/leaderboard" className={`px-3 py-1 rounded-lg ${location.pathname==='/leaderboard'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Leaderboard</Link>
             <Link to="/settings" className={`px-3 py-1 rounded-lg ${location.pathname==='/settings'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Settings</Link>
           </nav>

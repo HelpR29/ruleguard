@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Shield, BookOpen, BarChart3, Settings, Trophy } from 'lucide-react';
+import { Home, Shield, BookOpen, BarChart3, Settings, Trophy, Users } from 'lucide-react';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/rules', icon: Shield, label: 'Rules' },
   { path: '/journal', icon: BookOpen, label: 'Journal' },
   { path: '/reports', icon: BarChart3, label: 'Reports' },
+  { path: '/friends', icon: Users, label: 'Friends' },
   { path: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];

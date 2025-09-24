@@ -11,6 +11,7 @@ import Leaderboard from './pages/Leaderboard';
 import Premium from './pages/Premium';
 import Achievements from './pages/Achievements';
 import Onboarding from './pages/Onboarding';
+import Friends from './pages/Friends';
 import { UserProvider } from './context/UserContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
@@ -51,6 +52,7 @@ function App() {
                   <Route path="/journal" element={<Journal />} />
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/leaderboard" element={<Leaderboard />} />
+                  <Route path="/friends" element={<Friends />} />
                   <Route path="/premium" element={<Premium />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/achievements" element={<Achievements />} />
