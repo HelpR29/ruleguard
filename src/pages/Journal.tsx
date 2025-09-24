@@ -534,10 +534,44 @@ export default function Journal() {
                         return { ...prev, tags: t + ', ' };
                       });
                     }
+                    if (e.key === 'Backspace') {
+                      const inputEl = e.target as HTMLInputElement;
+                      if (inputEl.selectionStart === 0 && inputEl.selectionEnd === 0 && inputEl.value.trim() === '') {
+                        e.preventDefault();
+                        setForm(prev => {
+                          const arr = prev.tags.split(',').map(t=>t.trim()).filter(Boolean);
+                          arr.pop();
+                          return { ...prev, tags: arr.length ? arr.join(', ') + ', ' : '' };
+                        });
+                      }
+                    }
                   }}
                   placeholder="Breakout, Risk, Momentum"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 />
+                {/* Live chips preview */}
+                {(() => {
+                  const chips = form.tags.split(',').map(t=>t.trim()).filter(Boolean);
+                  if (!chips.length) return null;
+                  return (
+                    <div className="mt-2 flex items-center gap-2 flex-wrap">
+                      {chips.map((tag, idx) => (
+                        <button
+                          type="button"
+                          key={`${tag}-${idx}`}
+                          onClick={() => {
+                            const next = chips.filter((_, i) => i !== idx);
+                            setForm(prev => ({ ...prev, tags: next.length ? next.join(', ') + ', ' : '' }));
+                          }}
+                          className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200"
+                          title="Click to remove"
+                        >
+                          {tag} ×
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
               <div className="flex items-center gap-2 md:col-span-2">
                 <input id="rc" type="checkbox" checked={form.ruleCompliant} onChange={(e)=>setForm({...form, ruleCompliant: e.target.checked})} />
