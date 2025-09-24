@@ -1,5 +1,6 @@
 import React from 'react';
 import { Home, FileText, Users, Shield, BarChart3, Settings, X, Search, Tag, Filter } from 'lucide-react';
+import Logo from './Logo';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -29,16 +30,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 lg:hidden">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg border border-blue-500/20">
-              <div className="relative">
-                <span className="text-white font-bold text-sm tracking-tight">RG</span>
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              </div>
-            </div>
-            <div>
-              <h2 className="font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">RuleGuard</h2>
-              <p className="text-xs text-gray-500">Rule Management</p>
-            </div>
+            <Logo size={40} showText subtitle="Menu" />
           </div>
           <button
             onClick={onClose}

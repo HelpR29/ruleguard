@@ -6,6 +6,7 @@ import { useUser } from '../context/UserContext';
 import { useTheme } from '../context/ThemeContext';
 import NotificationPanel from './NotificationPanel';
 import AvatarSelector from './AvatarSelector';
+import Logo from './Logo';
 
 const pageNames: Record<string, string> = {
   '/': 'Dashboard',
@@ -31,16 +32,7 @@ export default function Header() {
       <div className="flex items-center justify-between px-4 py-3 lg:px-6">
         {/* Left Section */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg border border-blue-500/20">
-            <div className="relative">
-              <span className="text-white font-bold text-sm tracking-tight">RG</span>
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            </div>
-          </div>
-          <div className="hidden sm:block">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">RuleGuard</h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{pageName}</p>
-          </div>
+          <Logo size={40} showText subtitle={pageName} />
           <div className="sm:hidden">
             <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{pageName}</h1>
           </div>
