@@ -187,7 +187,7 @@ export default function Leaderboard() {
         </div>
 
         {/* Your Rank Card */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+        <div className="bg-gradient-to-r from-red-600 to-green-600 rounded-2xl p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-bold mb-1">Your Current Rank</h3>
@@ -197,7 +197,7 @@ export default function Leaderboard() {
                   <TrendingUp className="h-5 w-5 text-green-300" />
                   <span className="text-green-300 text-sm">↑23</span>
                 </div>
-                <div className="text-blue-100">
+                <div className="text-white/80">
                   <p className="text-sm">Discipline Score</p>
                   <p className="text-xl font-bold">{progress.disciplineScore}%</p>
                 </div>

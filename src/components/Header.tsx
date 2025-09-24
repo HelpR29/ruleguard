@@ -76,17 +76,17 @@ export default function Header() {
             <Logo showText subtitle={pageName} />
           </Link>
           <div className="sm:hidden">
-            <h1 className="text-lg font-bold bg-gradient-to-r from-red-600 to-green-600 bg-clip-text text-transparent">{pageName}</h1>
+            <h1 className="text-lg font-bold text-orange-600">{pageName}</h1>
           </div>
           {/* Desktop Top Nav */}
           <nav className="hidden lg:flex items-center gap-4 text-sm ml-2">
-            <Link to="/" className={`px-3 py-1 rounded-lg ${location.pathname==='/'?'bg-red-50 text-red-700 border border-red-200':'text-gray-600 hover:bg-gray-100'}`}>Home</Link>
-            <Link to="/rules" className={`px-3 py-1 rounded-lg ${location.pathname==='/rules'?'bg-red-50 text-red-700 border border-red-200':'text-gray-600 hover:bg-gray-100'}`}>Rules</Link>
-            <Link to="/journal" className={`px-3 py-1 rounded-lg ${location.pathname==='/journal'?'bg-red-50 text-red-700 border border-red-200':'text-gray-600 hover:bg-gray-100'}`}>Journal</Link>
-            <Link to="/reports" className={`px-3 py-1 rounded-lg ${location.pathname==='/reports'?'bg-red-50 text-red-700 border border-red-200':'text-gray-600 hover:bg-gray-100'}`}>Reports</Link>
-            <Link to="/friends" className={`px-3 py-1 rounded-lg ${location.pathname==='/friends'?'bg-red-50 text-red-700 border border-red-200':'text-gray-600 hover:bg-gray-100'}`}>Friends</Link>
-            <Link to="/leaderboard" className={`px-3 py-1 rounded-lg ${location.pathname==='/leaderboard'?'bg-red-50 text-red-700 border border-red-200':'text-gray-600 hover:bg-gray-100'}`}>Leaderboard</Link>
-            <Link to="/settings" className={`px-3 py-1 rounded-lg ${location.pathname==='/settings'?'bg-red-50 text-red-700 border border-red-200':'text-gray-600 hover:bg-gray-100'}`}>Settings</Link>
+            <Link to="/" className={`px-3 py-1 rounded-lg ${location.pathname==='/'?'bg-orange-50 text-orange-700 border border-orange-200':'text-gray-600 hover:bg-gray-100'}`}>Home</Link>
+            <Link to="/rules" className={`px-3 py-1 rounded-lg ${location.pathname==='/rules'?'bg-orange-50 text-orange-700 border border-orange-200':'text-gray-600 hover:bg-gray-100'}`}>Rules</Link>
+            <Link to="/journal" className={`px-3 py-1 rounded-lg ${location.pathname==='/journal'?'bg-orange-50 text-orange-700 border border-orange-200':'text-gray-600 hover:bg-gray-100'}`}>Journal</Link>
+            <Link to="/reports" className={`px-3 py-1 rounded-lg ${location.pathname==='/reports'?'bg-orange-50 text-orange-700 border border-orange-200':'text-gray-600 hover:bg-gray-100'}`}>Reports</Link>
+            <Link to="/friends" className={`px-3 py-1 rounded-lg ${location.pathname==='/friends'?'bg-orange-50 text-orange-700 border border-orange-200':'text-gray-600 hover:bg-gray-100'}`}>Friends</Link>
+            <Link to="/leaderboard" className={`px-3 py-1 rounded-lg ${location.pathname==='/leaderboard'?'bg-orange-50 text-orange-700 border border-orange-200':'text-gray-600 hover:bg-gray-100'}`}>Leaderboard</Link>
+            <Link to="/settings" className={`px-3 py-1 rounded-lg ${location.pathname==='/settings'?'bg-orange-50 text-orange-700 border border-orange-200':'text-gray-600 hover:bg-gray-100'}`}>Settings</Link>
           </nav>
         </div>
 
