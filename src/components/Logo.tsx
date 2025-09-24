@@ -7,9 +7,10 @@ interface LogoProps {
 }
 
 /**
- * Logo component that combines a stock candlestick motif with a gaming D-pad.
- * - The left side shows an upward green candlestick with wicks.
- * - The right side shows a subtle controller D-pad/cross.
+ * Logo component that combines a stock chart hammer candlestick with a gaming controller.
+ * - Left: hammer-style bullish candlestick (small body near the top, long lower wick).
+ * - Right: compact controller silhouette with D-pad and AB buttons.
+ * - Subtle chart grid ties both concepts together.
  */
 export default function Logo({ size = 40, showText = false, subtitle }: LogoProps) {
   return (
@@ -31,20 +32,35 @@ export default function Logo({ size = 40, showText = false, subtitle }: LogoProp
               <stop offset="100%" stopColor="#60a5fa" />
             </linearGradient>
           </defs>
-          {/* Candlestick (left) */}
-          <g>
-            {/* Wick */}
-            <rect x="12" y="12" width="4" height="40" rx="2" fill="#e5e7eb" opacity="0.9" />
-            {/* Body (bullish) */}
-            <rect x="8" y="22" width="12" height="22" rx="3" fill="url(#lg)" />
+          {/* Subtle chart grid */}
+          <g opacity="0.25" stroke="#e5e7eb">
+            <path d="M8 16 H56" />
+            <path d="M8 28 H56" />
+            <path d="M8 40 H56" />
+            <path d="M8 52 H56" />
           </g>
 
-          {/* D-pad (right) */}
-          <g transform="translate(30,16)">
-            <rect x="6" y="0" width="8" height="16" rx="2" fill="#c7d2fe" opacity="0.9" />
-            <rect x="0" y="6" width="20" height="8" rx="2" fill="#c7d2fe" opacity="0.9" />
-            {/* subtle circle to tie elements */}
-            <circle cx="10" cy="10" r="12" stroke="#93c5fd" strokeWidth="2" fill="none" opacity="0.6" />
+          {/* Hammer Candlestick (left) */}
+          <g>
+            {/* Long lower wick */}
+            <rect x="14" y="12" width="4" height="44" rx="2" fill="#e5e7eb" opacity="0.9" />
+            {/* Small body near top (hammer) */}
+            <rect x="10" y="12" width="12" height="10" rx="3" fill="url(#lg)" />
+          </g>
+
+          {/* Controller silhouette (right) */}
+          <g transform="translate(30,18)">
+            {/* Body */}
+            <rect x="0" y="6" width="26" height="14" rx="7" fill="#c7d2fe" opacity="0.95" />
+            {/* Grips */}
+            <circle cx="4" cy="17" r="5" fill="#c7d2fe" opacity="0.95" />
+            <circle cx="22" cy="17" r="5" fill="#c7d2fe" opacity="0.95" />
+            {/* D-pad */}
+            <rect x="4" y="9" width="3" height="9" rx="1" fill="#94a3b8" />
+            <rect x="2" y="11" width="7" height="3" rx="1" fill="#94a3b8" />
+            {/* AB buttons */}
+            <circle cx="19" cy="12" r="2.2" fill="#6366f1" />
+            <circle cx="22.5" cy="15.5" r="2.2" fill="#10b981" />
           </g>
         </svg>
       </div>
