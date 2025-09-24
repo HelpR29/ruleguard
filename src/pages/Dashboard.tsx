@@ -7,11 +7,38 @@ import QuickActions from '../components/QuickActions';
 import RecentActivity from '../components/RecentActivity';
 
 export default function Dashboard() {
-  const { settings, progress } = useUser();
+  const { settings, progress, updateProgress } = useUser();
   const [showAddCompletion, setShowAddCompletion] = useState(false);
 
   const targetBalance = settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, settings.targetCompletions);
   const progressPercent = (progress.completions / settings.targetCompletions) * 100;
+
+  const addCompletion = () => {
+    const rate = settings.growthPerCompletion / 100;
+    const newCompletions = Math.min(progress.completions + 1, settings.targetCompletions);
+    const newBalance = progress.currentBalance * (1 + rate);
+    const newDiscipline = Math.min(100, progress.disciplineScore + 1);
+    const newStreak = progress.streak + 1;
+    updateProgress({
+      completions: newCompletions,
+      currentBalance: Number(newBalance.toFixed(2)),
+      disciplineScore: newDiscipline,
+      streak: newStreak,
+    });
+  };
+
+  const addViolation = () => {
+    const rate = settings.growthPerCompletion / 100;
+    const newCompletions = Math.max(progress.completions - 1, 0);
+    const newBalance = progress.currentBalance / (1 + rate);
+    const newDiscipline = Math.max(0, progress.disciplineScore - 2);
+    updateProgress({
+      completions: newCompletions,
+      currentBalance: Number(newBalance.toFixed(2)),
+      disciplineScore: newDiscipline,
+      streak: 0,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -69,14 +96,8 @@ export default function Dashboard() {
               <div className="flex flex-col items-center space-y-8">
                 <AnimatedProgressIcon 
                   size="xl"
-                  onComplete={() => {
-                    // Handle completion
-                    console.log('Completion added!');
-                  }}
-                  onViolation={() => {
-                    // Handle violation
-                    console.log('Rule violation!');
-                  }}
+                  onComplete={addCompletion}
+                  onViolation={addViolation}
                 />
                 
                 {/* Clean Progress Summary */}
@@ -194,7 +215,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => {
-                  // Add completion logic here
+                  addCompletion();
                   setShowAddCompletion(false);
                 }}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"

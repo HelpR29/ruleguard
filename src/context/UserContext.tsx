@@ -40,15 +40,35 @@ const defaultProgress: UserProgress = {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<UserSettings>(defaultSettings);
-  const [progress, setProgress] = useState<UserProgress>(defaultProgress);
+  const [settings, setSettings] = useState<UserSettings>(() => {
+    try {
+      const raw = localStorage.getItem('user_settings');
+      if (raw) return { ...defaultSettings, ...JSON.parse(raw) } as UserSettings;
+    } catch {}
+    return defaultSettings;
+  });
+  const [progress, setProgress] = useState<UserProgress>(() => {
+    try {
+      const raw = localStorage.getItem('user_progress');
+      if (raw) return { ...defaultProgress, ...JSON.parse(raw) } as UserProgress;
+    } catch {}
+    return defaultProgress;
+  });
 
   const updateSettings = (newSettings: Partial<UserSettings>) => {
-    setSettings(prev => ({ ...prev, ...newSettings }));
+    setSettings(prev => {
+      const merged = { ...prev, ...newSettings };
+      try { localStorage.setItem('user_settings', JSON.stringify(merged)); } catch {}
+      return merged;
+    });
   };
 
   const updateProgress = (newProgress: Partial<UserProgress>) => {
-    setProgress(prev => ({ ...prev, ...newProgress }));
+    setProgress(prev => {
+      const merged = { ...prev, ...newProgress };
+      try { localStorage.setItem('user_progress', JSON.stringify(merged)); } catch {}
+      return merged;
+    });
   };
 
   return (
