@@ -57,6 +57,15 @@ export default function Reports() {
     return data;
   }, []);
 
+  const totalPnl = useMemo(() => weeklyData.reduce((s, d) => s + d.pnl, 0), [weeklyData]);
+  const avatar = useMemo(() => {
+    try {
+      return localStorage.getItem('user_avatar') || '👤';
+    } catch {
+      return '👤';
+    }
+  }, []);
+
   const emotionData = [
     { name: 'Confident', value: 40, color: '#10b981' },
     { name: 'FOMO', value: 25, color: '#f59e0b' },
@@ -293,11 +302,18 @@ export default function Reports() {
           ctx.save();
           ctx.beginPath(); ctx.arc(cx, cy, 120, 0, Math.PI*2); ctx.clip();
           ctx.drawImage(aimg, cx-120, cy-120, 240, 240);
+          // tint overlay for consistency with UI card
+          ctx.fillStyle = isGain ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)';
+          ctx.fillRect(cx-120, cy-120, 240, 240);
           ctx.restore();
         } else {
           // emoji avatar render
           ctx.font = '140px Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji';
           ctx.fillText(savedAvatar, width - 340, 340);
+          // subtle tint circle
+          ctx.beginPath(); ctx.arc(cx, cy, 120, 0, Math.PI*2); ctx.closePath();
+          ctx.fillStyle = isGain ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)';
+          ctx.fill();
         }
       }
     } catch {}
@@ -347,10 +363,16 @@ export default function Reports() {
                 <p className="text-gray-600">Track your trading performance</p>
               </div>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors">
-              <Download className="h-4 w-4" />
-              Export PDF
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={buildShareCard} className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-xl hover:bg-gray-900 transition-colors">
+                <Download className="h-4 w-4" />
+                Share
+              </button>
+              <button className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors">
+                <Download className="h-4 w-4" />
+                Export PDF
+              </button>
+            </div>
           </div>
 
           {/* Report Type Selection */}
