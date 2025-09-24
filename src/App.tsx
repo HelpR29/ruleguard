@@ -65,6 +65,7 @@ function App() {
               <Toasts />
             </div>
           </Router>
+        </UserProvider>
       </ToastProvider>
     </ThemeProvider>
   );
@@ -74,7 +75,6 @@ export default App;
 
 // Inline component to handle invite links
 function InviteAccept() {
-  const params = new URLSearchParams(window.location.search);
   // using window.location because simple handler; alternatively use useParams
   const codeFromPath = window.location.pathname.split('/').pop() || '';
   const code = decodeURIComponent(codeFromPath).toUpperCase();
