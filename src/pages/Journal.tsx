@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useUser } from '../context/UserContext';
@@ -84,6 +84,8 @@ export default function Journal() {
     type: 'Long',
     entry: '',
     exit: '',
+    target: '',
+    stop: '',
     size: '',
     emotion: 'Neutral',
     notes: '',
@@ -92,7 +94,7 @@ export default function Journal() {
 
   const resetForm = () => setForm({
     date: new Date().toISOString().slice(0,10),
-    symbol: '', type: 'Long', entry: '', exit: '', size: '', emotion: 'Neutral', notes: '', ruleCompliant: true,
+    symbol: '', type: 'Long', entry: '', exit: '', target: '', stop: '', size: '', emotion: 'Neutral', notes: '', ruleCompliant: true,
   });
 
   const saveEntry = () => {
@@ -102,9 +104,12 @@ export default function Journal() {
     }
     const entryNum = Number(form.entry);
     const exitNum = Number(form.exit);
+    const targetNum = form.target ? Number(form.target) : undefined;
+    const stopNum = form.stop ? Number(form.stop) : undefined;
     const sizeNum = Number(form.size);
-    if (Number.isNaN(entryNum) || Number.isNaN(exitNum) || Number.isNaN(sizeNum)) {
-      addToast('warning', 'Entry, Exit, and Size must be numbers.');
+    if (Number.isNaN(entryNum) || Number.isNaN(exitNum) || Number.isNaN(sizeNum) ||
+        (form.target && Number.isNaN(targetNum as number)) || (form.stop && Number.isNaN(stopNum as number))) {
+      addToast('warning', 'Entry, Exit, Size (and optional Target/Stop) must be numbers.');
       return;
     }
     const pnl = Number(((exitNum - entryNum) * sizeNum).toFixed(2));
@@ -115,6 +120,8 @@ export default function Journal() {
       type: form.type,
       entry: entryNum,
       exit: exitNum,
+      target: targetNum ?? null,
+      stop: stopNum ?? null,
       size: sizeNum,
       pnl,
       emotion: form.emotion,
@@ -328,6 +335,14 @@ export default function Journal() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Exit</label>
                 <input value={form.exit} onChange={(e)=>setForm({...form, exit: e.target.value})} placeholder="152.75" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Target</label>
+                <input value={form.target} onChange={(e)=>setForm({...form, target: e.target.value})} placeholder="155.00" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Stop Loss</label>
+                <input value={form.stop} onChange={(e)=>setForm({...form, stop: e.target.value})} placeholder="145.00" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+              </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Emotion</label>
                 <select value={form.emotion} onChange={(e)=>setForm({...form, emotion: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
@@ -345,6 +360,10 @@ export default function Journal() {
               <div className="flex items-center gap-2 md:col-span-2">
                 <input id="rc" type="checkbox" checked={form.ruleCompliant} onChange={(e)=>setForm({...form, ruleCompliant: e.target.checked})} />
                 <label htmlFor="rc" className="text-sm text-gray-700">Rule Compliant</label>
+              </div>
+              {/* Live Chart Preview */}
+              <div className="md:col-span-2">
+                <LiveTradeChart entry={form.entry} exit={form.exit} target={form.target} stop={form.stop} />
               </div>
             </div>
             <div className="mt-6 flex gap-3">
