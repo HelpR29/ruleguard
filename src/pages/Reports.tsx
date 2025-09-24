@@ -205,23 +205,41 @@ export default function Reports() {
     // Card panel
     ctx.fillStyle = 'rgba(255,255,255,0.9)';
     ctx.fillRect(40,40,width-80,height-80);
+    // Brand strip
+    ctx.fillStyle = '#111827';
+    ctx.fillRect(40,40,width-80,60);
+    // Logo (best-effort rasterize from public/svg)
+    try {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = '/logo-trade-game.svg';
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+      });
+      const logoSize = 44;
+      ctx.drawImage(img, 54, 48, logoSize, logoSize);
+    } catch {}
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 26px Inter, system-ui, -apple-system, Segoe UI, Roboto';
+    ctx.fillText('RuleGuard', 110, 80);
     ctx.fillStyle = '#111827';
     ctx.font = 'bold 42px Inter, system-ui, -apple-system, Segoe UI, Roboto';
-    ctx.fillText('RuleGuard Weekly Report', 70, 110);
+    ctx.fillText('RuleGuard Weekly Report', 70, 140);
     // Discipline
     ctx.font = '600 28px Inter';
-    ctx.fillText(`Discipline Score: ${progress.disciplineScore}%`, 70, 160);
+    ctx.fillText(`Discipline Score: ${progress.disciplineScore}%`, 70, 190);
     // Top risky hours
-    ctx.font = 'bold 24px Inter'; ctx.fillText('Top Risky Hours', 70, 220);
+    ctx.font = 'bold 24px Inter'; ctx.fillText('Top Risky Hours', 70, 250);
     ctx.font = '400 22px Inter';
     topRiskyHours.slice(0,3).forEach((e, i) => {
-      ctx.fillText(`${i+1}. ${e.day} ${e.hour}:00 (${e.count})`, 70, 255 + i*30);
+      ctx.fillText(`${i+1}. ${e.day} ${e.hour}:00 (${e.count})`, 70, 285 + i*30);
     });
     // Top tags
-    ctx.font = 'bold 24px Inter'; ctx.fillText('Top Tags', 520, 220);
+    ctx.font = 'bold 24px Inter'; ctx.fillText('Top Tags', 520, 250);
     ctx.font = '400 22px Inter';
     topTags.slice(0,3).forEach(([tag, cnt], i) => {
-      ctx.fillText(`${i+1}. ${tag} (${cnt})`, 520, 255 + i*30);
+      ctx.fillText(`${i+1}. ${tag} (${cnt})`, 520, 285 + i*30);
     });
     // Footer
     ctx.font = '400 18px Inter';
