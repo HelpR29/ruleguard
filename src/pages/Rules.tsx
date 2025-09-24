@@ -114,9 +114,48 @@ export default function Rules() {
                   type="text"
                   value={editingTags}
                   onChange={(e) => setEditingTags(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const t = editingTags.trim();
+                      if (!t || t.endsWith(',') || t.endsWith(', ')) return;
+                      setEditingTags(t + ', ');
+                    }
+                    if (e.key === 'Backspace') {
+                      const el = e.target as HTMLInputElement;
+                      if (el.selectionStart === 0 && el.selectionEnd === 0 && el.value.trim() === '') {
+                        e.preventDefault();
+                        const arr = editingTags.split(',').map(s=>s.trim()).filter(Boolean);
+                        arr.pop();
+                        setEditingTags(arr.length ? arr.join(', ') + ', ' : '');
+                      }
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Risk, Mindset, Entry, Exit"
                 />
+                {(() => {
+                  const chips = editingTags.split(',').map(t=>t.trim()).filter(Boolean);
+                  if (!chips.length) return null;
+                  return (
+                    <div className="mt-2 flex items-center gap-2 flex-wrap">
+                      {chips.map((tag, idx) => (
+                        <button
+                          key={`${tag}-${idx}`}
+                          type="button"
+                          onClick={() => {
+                            const next = chips.filter((_, i) => i !== idx);
+                            setEditingTags(next.length ? next.join(', ') + ', ' : '');
+                          }}
+                          className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200"
+                          title="Click to remove"
+                        >
+                          {tag} ×
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
             <div className="mt-6 flex items-center justify-between">

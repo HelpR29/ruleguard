@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { UserPlus, Users, Crown, Shield, Trophy, AlertCircle, Link as LinkIcon, Loader2 } from 'lucide-react';
+import { UserPlus, Users, Crown, Shield, Trophy, AlertCircle, Link as LinkIcon } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 
