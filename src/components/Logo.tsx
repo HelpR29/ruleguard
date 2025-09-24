@@ -20,8 +20,8 @@ export default function Logo({ size = 40, showText = false, subtitle }: LogoProp
         style={{ width: size, height: size }}
       >
         <svg
-          width={Math.floor(size * 0.7)}
-          height={Math.floor(size * 0.7)}
+          width={Math.floor(size * 0.85)}
+          height={Math.floor(size * 0.85)}
           viewBox="0 0 64 64"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
@@ -32,35 +32,45 @@ export default function Logo({ size = 40, showText = false, subtitle }: LogoProp
               <stop offset="100%" stopColor="#60a5fa" />
             </linearGradient>
           </defs>
-          {/* Subtle chart grid */}
-          <g opacity="0.25" stroke="#e5e7eb">
-            <path d="M8 16 H56" />
-            <path d="M8 28 H56" />
-            <path d="M8 40 H56" />
-            <path d="M8 52 H56" />
-          </g>
+          {/* Centered group for composition */}
+          <g transform="translate(32,32)">
+            {/* Subtle chart crosshair */}
+            <g opacity="0.18" stroke="#e5e7eb">
+              <path d="M-24 0 H24" />
+              <path d="M0 -24 V24" />
+            </g>
 
-          {/* Hammer Candlestick (left) */}
-          <g>
-            {/* Long lower wick */}
-            <rect x="14" y="12" width="4" height="44" rx="2" fill="#e5e7eb" opacity="0.9" />
-            {/* Small body near top (hammer) */}
-            <rect x="10" y="12" width="12" height="10" rx="3" fill="url(#lg)" />
-          </g>
+            {/* Controller at center (slightly rotated from impact) */}
+            <g transform="translate(4,6) rotate(8)">
+              <rect x="-18" y="-8" width="36" height="16" rx="8" fill="#c7d2fe" opacity="0.98" />
+              <circle cx="-14" cy="6" r="6" fill="#c7d2fe" opacity="0.98" />
+              <circle cx="14" cy="6" r="6" fill="#c7d2fe" opacity="0.98" />
+              {/* D-pad */}
+              <rect x="-13" y="-5" width="3.5" height="10" rx="1" fill="#94a3b8" />
+              <rect x="-16" y="-2" width="10" height="3.5" rx="1" fill="#94a3b8" />
+              {/* AB buttons */}
+              <circle cx="8" cy="-2" r="2.4" fill="#6366f1" />
+              <circle cx="12" cy="2" r="2.4" fill="#10b981" />
+              {/* Crack at impact */}
+              <path d="M-2 -4 L0 -1 L-1 2 L2 4" stroke="#64748b" strokeWidth="1.2" fill="none" />
+            </g>
 
-          {/* Controller silhouette (right) */}
-          <g transform="translate(30,18)">
-            {/* Body */}
-            <rect x="0" y="6" width="26" height="14" rx="7" fill="#c7d2fe" opacity="0.95" />
-            {/* Grips */}
-            <circle cx="4" cy="17" r="5" fill="#c7d2fe" opacity="0.95" />
-            <circle cx="22" cy="17" r="5" fill="#c7d2fe" opacity="0.95" />
-            {/* D-pad */}
-            <rect x="4" y="9" width="3" height="9" rx="1" fill="#94a3b8" />
-            <rect x="2" y="11" width="7" height="3" rx="1" fill="#94a3b8" />
-            {/* AB buttons */}
-            <circle cx="19" cy="12" r="2.2" fill="#6366f1" />
-            <circle cx="22.5" cy="15.5" r="2.2" fill="#10b981" />
+            {/* Hammer candlestick swinging in (rotated) */}
+            <g transform="translate(-8,-10) rotate(-28)">
+              {/* Wick (long lower) */}
+              <rect x="-2" y="-14" width="4" height="36" rx="2" fill="#e5e7eb" opacity="0.95" />
+              {/* Small body near top */}
+              <rect x="-6" y="-14" width="12" height="10" rx="3" fill="url(#lg)" />
+            </g>
+
+            {/* Impact burst/debris */}
+            <g opacity="0.85">
+              <circle cx="2" cy="2" r="6.5" fill="none" stroke="#93c5fd" strokeWidth="2" opacity="0.7" />
+              <path d="M-8 -2 l-3 -2" stroke="#93c5fd" strokeWidth="2" />
+              <path d="M10 -4 l3 -2" stroke="#93c5fd" strokeWidth="2" />
+              <path d="M-4 10 l-2 3" stroke="#93c5fd" strokeWidth="2" />
+              <path d="M12 8 l2 3" stroke="#93c5fd" strokeWidth="2" />
+            </g>
           </g>
         </svg>
       </div>
