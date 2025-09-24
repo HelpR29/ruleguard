@@ -14,7 +14,7 @@ export default function Dashboard() {
   const progressPercent = (progress.completions / settings.targetCompletions) * 100;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Welcome Section */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
@@ -53,9 +53,9 @@ export default function Dashboard() {
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
             {/* Progress Tracker */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900">Progress Tracker</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Progress Tracker</h3>
                 <button
                   onClick={() => setShowAddCompletion(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
@@ -81,21 +81,21 @@ export default function Dashboard() {
                 
                 {/* Clean Progress Summary */}
                 <div className="text-center space-y-4">
-                  <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-                    <h3 className="text-3xl font-bold text-gray-900 mb-2">
+                  <div className="bg-white dark:bg-gray-700 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-600">
+                    <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                       {progress.completions}/{settings.targetCompletions}
                     </h3>
-                    <p className="text-gray-600 mb-3">
+                    <p className="text-gray-600 dark:text-gray-300 mb-3">
                       {settings.targetCompletions - progress.completions} {settings.progressObject}s remaining
                     </p>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                       <div
                         className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-500"
                         style={{ width: `${(progress.completions / settings.targetCompletions) * 100}%` }}
                       ></div>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     Click to add completion • Double-click for violation
                   </p>
                 </div>
@@ -103,10 +103,10 @@ export default function Dashboard() {
             </div>
 
             {/* Compounding Growth Chart */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900">Growth Projection</h3>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Growth Projection</h3>
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                   <TrendingUp className="h-4 w-4" />
                   {settings.growthPerCompletion}% per completion
                 </div>
@@ -124,24 +124,24 @@ export default function Dashboard() {
             <RecentActivity />
 
             {/* Next Milestone */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Next Milestone</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Next Milestone</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Target Balance</span>
+                  <span className="text-gray-600 dark:text-gray-300">Target Balance</span>
                   <span className="font-bold text-green-600">${targetBalance.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Remaining</span>
-                  <span className="font-bold">{settings.targetCompletions - progress.completions} completions</span>
+                  <span className="text-gray-600 dark:text-gray-300">Remaining</span>
+                  <span className="font-bold text-gray-900 dark:text-white">{settings.targetCompletions - progress.completions} completions</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
+                <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3">
                   <div
                     className="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-500"
                     style={{ width: `${Math.min(progressPercent, 100)}%` }}
                   ></div>
                 </div>
-                <p className="text-sm text-gray-600">{progressPercent.toFixed(1)}% complete</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{progressPercent.toFixed(1)}% complete</p>
               </div>
             </div>
 
@@ -180,15 +180,15 @@ export default function Dashboard() {
       {/* Add Completion Modal */}
       {showAddCompletion && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">Add Completion</h3>
-            <p className="text-gray-600 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Add Completion</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               Confirm that you've successfully completed your trading rules and discipline requirements.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowAddCompletion(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Cancel
               </button>
