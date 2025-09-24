@@ -26,6 +26,8 @@ interface UserContextType {
   deleteRule: (id: string) => void;
   toggleRuleActive: (id: string) => void;
   recordViolation: (id: string) => void;
+  recordCompletion: () => void;
+  markCompliance: (id: string) => void;
 }
 
 export interface UserRule {
@@ -150,10 +152,55 @@ export function UserProvider({ children }: { children: ReactNode }) {
       return next;
     });
     updateProgress({ disciplineScore: Math.max(0, progress.disciplineScore - 1) });
+    // Increment daily stats
+    try {
+      const key = new Date().toISOString().slice(0,10);
+      const stats = JSON.parse(localStorage.getItem('daily_stats') || '{}');
+      const today = stats[key] || { completions: 0, violations: 0 };
+      today.violations += 1;
+      stats[key] = today;
+      localStorage.setItem('daily_stats', JSON.stringify(stats));
+    } catch {}
+  };
+
+  const recordCompletion = () => {
+    const rate = settings.growthPerCompletion / 100;
+    const newCompletions = Math.min(progress.completions + 1, settings.targetCompletions);
+    const newBalance = progress.currentBalance * (1 + rate);
+    const newDiscipline = Math.min(100, progress.disciplineScore + 1);
+    const newStreak = progress.streak + 1;
+    updateProgress({
+      completions: newCompletions,
+      currentBalance: Number(newBalance.toFixed(2)),
+      disciplineScore: newDiscipline,
+      streak: newStreak,
+    });
+    // Increment daily stats
+    try {
+      const key = new Date().toISOString().slice(0,10);
+      const stats = JSON.parse(localStorage.getItem('daily_stats') || '{}');
+      const today = stats[key] || { completions: 0, violations: 0 };
+      today.completions += 1;
+      stats[key] = today;
+      localStorage.setItem('daily_stats', JSON.stringify(stats));
+    } catch {}
+  };
+
+  const markCompliance = (id: string) => {
+    setRules(prev => {
+      const next = prev.map(r => (
+        r.id === id
+          ? { ...r, violations: Math.max(0, r.violations - 1), lastViolation: r.violations - 1 > 0 ? r.lastViolation : null }
+          : r
+      ));
+      persistRules(next);
+      return next;
+    });
+    updateProgress({ disciplineScore: Math.min(100, progress.disciplineScore + 1) });
   };
 
   return (
-    <UserContext.Provider value={{ settings, progress, rules, updateSettings, updateProgress, addRule, editRule, deleteRule, toggleRuleActive, recordViolation }}>
+    <UserContext.Provider value={{ settings, progress, rules, updateSettings, updateProgress, addRule, editRule, deleteRule, toggleRuleActive, recordViolation, recordCompletion, markCompliance }}>
       {children}
     </UserContext.Provider>
   );
