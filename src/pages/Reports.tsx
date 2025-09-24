@@ -44,18 +44,6 @@ export default function Reports() {
       stats = {};
     }
 
-    // Merge in trade tags counts
-    try {
-      const rawTrades = localStorage.getItem('journal_trades');
-      const ts: any[] = rawTrades ? JSON.parse(rawTrades) : [];
-      for (const tr of ts) {
-        const tags: string[] = (tr.tags || []).map((t: string) => t.toLowerCase());
-        const include = selectedTags.length === 0 || tags.some(t => selectedTags.includes(t));
-        if (include) {
-          for (const t of tags) tagAgg[t] = (tagAgg[t] || 0) + 1;
-        }
-      }
-    } catch {}
     const data = [] as Array<{ day: string; completions: number; violations: number; pnl: number }>;
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today);
