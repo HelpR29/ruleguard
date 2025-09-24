@@ -29,6 +29,7 @@ export default function Header() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [userAvatar, setUserAvatar] = useState('👤');
   const [isProfileLocked, setIsProfileLocked] = useState(false);
+  const [displayName, setDisplayName] = useState('Trading Pro');
   const [premiumStatus, setPremiumStatus] = useState<'none' | 'premium' | 'discount_25' | 'discount_50' | 'free_monthly'>('none');
   const [achievements, setAchievements] = useState<string[]>([]);
   const pageName = pageNames[location.pathname] || 'RuleGuard';
@@ -37,6 +38,8 @@ export default function Header() {
     try {
       const locked = localStorage.getItem('profile_locked');
       setIsProfileLocked(locked === 'true');
+      const dn = localStorage.getItem('display_name');
+      if (dn) setDisplayName(dn);
       const ps = (localStorage.getItem('premium_status') as any) || 'none';
       setPremiumStatus(ps);
       const ach = JSON.parse(localStorage.getItem('user_achievements') || '[]');
@@ -144,6 +147,9 @@ export default function Header() {
             <Settings className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
           
+          <div className="hidden md:flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 mr-1">
+            <span className="truncate max-w-[120px]" title={displayName}>{displayName}</span>
+          </div>
           <button 
             className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
             onClick={() => setShowProfileMenu(prev => !prev)}
