@@ -39,7 +39,7 @@ export default function Reports() {
   ];
 
   // Per-rule, time-of-day, and weekday-hour heatmap from activity_log
-  const { perRuleData, hourlyData, heatmap, tagStats } = useMemo(() => {
+  const { perRuleData, hourlyData, heatmap, tagStats, maxHeat } = useMemo(() => {
     let log: Array<{ ts: number; type: 'violation' | 'completion'; ruleId?: string }> = [];
     try {
       log = JSON.parse(localStorage.getItem('activity_log') || '[]');
@@ -81,7 +81,8 @@ export default function Reports() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 7);
 
-    return { perRuleData: perRule, hourlyData: hourly, heatmap: heat, tagStats: tagAgg };
+    const maxHeat = heat.reduce((m,row)=>Math.max(m, ...row), 0);
+    return { perRuleData: perRule, hourlyData: hourly, heatmap: heat, tagStats: tagAgg, maxHeat };
   }, [rules]);
 
   // Top risky hours from heatmap
@@ -409,6 +410,11 @@ export default function Reports() {
               <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div className="text-xs text-gray-500">
                   <span className="font-medium">Legend:</span> lighter = fewer, darker = more violations. Focus risk controls on dark cells.
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="text-[10px] text-gray-500">0</span>
+                    <div className="h-2 w-40 rounded" style={{ background: 'linear-gradient(to right, rgba(239,68,68,0.1), rgba(239,68,68,1))' }} />
+                    <span className="text-[10px] text-gray-500">{maxHeat}</span>
+                  </div>
                 </div>
                 <div className="text-xs text-gray-600">
                   <span className="font-medium">Top Risky Hours:</span> {topRiskyHours.length ? topRiskyHours.map((e,i)=>`${e.day} ${e.hour}:00 (${e.count})`).join(', ') : 'None yet'}
@@ -461,7 +467,24 @@ export default function Reports() {
                   <li key={idx}>{it}</li>
                 ))}
               </ol>
-              <div className="mt-4 flex justify-end">
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <div className="flex gap-2">
+                  <button
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+                    onClick={() => {
+                      const text = `1-Week Discipline Plan:\n- ${planItems.join('\n- ')}`;
+                      navigator.clipboard?.writeText(text);
+                    }}
+                  >
+                    Copy to Clipboard
+                  </button>
+                  <button
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+                    onClick={() => window.print()}
+                  >
+                    Print / PDF
+                  </button>
+                </div>
                 <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onClick={() => setShowPlan(false)}>Got it</button>
               </div>
             </div>
