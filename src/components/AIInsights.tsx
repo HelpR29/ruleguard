@@ -312,30 +312,45 @@ export default function AIInsights({ trades, period }: AIInsightsProps) {
 
       {periodTrades.length > 0 && (
         <div className="mt-6 pt-4 border-t border-gray-200">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{periodTrades.length}</p>
-              <p className="text-xs text-gray-600">Total Trades</p>
+          <h4 className="text-sm font-medium text-gray-700 mb-3 text-center">
+            {period === 'weekly' ? 'Weekly' : 'Monthly'} Summary
+          </h4>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-blue-50 rounded-lg p-3 text-center">
+              <p className="text-xl font-bold text-blue-700">{periodTrades.length}</p>
+              <p className="text-xs text-blue-600 mt-1">Total Trades</p>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">
+            <div className="bg-green-50 rounded-lg p-3 text-center">
+              <p className="text-xl font-bold text-green-700">
                 {periodTrades.filter(t => t.pnl > 0).length}
               </p>
-              <p className="text-xs text-gray-600">Winners</p>
+              <p className="text-xs text-green-600 mt-1">Winners</p>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">
+            <div className="bg-purple-50 rounded-lg p-3 text-center">
+              <p className="text-xl font-bold text-purple-700">
                 {((periodTrades.filter(t => t.pnl > 0).length / periodTrades.length) * 100).toFixed(1)}%
               </p>
-              <p className="text-xs text-gray-600">Win Rate</p>
+              <p className="text-xs text-purple-600 mt-1">Win Rate</p>
             </div>
-            <div>
-              <p className={`text-2xl font-bold ${
-                periodTrades.reduce((sum, t) => sum + t.pnl, 0) >= 0 ? 'text-green-600' : 'text-red-600'
+            <div className={`rounded-lg p-3 text-center ${
+              periodTrades.reduce((sum, t) => sum + t.pnl, 0) >= 0 
+                ? 'bg-emerald-50' 
+                : 'bg-red-50'
+            }`}>
+              <p className={`text-xl font-bold ${
+                periodTrades.reduce((sum, t) => sum + t.pnl, 0) >= 0 
+                  ? 'text-emerald-700' 
+                  : 'text-red-700'
               }`}>
-                ${periodTrades.reduce((sum, t) => sum + t.pnl, 0).toFixed(2)}
+                ${Math.abs(periodTrades.reduce((sum, t) => sum + t.pnl, 0)).toFixed(0)}
               </p>
-              <p className="text-xs text-gray-600">Net P&L</p>
+              <p className={`text-xs mt-1 ${
+                periodTrades.reduce((sum, t) => sum + t.pnl, 0) >= 0 
+                  ? 'text-emerald-600' 
+                  : 'text-red-600'
+              }`}>
+                Net {periodTrades.reduce((sum, t) => sum + t.pnl, 0) >= 0 ? 'Profit' : 'Loss'}
+              </p>
             </div>
           </div>
         </div>

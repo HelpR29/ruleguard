@@ -10,6 +10,7 @@ export default function Dashboard() {
   const { settings, progress, updateProgress } = useUser();
   const [showAddCompletion, setShowAddCompletion] = useState(false);
   const [progressView, setProgressView] = useState<'icon'|'grid'>('icon');
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const targetBalance = settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, settings.targetCompletions);
   const progressPercent = (progress.completions / settings.targetCompletions) * 100;
@@ -30,6 +31,11 @@ export default function Dashboard() {
       disciplineScore: newDiscipline,
       streak: newStreak,
     });
+    
+    // Show celebration if goal is reached
+    if (newCompletions === settings.targetCompletions) {
+      setShowCelebration(true);
+    }
   };
 
   const addViolation = () => {
@@ -260,6 +266,55 @@ export default function Dashboard() {
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
               >
                 Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Celebration Modal */}
+      {showCelebration && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full text-center">
+            <div className="mb-6">
+              <div className="text-6xl mb-4">🎉</div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Congratulations!</h2>
+              <p className="text-gray-600 dark:text-gray-300">
+                You've completed your goal of {settings.targetCompletions} {settings.progressObject}s!
+              </p>
+            </div>
+            
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 mb-6">
+              <p className="text-sm text-green-600 dark:text-green-400 mb-1">Final Portfolio Value</p>
+              <p className="text-3xl font-bold text-green-700 dark:text-green-300">
+                ${targetBalance.toFixed(2)}
+              </p>
+              <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                Growth: {(((targetBalance - settings.startingPortfolio) / settings.startingPortfolio) * 100).toFixed(1)}%
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <button 
+                onClick={() => {
+                  // Reset for new goal
+                  updateProgress({
+                    completions: 0,
+                    currentBalance: targetBalance,
+                    disciplineScore: progress.disciplineScore,
+                    streak: progress.streak,
+                  });
+                  setShowCelebration(false);
+                }}
+                className="w-full accent-btn"
+              >
+                Start New Goal
+              </button>
+              <button 
+                onClick={() => setShowCelebration(false)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                Continue Viewing
               </button>
             </div>
           </div>
