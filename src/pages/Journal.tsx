@@ -196,6 +196,38 @@ export default function Journal() {
     return mockJournals;
   });
 
+  // One-time migration: move legacy base64 images to IndexedDB and store IDs
+  useEffect(() => {
+    (async () => {
+      try {
+        if (localStorage.getItem('journal_migrated_images_v1') === 'true') return;
+        let changed = false;
+        const next = await Promise.all((trades || []).map(async (t: any) => {
+          if (Array.isArray(t.images) && t.images.length > 0 && (!Array.isArray(t.imageIds) || t.imageIds.length === 0)) {
+            const ids: number[] = [];
+            for (const dataUrl of t.images) {
+              try {
+                const blob = await (await fetch(dataUrl)).blob();
+                const id = await saveAttachment(blob);
+                ids.push(id);
+              } catch {}
+            }
+            changed = true;
+            const { images, ...rest } = t;
+            return { ...rest, imageIds: ids } as Trade;
+          }
+          return t as Trade;
+        }));
+        if (changed) {
+          setTrades(next as Trade[]);
+          try { localStorage.setItem('journal_trades', JSON.stringify(next)); } catch {}
+        }
+        localStorage.setItem('journal_migrated_images_v1', 'true');
+      } catch {}
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     try { localStorage.setItem('journal_trades', JSON.stringify(trades)); } catch {}
   }, [trades]);
@@ -232,7 +264,14 @@ export default function Journal() {
     if (!files) return;
     const maxFiles = 4;
     const allowed = ['image/png','image/jpeg','image/webp','image/gif'];
-    const selected = Array.from(files).filter(f=>allowed.includes(f.type)).slice(0, maxFiles);
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const selected = Array.from(files)
+      .filter(f=>{
+        if (!allowed.includes(f.type)) { addToast('warning', `Unsupported type: ${f.type}`); return false; }
+        if (f.size > maxSize) { addToast('warning', `${f.name} is too large (max 5MB)`); return false; }
+        return true;
+      })
+      .slice(0, maxFiles);
     const ids: number[] = [];
     const previews: string[] = [];
     for (const f of selected) {
@@ -568,6 +607,37 @@ export default function Journal() {
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
                 <textarea rows={4} value={form.notes} onChange={(e)=>setForm({...form, notes: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="What happened? What did you learn?" />
+              </div>
+              {/* Images input and previews */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Images (up to 4)</label>
+                <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple onChange={(e)=>handleImageFiles(e.target.files)} className="block w-full text-sm" />
+                {form.imagePreviews.length > 0 && (
+                  <div className="mt-2 grid grid-cols-4 gap-2">
+                    {form.imagePreviews.map((src, idx) => (
+                      <div key={idx} className="relative group">
+                        <img src={src} alt={`img-${idx}`} className="w-full h-16 object-cover rounded border" />
+                        <button
+                          type="button"
+                          aria-label="Remove image"
+                          onClick={async () => {
+                            const id = form.imageIds[idx];
+                            try { await deleteAttachment(id); } catch {}
+                            URL.revokeObjectURL(src);
+                            setForm(prev => {
+                              const ids = prev.imageIds.filter((_, i) => i !== idx);
+                              const previews = prev.imagePreviews.filter((_, i) => i !== idx);
+                              return { ...prev, imageIds: ids, imagePreviews: previews };
+                            });
+                          }}
+                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white text-gray-700 border border-gray-300 rounded-full w-6 h-6 grid place-items-center text-xs"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Strategy / Tags (comma-separated)</label>
