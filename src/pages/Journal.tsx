@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useUser } from '../context/UserContext';
+import { saveAttachment, getAttachment, deleteAttachment } from '../utils/db';
 
 type Trade = {
   id: number;
@@ -18,7 +19,7 @@ type Trade = {
   target: number | null;
   stop: number | null;
   tags?: string[];
-  images?: string[];
+  imageIds?: number[]; // IndexedDB IDs
 };
 
 function LiveTradeChart({ entry, exit, target, stop }: { entry: string; exit: string; target?: string; stop?: string }) {
@@ -85,6 +86,39 @@ function LiveTradeChart({ entry, exit, target, stop }: { entry: string; exit: st
     <div>
       <p className="text-sm text-gray-700 mb-2">Preview</p>
       <canvas ref={canvasRef} className="w-full rounded-lg border" />
+    </div>
+  );
+}
+
+// Resolve image IDs to object URLs and render a grid
+function TradeImages({ ids }: { ids: number[] }) {
+  const [urls, setUrls] = useState<string[]>([]);
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const arr: string[] = [];
+        for (const id of ids) {
+          const blob = await getAttachment(id);
+          if (blob) arr.push(URL.createObjectURL(blob));
+        }
+        if (active) setUrls(arr);
+      } catch {}
+    })();
+    return () => {
+      setUrls(prev => {
+        prev.forEach(u => URL.revokeObjectURL(u));
+        return [];
+      });
+    };
+  }, [ids]);
+
+  if (!urls.length) return null;
+  return (
+    <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2">
+      {urls.map((src, idx) => (
+        <img key={idx} src={src} alt={`img-${idx}`} className="w-full h-24 object-cover rounded border" />
+      ))}
     </div>
   );
 }
@@ -183,13 +217,14 @@ export default function Journal() {
     notes: '',
     tags: '',
     ruleCompliant: true,
-    images: [] as string[],
+    imageIds: [] as number[],
+    imagePreviews: [] as string[],
   });
 
   const resetForm = () => setForm({
     date: new Date().toISOString().slice(0,10),
     symbol: '', type: 'Long', entry: '', exit: '', target: '', stop: '', size: '', emotion: 'Neutral', notes: '', tags: '', ruleCompliant: true,
-    images: [],
+    imageIds: [], imagePreviews: [],
   });
 
   // Attachments handlers
@@ -197,16 +232,21 @@ export default function Journal() {
     if (!files) return;
     const maxFiles = 4;
     const allowed = ['image/png','image/jpeg','image/webp','image/gif'];
-    const selected = Array.from(files).slice(0, maxFiles);
-    const readers = await Promise.all(selected.map(f => new Promise<string>((resolve) => {
-      if (!allowed.includes(f.type)) return resolve('');
-      const fr = new FileReader();
-      fr.onload = () => resolve(String(fr.result || ''));
-      fr.onerror = () => resolve('');
-      fr.readAsDataURL(f);
-    })));
-    const imgs = readers.filter(Boolean);
-    setForm(prev => ({ ...prev, images: [...prev.images, ...imgs].slice(0, maxFiles) }));
+    const selected = Array.from(files).filter(f=>allowed.includes(f.type)).slice(0, maxFiles);
+    const ids: number[] = [];
+    const previews: string[] = [];
+    for (const f of selected) {
+      try {
+        const id = await saveAttachment(f);
+        ids.push(id);
+        previews.push(URL.createObjectURL(f));
+      } catch {}
+    }
+    setForm(prev => ({
+      ...prev,
+      imageIds: [...prev.imageIds, ...ids].slice(0, maxFiles),
+      imagePreviews: [...prev.imagePreviews, ...previews].slice(0, maxFiles)
+    }));
   };
 
   // no audio support
@@ -255,7 +295,7 @@ export default function Journal() {
       notes: form.notes,
       tags: form.tags.split(',').map(t=>t.trim()).filter(Boolean),
       ruleCompliant: form.ruleCompliant,
-      images: form.images,
+      imageIds: form.imageIds,
     };
     setTrades(prev => [newTrade, ...prev]);
     if (form.notes.trim()) {
@@ -406,7 +446,12 @@ export default function Journal() {
                   </div>
                   
                   <p className="text-gray-700 bg-gray-50 rounded-lg p-3 text-sm">{trade.notes}</p>
-                  
+
+                  {/* Attachments */}
+                  {Array.isArray(trade.imageIds) && trade.imageIds.length > 0 && (
+                    <TradeImages ids={trade.imageIds} />
+                  )}
+
                   <div className="mt-3 flex justify-between items-center">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       trade.ruleCompliant
@@ -415,6 +460,24 @@ export default function Journal() {
                     }`}>
                       {trade.ruleCompliant ? 'Rule Compliant' : 'Rule Violation'}
                     </span>
+                    <button
+                      className="text-xs px-2 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50"
+                      onClick={async () => {
+                        if (!confirm('Delete this entry? This will remove its attachments.')) return;
+                        // cleanup attachments
+                        try {
+                          if (Array.isArray(trade.imageIds)) {
+                            for (const id of trade.imageIds) {
+                              await deleteAttachment(id);
+                            }
+                          }
+                        } catch {}
+                        setTrades(prev => prev.filter(t => t.id !== trade.id));
+                        addToast('success', 'Entry deleted.');
+                      }}
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               ))}
@@ -505,20 +568,6 @@ export default function Journal() {
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
                 <textarea rows={4} value={form.notes} onChange={(e)=>setForm({...form, notes: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="What happened? What did you learn?" />
-              </div>
-              {/* Attachments */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Images (up to 4)</label>
-                <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple onChange={(e)=>handleImageFiles(e.target.files)} className="block w-full text-sm" />
-                {form.images.length > 0 && (
-                  <div className="mt-2 grid grid-cols-4 gap-2">
-                    {form.images.map((src, idx) => (
-                      <div key={idx} className="relative">
-                        <img src={src} alt={`img-${idx}`} className="w-full h-16 object-cover rounded border" />
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Strategy / Tags (comma-separated)</label>

@@ -1,4 +1,4 @@
-import React from 'react';
+ 
 
 type PnlCardProps = {
   title?: string;
@@ -30,7 +30,8 @@ export default function PnlCard({
   timeframe,
   date,
   className = '',
-  variant = 'card'
+  variant = 'card',
+  sparkline
 }: PnlCardProps) {
   const isGain = pnl >= 0;
   const bgFrom = isGain ? 'from-emerald-800' : 'from-rose-800';

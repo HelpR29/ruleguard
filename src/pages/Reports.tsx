@@ -238,7 +238,7 @@ export default function Reports() {
     setSelectedTags(prev => prev.includes(t) ? prev.filter(x=>x!==t) : [...prev, t]);
   };
 
-  const buildShareCard = async () => {
+  const buildShareCard = async (forPrint: boolean = false) => {
     const width = 1200, height = 630;
     const canvas = document.createElement('canvas');
     canvas.width = width; canvas.height = height;
@@ -274,7 +274,9 @@ export default function Reports() {
     } catch {}
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 26px Inter, system-ui, -apple-system, Segoe UI, Roboto';
-    ctx.fillText('RuleGuard', 110, 80);
+    const dn = (localStorage.getItem('display_name') || '').trim();
+    const brand = dn ? `RuleGuard • ${dn}` : 'RuleGuard';
+    ctx.fillText(brand, 110, 80);
     ctx.fillStyle = '#111827';
     ctx.font = 'bold 42px Inter, system-ui, -apple-system, Segoe UI, Roboto';
     ctx.fillText('RuleGuard Weekly Report', 70, 140);
@@ -340,6 +342,14 @@ export default function Reports() {
     ctx.fillText('ruleguard.app • Share your discipline progress', 70, height-70);
     const url = canvas.toDataURL('image/png');
     setShareUrl(url);
+    if (forPrint) {
+      const w = window.open('about:blank', '_blank');
+      if (w) {
+        w.document.write(`<html><head><title>RuleGuard Report</title><style>body{margin:0;display:grid;place-items:center;background:#fff}</style></head><body><img src="${url}" style="max-width:100%;height:auto" onload="window.print(); setTimeout(()=>window.close(), 300);"/></body></html>`);
+        w.document.close();
+      }
+      return;
+    }
     try {
       if (navigator.share && navigator.canShare) {
         // Attempt Web Share with data URL converted to blob
@@ -369,11 +379,11 @@ export default function Reports() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={buildShareCard} className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-xl hover:bg-gray-900 transition-colors">
+              <button onClick={() => buildShareCard()} className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-xl hover:bg-gray-900 transition-colors">
                 <Download className="h-4 w-4" />
                 Share
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors">
+              <button onClick={() => buildShareCard(true)} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors">
                 <Download className="h-4 w-4" />
                 Export PDF
               </button>
@@ -464,6 +474,7 @@ export default function Reports() {
                   avatar={avatar || undefined}
                   timeframe="This Week"
                   variant="tile"
+                  sparkline={weeklyData.map(d=>d.pnl)}
                 />
               </div>
 
@@ -684,7 +695,7 @@ export default function Reports() {
                 </button>
                 <button
                   className="ml-3 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900"
-                  onClick={buildShareCard}
+                  onClick={() => buildShareCard()}
                 >
                   Create Share Card
                 </button>
