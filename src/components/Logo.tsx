@@ -4,25 +4,12 @@ interface LogoProps {
   size?: number;
   showText?: boolean;
   subtitle?: string;
-}
-
-/**
- * Logo component that combines a stock chart hammer candlestick with a gaming controller.
- * - Left: hammer-style bullish candlestick (small body near the top, long lower wick).
- * - Right: compact controller silhouette with D-pad and AB buttons.
- * - Subtle chart grid ties both concepts together.
- */
-export default function Logo({ size = 40, showText = false, subtitle }: LogoProps) {
   return (
-    <div className="flex items-center gap-3 select-none" aria-label="RuleGuard logo">
-      <div
-        className="rounded-xl shadow-lg border border-blue-500/20 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 flex items-center justify-center"
-        style={{ width: size, height: size }}
-      >
-        <svg
-          width={Math.floor(size * 0.85)}
-          height={Math.floor(size * 0.85)}
-          viewBox="0 0 64 64"
+    <div className={`flex items-center gap-2 ${className}`}>
+      <div className="relative w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
+        <Lock className="h-5 w-5 text-white" />
+        {/* Candlestick accent */}
+        <div className="absolute -top-1 -right-1 w-2 h-3 bg-green-500 rounded-sm opacity-80"></div>
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
         >
