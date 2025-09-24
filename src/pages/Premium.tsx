@@ -92,7 +92,7 @@ export default function Premium() {
 
         {/* Pricing Toggle */}
         <div className="flex justify-center">
-          <div className="bg-white rounded-2xl p-2 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-sm">
             <div className="flex gap-2">
               <button
                 onClick={() => setSelectedPlan('monthly')}
@@ -123,7 +123,7 @@ export default function Premium() {
 
         {/* Pricing Card */}
         <div className="max-w-md mx-auto">
-          <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-purple-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border-2 border-purple-200 dark:border-purple-700">
             <div className="text-center mb-6">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Star className="h-6 w-6 text-purple-600" />
@@ -160,9 +160,9 @@ export default function Premium() {
         </div>
 
         {/* Feature Comparison */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-2xl font-bold text-gray-900 text-center">What's Included</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-600">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white text-center">What's Included</h3>
           </div>
           
           <div className="p-6">
@@ -245,8 +245,8 @@ export default function Premium() {
         </div>
 
         {/* FAQ */}
-        <div className="bg-white rounded-2xl p-8 shadow-sm">
-          <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">Frequently Asked Questions</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-8">Frequently Asked Questions</h3>
           <div className="space-y-6">
             <div>
               <h4 className="font-semibold text-gray-900 mb-2">Can I cancel anytime?</h4>
