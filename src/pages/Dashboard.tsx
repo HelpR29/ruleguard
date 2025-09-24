@@ -9,13 +9,6 @@ import RecentActivity from '../components/RecentActivity';
 export default function Dashboard() {
   const { settings, progress, updateProgress } = useUser();
   const [showAddCompletion, setShowAddCompletion] = useState(false);
-  const [progressMode, setProgressMode] = useState<'percent'|'counts'>('counts');
-  const [premiumStatus] = useState<string>(() => {
-    try { return localStorage.getItem('premium_status') || 'none'; } catch { return 'none'; }
-  });
-  const [achievements] = useState<string[]>(() => {
-    try { const a = JSON.parse(localStorage.getItem('user_achievements') || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
-  });
 
   const targetBalance = settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, settings.targetCompletions);
   const progressPercent = (progress.completions / settings.targetCompletions) * 100;
@@ -90,21 +83,13 @@ export default function Dashboard() {
             <div className="rounded-2xl p-6 shadow-sm card-surface">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">Progress Tracker</h3>
-                <div className="flex items-center gap-2">
-                  <button className="text-xs accent-outline" onClick={()=>setProgressMode(m=>m==='counts'?'percent':'counts')}>Switch View</button>
-                  {(() => {
-                    const allowed = premiumStatus === 'premium' || achievements.includes('champion');
-                    if (allowed) return <a href="/settings" className="text-xs accent-btn">Edit Goal</a>;
-                    return <a href="/premium" title="Editing weekly goal requires Premium or Champion" className="text-[11px] chip rounded-full px-2 py-0.5">Premium to edit</a>;
-                  })()}
-                  <button
-                    onClick={() => setShowAddCompletion(true)}
-                    className="flex items-center gap-2 accent-btn"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Completion
-                  </button>
-                </div>
+                <button
+                  onClick={() => setShowAddCompletion(true)}
+                  className="flex items-center gap-2 accent-btn"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Completion
+                </button>
               </div>
               
               {/* Animated Progress Icon */}
@@ -118,27 +103,18 @@ export default function Dashboard() {
                 {/* Clean Progress Summary */}
                 <div className="text-center space-y-4">
                   <div className="rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-600 card-surface">
-                    {progressMode === 'counts' ? (
-                      <>
-                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                          {progress.completions}/{settings.targetCompletions}
-                        </h3>
-                        <p className="text-gray-600 dark:text-gray-300 mb-3">
-                          {Math.max(0, settings.targetCompletions - progress.completions)} {settings.progressObject}s remaining
-                        </p>
-                        <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                          <div
-                            className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-500"
-                            style={{ width: `${(progress.completions / settings.targetCompletions) * 100}%` }}
-                          ></div>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <h3 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">{progress.disciplineScore}%</h3>
-                        <p className="text-green-600 dark:text-green-400">Discipline</p>
-                      </>
-                    )}
+                    <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                      {progress.completions}/{settings.targetCompletions}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-3">
+                      {Math.max(0, settings.targetCompletions - progress.completions)} {settings.progressObject}s remaining
+                    </p>
+                    <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${(progress.completions / settings.targetCompletions) * 100}%` }}
+                      ></div>
+                    </div>
                   </div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     Click to add completion • Double-click for violation
