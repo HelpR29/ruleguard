@@ -1,35 +1,54 @@
 import React from 'react';
 import { Plus, BookOpen, Share2, Target, TrendingUp, Award } from 'lucide-react';
+import { useUser } from '../context/UserContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function QuickActions() {
+  const { settings, progress, updateProgress } = useUser();
+  const navigate = useNavigate();
+
+  const addCompletion = () => {
+    const rate = settings.growthPerCompletion / 100;
+    const newCompletions = Math.min(progress.completions + 1, settings.targetCompletions);
+    const newBalance = progress.currentBalance * (1 + rate);
+    const newDiscipline = Math.min(100, progress.disciplineScore + 1);
+    const newStreak = progress.streak + 1;
+    updateProgress({
+      completions: newCompletions,
+      currentBalance: Number(newBalance.toFixed(2)),
+      disciplineScore: newDiscipline,
+      streak: newStreak,
+    });
+  };
+
   const actions = [
     {
       icon: Plus,
       label: 'Add Completion',
       description: 'Mark a successful rule follow',
       color: 'bg-green-500 hover:bg-green-600',
-      action: () => {}
+      action: addCompletion
     },
     {
       icon: BookOpen,
       label: 'Journal Entry',
       description: 'Log your trading thoughts',
       color: 'bg-blue-500 hover:bg-blue-600',
-      action: () => {}
+      action: () => navigate('/journal')
     },
     {
       icon: Share2,
       label: 'Share Progress',
       description: 'Create social card',
       color: 'bg-purple-500 hover:bg-purple-600',
-      action: () => {}
+      action: () => navigate('/reports')
     },
     {
       icon: Target,
       label: 'View Rules',
       description: 'Check your discipline rules',
       color: 'bg-orange-500 hover:bg-orange-600',
-      action: () => {}
+      action: () => navigate('/rules')
     }
   ];
 
