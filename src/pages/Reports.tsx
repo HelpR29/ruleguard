@@ -382,7 +382,7 @@ export default function Reports() {
               </div>
             </div>
 
-            {/* Weekday x Hour Heatmap */
+            {/* Weekday x Hour Heatmap */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Weekly Heatmap (Violations)</h3>
               <div className="overflow-x-auto">
@@ -394,15 +394,15 @@ export default function Reports() {
                   ))}
                   {/* Rows */}
                   {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((day, i) => (
-                    <>
-                      <div key={`${day}-label`} className="text-xs text-gray-600 flex items-center">{day}</div>
+                    <React.Fragment key={`row-${day}`}>
+                      <div className="text-xs text-gray-600 flex items-center">{day}</div>
                       {Array.from({ length: 24 }, (_, h) => {
                         const v = heatmap?.[i]?.[h] || 0;
                         const level = Math.min(1, v / 5);
                         const bg = `rgba(239,68,68,${0.1 + level * 0.9})`;
                         return <div key={`${day}-${h}`} className="h-5 border border-gray-100" style={{ backgroundColor: v ? bg : '#f9fafb' }} title={`${day} ${h}:00 — ${v} violations`} />;
                       })}
-                    </>
+                    </React.Fragment>
                   ))}
                 </div>
               </div>
