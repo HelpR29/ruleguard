@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
+import { useUser } from '../context/UserContext';
 
 export default function Journal() {
   const [activeTab, setActiveTab] = useState('trades');
-  
+  const [showNewEntry, setShowNewEntry] = useState(false);
+  const { addToast } = useToast();
+  const { recordCompletion } = useUser();
+
   const mockTrades = [
     {
       id: 1,
@@ -50,6 +55,84 @@ export default function Journal() {
     }
   ];
 
+  const [trades, setTrades] = useState<typeof mockTrades>(() => {
+    try {
+      const raw = localStorage.getItem('journal_trades');
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return mockTrades;
+  });
+  const [journals, setJournals] = useState<typeof mockJournals>(() => {
+    try {
+      const raw = localStorage.getItem('journal_notes');
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return mockJournals;
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem('journal_trades', JSON.stringify(trades)); } catch {}
+  }, [trades]);
+  useEffect(() => {
+    try { localStorage.setItem('journal_notes', JSON.stringify(journals)); } catch {}
+  }, [journals]);
+
+  // New Entry form state
+  const [form, setForm] = useState({
+    date: new Date().toISOString().slice(0,10),
+    symbol: '',
+    type: 'Long',
+    entry: '',
+    exit: '',
+    size: '',
+    emotion: 'Neutral',
+    notes: '',
+    ruleCompliant: true,
+  });
+
+  const resetForm = () => setForm({
+    date: new Date().toISOString().slice(0,10),
+    symbol: '', type: 'Long', entry: '', exit: '', size: '', emotion: 'Neutral', notes: '', ruleCompliant: true,
+  });
+
+  const saveEntry = () => {
+    if (!form.symbol || !form.entry || !form.exit || !form.size) {
+      addToast('warning', 'Please complete symbol, entry, exit, and size.');
+      return;
+    }
+    const entryNum = Number(form.entry);
+    const exitNum = Number(form.exit);
+    const sizeNum = Number(form.size);
+    if (Number.isNaN(entryNum) || Number.isNaN(exitNum) || Number.isNaN(sizeNum)) {
+      addToast('warning', 'Entry, Exit, and Size must be numbers.');
+      return;
+    }
+    const pnl = Number(((exitNum - entryNum) * sizeNum).toFixed(2));
+    const newTrade = {
+      id: Date.now(),
+      date: form.date,
+      symbol: form.symbol.toUpperCase(),
+      type: form.type,
+      entry: entryNum,
+      exit: exitNum,
+      size: sizeNum,
+      pnl,
+      emotion: form.emotion,
+      notes: form.notes,
+      ruleCompliant: form.ruleCompliant,
+    };
+    setTrades(prev => [newTrade, ...prev]);
+    if (form.notes.trim()) {
+      setJournals(prev => [{ id: Date.now(), date: form.date, entry: form.notes.trim(), mood: form.emotion, disciplineScore: form.ruleCompliant ? 90 : 60 }, ...prev]);
+    }
+    if (form.ruleCompliant) {
+      recordCompletion();
+    }
+    addToast('success', 'Journal entry added.');
+    setShowNewEntry(false);
+    resetForm();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
@@ -65,7 +148,7 @@ export default function Journal() {
                 <p className="text-gray-600">Track your trades and thoughts</p>
               </div>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors">
+            <button onClick={() => setShowNewEntry(true)} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors">
               <Plus className="h-4 w-4" />
               New Entry
             </button>
@@ -120,7 +203,7 @@ export default function Journal() {
           {/* Trade Log Tab */}
           {activeTab === 'trades' && (
             <div className="space-y-4">
-              {mockTrades.map((trade) => (
+              {trades.map((trade) => (
                 <div key={trade.id} className="border border-gray-200 rounded-xl p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
@@ -185,7 +268,7 @@ export default function Journal() {
           {/* Daily Journal Tab */}
           {activeTab === 'daily' && (
             <div className="space-y-4">
-              {mockJournals.map((journal) => (
+              {journals.map((journal) => (
                 <div key={journal.id} className="border border-gray-200 rounded-xl p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
@@ -208,6 +291,69 @@ export default function Journal() {
           )}
         </div>
       </div>
+
+      {/* New Entry Modal */}
+      {showNewEntry && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold">New Journal Entry</h3>
+              <button onClick={() => setShowNewEntry(false)} className="text-gray-500 hover:text-gray-700">×</button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                <input type="date" value={form.date} onChange={(e)=>setForm({...form, date: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Symbol</label>
+                <input value={form.symbol} onChange={(e)=>setForm({...form, symbol: e.target.value})} placeholder="AAPL" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                <select value={form.type} onChange={(e)=>setForm({...form, type: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                  <option>Long</option>
+                  <option>Short</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Size</label>
+                <input value={form.size} onChange={(e)=>setForm({...form, size: e.target.value})} placeholder="100" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Entry</label>
+                <input value={form.entry} onChange={(e)=>setForm({...form, entry: e.target.value})} placeholder="150.25" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Exit</label>
+                <input value={form.exit} onChange={(e)=>setForm({...form, exit: e.target.value})} placeholder="152.75" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Emotion</label>
+                <select value={form.emotion} onChange={(e)=>setForm({...form, emotion: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                  <option>Confident</option>
+                  <option>FOMO</option>
+                  <option>Fear</option>
+                  <option>Neutral</option>
+                  <option>Frustrated</option>
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                <textarea rows={4} value={form.notes} onChange={(e)=>setForm({...form, notes: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="What happened? What did you learn?" />
+              </div>
+              <div className="flex items-center gap-2 md:col-span-2">
+                <input id="rc" type="checkbox" checked={form.ruleCompliant} onChange={(e)=>setForm({...form, ruleCompliant: e.target.checked})} />
+                <label htmlFor="rc" className="text-sm text-gray-700">Rule Compliant</label>
+              </div>
+            </div>
+            <div className="mt-6 flex gap-3">
+              <button onClick={()=>setShowNewEntry(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
+              <button onClick={saveEntry} className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Save Entry</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
