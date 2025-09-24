@@ -211,7 +211,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 type="text"
                 placeholder="e.g., Only trade during market hours"
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                onKeyPress={(e) => {
+                onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     const value = (e.target as HTMLInputElement).value.trim();
                     if (value) {
@@ -221,6 +221,22 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   }
                 }}
               />
+              <button
+                type="button"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                onClick={(e) => {
+                  const input = (e.currentTarget.previousElementSibling as HTMLInputElement);
+                  if (input) {
+                    const value = input.value.trim();
+                    if (value) {
+                      setFormData({ ...formData, rules: [...formData.rules, value] });
+                      input.value = '';
+                    }
+                  }
+                }}
+              >
+                Add
+              </button>
             </div>
           </div>
 
