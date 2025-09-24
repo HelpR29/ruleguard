@@ -51,6 +51,7 @@ function App() {
                   <Route path="/rules" element={<Rules />} />
                   <Route path="/journal" element={<Journal />} />
                   <Route path="/reports" element={<Reports />} />
+                  <Route path="/invite/:code" element={<InviteAccept />} />
                   <Route path="/leaderboard" element={<Leaderboard />} />
                   <Route path="/friends" element={<Friends />} />
                   <Route path="/premium" element={<Premium />} />
@@ -64,10 +65,39 @@ function App() {
               <Toasts />
             </div>
           </Router>
-        </UserProvider>
       </ToastProvider>
     </ThemeProvider>
   );
 }
 
 export default App;
+
+// Inline component to handle invite links
+function InviteAccept() {
+  const params = new URLSearchParams(window.location.search);
+  // using window.location because simple handler; alternatively use useParams
+  const codeFromPath = window.location.pathname.split('/').pop() || '';
+  const code = decodeURIComponent(codeFromPath).toUpperCase();
+  try {
+    const raw = localStorage.getItem('friends');
+    const friends = raw ? JSON.parse(raw) : [];
+    const exists = friends.some((f: any) => f.code === code);
+    if (!exists && /^RG-[A-Z0-9]{6}$/.test(code)) {
+      const f = {
+        id: `${Date.now()}`,
+        code,
+        name: `Trader ${code.slice(-3)}`,
+        disciplineScore: Math.floor(60 + Math.random()*35),
+        badges: Math.random() > 0.5 ? ['Streak', 'Mindset'] : ['Risk Aware'],
+        premium: Math.random() > 0.7
+      };
+      friends.unshift(f);
+      localStorage.setItem('friends', JSON.stringify(friends));
+    }
+  } catch {}
+  // redirect to friends page with a small banner
+  window.history.replaceState({}, '', '/friends');
+  // Use a tiny delay so Friends can read state? We'll attach state through sessionStorage
+  try { sessionStorage.setItem('invite_added_code', code); } catch {}
+  return <Navigate to="/friends" replace state={{ addedCode: code }} />;
+}

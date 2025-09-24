@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { UserPlus, Users, Crown, Shield, Trophy, AlertCircle } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
  type Friend = {
   id: string;
@@ -18,6 +19,7 @@ function genCode(): string {
 }
 
 export default function Friends() {
+  const location = useLocation() as any;
   const [friends, setFriends] = useState<Friend[]>([]);
   const [myCode, setMyCode] = useState('');
   const [addCode, setAddCode] = useState('');
@@ -35,6 +37,12 @@ export default function Friends() {
       if (!code) { code = genCode(); localStorage.setItem('invite_code', code); }
       setMyCode(code);
     } catch {}
+    if (location?.state?.addedCode) {
+      // show the code in the input briefly
+      setAddCode(location.state.addedCode);
+      // clear state so it doesn't persist on back/forward
+      history.replaceState({}, '');
+    }
   }, []);
 
   const addFriend = () => {
@@ -81,6 +89,13 @@ export default function Friends() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
+          {location?.state?.addedCode && (
+            <div className="md:col-span-3 mb-2">
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
+                Friend with code <span className="font-mono font-semibold">{location.state.addedCode}</span> added.
+              </div>
+            </div>
+          )}
           <div className="md:col-span-1">
             <div className="p-4 rounded-xl border border-gray-200">
               <label className="block text-sm font-medium text-gray-700 mb-2">Add Friend by Code</label>
