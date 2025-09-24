@@ -329,7 +329,7 @@ export default function Profile() {
               
               <div className="grid grid-cols-2 gap-3">
                 {achievementBadges.map((achievement, index) => {
-                  const categoryColors = {
+                  const categoryColors: Record<string, string> = {
                     progress: 'from-blue-50 to-blue-100 border-blue-200 dark:from-blue-900/20 dark:to-blue-800/20 dark:border-blue-700',
                     goals: 'from-green-50 to-green-100 border-green-200 dark:from-green-900/20 dark:to-green-800/20 dark:border-green-700',
                     streaks: 'from-orange-50 to-red-100 border-orange-200 dark:from-orange-900/20 dark:to-red-800/20 dark:border-orange-700',

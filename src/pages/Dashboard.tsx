@@ -38,9 +38,77 @@ export default function Dashboard() {
       streak: newStreak,
     });
     
+    // Check for other achievements
+    try {
+      const currentAchievements = JSON.parse(localStorage.getItem('user_achievements') || '[]');
+      let newAchievements = false;
+      
+      // Progress milestones
+      if (newCompletions >= 10 && !currentAchievements.includes('first_steps')) {
+        currentAchievements.push('first_steps');
+        addToast('success', '🎯 Achievement Unlocked: First Steps!');
+        newAchievements = true;
+      }
+      if (newCompletions >= 25 && !currentAchievements.includes('quarter_master')) {
+        currentAchievements.push('quarter_master');
+        addToast('success', '🏆 Achievement Unlocked: Quarter Master!');
+        newAchievements = true;
+      }
+      if (newCompletions >= 100 && !currentAchievements.includes('century_club')) {
+        currentAchievements.push('century_club');
+        addToast('success', '💯 Achievement Unlocked: Century Club!');
+        newAchievements = true;
+      }
+      
+      // Streak achievements
+      if (newStreak >= 7 && !currentAchievements.includes('week_warrior')) {
+        currentAchievements.push('week_warrior');
+        addToast('success', '🔥 Achievement Unlocked: Week Warrior!');
+        newAchievements = true;
+      }
+      if (newStreak >= 30 && !currentAchievements.includes('monthly_master')) {
+        currentAchievements.push('monthly_master');
+        addToast('success', '👑 Achievement Unlocked: Monthly Master!');
+        newAchievements = true;
+      }
+      
+      // Discipline achievements
+      if (newDiscipline >= 90 && !currentAchievements.includes('discipline_demon')) {
+        currentAchievements.push('discipline_demon');
+        addToast('success', '😈 Achievement Unlocked: Discipline Demon!');
+        newAchievements = true;
+      }
+      
+      if (newAchievements) {
+        localStorage.setItem('user_achievements', JSON.stringify(currentAchievements));
+      }
+    } catch {}
+    
     // Show celebration if goal is reached
     if (newCompletions === settings.targetCompletions) {
       setShowCelebration(true);
+      
+      // Award achievement for goal completion
+      try {
+        const currentAchievements = JSON.parse(localStorage.getItem('user_achievements') || '[]');
+        const goalsCompleted = Math.floor(newCompletions / settings.targetCompletions);
+        
+        // Add goal completion achievements
+        if (goalsCompleted === 1 && !currentAchievements.includes('goal_getter')) {
+          currentAchievements.push('goal_getter');
+          addToast('success', '🎉 Achievement Unlocked: Goal Getter!');
+        }
+        if (goalsCompleted === 2 && !currentAchievements.includes('double_trouble')) {
+          currentAchievements.push('double_trouble');
+          addToast('success', '🎯 Achievement Unlocked: Double Trouble!');
+        }
+        if (goalsCompleted === 3 && !currentAchievements.includes('triple_threat')) {
+          currentAchievements.push('triple_threat');
+          addToast('success', '⭐ Achievement Unlocked: Triple Threat!');
+        }
+        
+        localStorage.setItem('user_achievements', JSON.stringify(currentAchievements));
+      } catch {}
     }
   };
 
