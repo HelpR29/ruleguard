@@ -362,6 +362,52 @@ export default function Profile() {
               )}
             </div>
 
+            {/* Monthly Badge History */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                <Trophy className="h-5 w-5" />
+                Monthly Badge History
+              </h3>
+              {(() => {
+                let history: Array<{month:string; top3: Array<{id:string;name:string;rank:number}>; yourRank:number}> = [];
+                try { history = JSON.parse(localStorage.getItem('leaderboard_history') || '[]'); } catch {}
+                if (!history || history.length === 0) {
+                  return (
+                    <p className="text-sm text-gray-600 dark:text-gray-300">No monthly history yet. Complete a cycle to see your badges here.</p>
+                  );
+                }
+                const getBadge = (rank:number) => {
+                  if (rank === 1) return { icon:'🥇', label:'Monthly Champion', color:'text-yellow-500' };
+                  if (rank === 2) return { icon:'🥈', label:'Monthly Runner-up', color:'text-gray-400' };
+                  if (rank === 3) return { icon:'🥉', label:'Monthly Third Place', color:'text-amber-600' };
+                  return { icon:'', label:'', color:'' };
+                };
+                return (
+                  <div className="space-y-4">
+                    {history.slice().reverse().map((m, idx) => {
+                      const badge = getBadge(m.yourRank);
+                      return (
+                        <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-gray-700">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-xl">
+                              {badge.icon || '📊'}
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-900 dark:text-white">{m.month}</p>
+                              <p className="text-xs text-gray-600 dark:text-gray-300">Your Rank: {m.yourRank > 0 ? `#${m.yourRank}` : '—'}</p>
+                            </div>
+                          </div>
+                          {badge.icon && (
+                            <div className={`text-sm font-medium ${badge.color}`}>{badge.label}</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+
             {/* Trading Insights */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Trophy, Medal, Award, Crown, TrendingUp, Users, Star, Zap } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 
