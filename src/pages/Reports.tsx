@@ -12,6 +12,12 @@ export default function Reports() {
   const [shareUrl, setShareUrl] = useState<string>('');
   const { progress, rules, settings } = useUser() as any;
   const [progressMode, setProgressMode] = useState<'percent'|'counts'>('percent');
+  const [premiumStatus] = useState<string>(() => {
+    try { return localStorage.getItem('premium_status') || 'none'; } catch { return 'none'; }
+  });
+  const [achievements] = useState<string[]>(() => {
+    try { const a = JSON.parse(localStorage.getItem('user_achievements') || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
+  });
 
   // Load trades from Journal for R:R and tag analytics
   const trades = useMemo(() => {
@@ -88,8 +94,8 @@ export default function Reports() {
 
     const ruleNameById = new Map<string, string>();
     const ruleTagsById = new Map<string, string[]>();
-    rules.forEach(r => ruleNameById.set(r.id, r.text));
-    rules.forEach(r => ruleTagsById.set(r.id, r.tags || []));
+    (rules as any[]).forEach((r: any) => ruleNameById.set(r.id, r.text));
+    (rules as any[]).forEach((r: any) => ruleTagsById.set(r.id, r.tags || []));
 
     const perRuleMap = new Map<string, number>();
     const hourly = Array.from({ length: 24 }, (_, h) => ({ hour: h, violations: 0, completions: 0 }));
@@ -225,7 +231,7 @@ export default function Reports() {
   }, [emotionData, weeklyData, progress.disciplineScore, tagStats]);
 
   const allTags = useMemo(() => {
-    const ruleTags = rules.flatMap(r => (r.tags||[]).map(t=>t.toLowerCase()));
+    const ruleTags = (rules as any[]).flatMap((r: any) => (r.tags||[]).map((t: string)=>t.toLowerCase()));
     let tradeTags: string[] = [];
     try {
       const raw = localStorage.getItem('journal_trades');
@@ -443,7 +449,16 @@ export default function Reports() {
                       <p className="text-xs text-gray-500">This Week</p>
                     </div>
                   </div>
-                  <button className="text-xs accent-outline" onClick={() => setProgressMode(m => m==='percent'?'counts':'percent')}>Switch View</button>
+                  <div className="flex items-center gap-2">
+                    <button className="text-xs accent-outline" onClick={() => setProgressMode(m => m==='percent'?'counts':'percent')}>Switch View</button>
+                    {(() => {
+                      const allowed = premiumStatus === 'premium' || achievements.includes('champion');
+                      if (allowed) {
+                        return <a href="/settings" className="text-xs accent-btn">Edit Goal</a>;
+                      }
+                      return <a href="/premium" title="Editing weekly goal requires Premium or Champion" className="text-[11px] chip rounded-full px-2 py-0.5">Premium to edit</a>;
+                    })()}
+                  </div>
                 </div>
                 {(() => {
                   const weekCompletions = weeklyData.reduce((s,d)=>s+d.completions,0);
