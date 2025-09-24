@@ -7,6 +7,8 @@ export default function Reports() {
   const [activeReport, setActiveReport] = useState('weekly');
   const [showPlan, setShowPlan] = useState(false);
   const [planItems, setPlanItems] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [shareUrl, setShareUrl] = useState<string>('');
   const { progress, rules } = useUser();
 
   const weeklyData = useMemo(() => {
@@ -39,7 +41,7 @@ export default function Reports() {
   ];
 
   // Per-rule, time-of-day, and weekday-hour heatmap from activity_log
-  const { perRuleData, hourlyData, heatmap, tagStats, maxHeat } = useMemo(() => {
+  const { perRuleData, hourlyData, heatmap, tagStats, maxHeat, topTags } = useMemo(() => {
     let log: Array<{ ts: number; type: 'violation' | 'completion'; ruleId?: string }> = [];
     try {
       log = JSON.parse(localStorage.getItem('activity_log') || '[]');
@@ -60,19 +62,37 @@ export default function Reports() {
       const h = d.getHours();
       const w = d.getDay(); // 0..6 (Sun..Sat)
       if (h >= 0 && h < 24) {
-        if (item.type === 'violation') hourly[h].violations += 1;
+        if (item.type === 'violation') {
+          // tag filter
+          if (item.ruleId) {
+            const tags = (ruleTagsById.get(item.ruleId) || []).map(t=>t.toLowerCase());
+            const match = selectedTags.length === 0 || tags.some(t => selectedTags.includes(t));
+            if (match) hourly[h].violations += 1;
+          } else {
+            hourly[h].violations += 1;
+          }
+        }
         if (item.type === 'completion') hourly[h].completions += 1;
       }
       if (w >= 0 && w < 7 && item.type === 'violation') {
-        heat[w][h] += 1;
+        if (item.ruleId) {
+          const tags = (ruleTagsById.get(item.ruleId) || []).map(t=>t.toLowerCase());
+          const match = selectedTags.length === 0 || tags.some(t => selectedTags.includes(t));
+          if (match) heat[w][h] += 1;
+        } else {
+          heat[w][h] += 1;
+        }
       }
       if (item.type === 'violation' && item.ruleId) {
         const name = ruleNameById.get(item.ruleId) || 'Unknown Rule';
-        perRuleMap.set(name, (perRuleMap.get(name) || 0) + 1);
-        const tags = ruleTagsById.get(item.ruleId) || [];
-        for (const t of tags) {
-          const key = t.toLowerCase();
-          tagAgg[key] = (tagAgg[key] || 0) + 1;
+        const tags = (ruleTagsById.get(item.ruleId) || []).map(t=>t.toLowerCase());
+        const match = selectedTags.length === 0 || tags.some(t => selectedTags.includes(t));
+        if (match) {
+          perRuleMap.set(name, (perRuleMap.get(name) || 0) + 1);
+          for (const t of tags) {
+            const key = t.toLowerCase();
+            tagAgg[key] = (tagAgg[key] || 0) + 1;
+          }
         }
       }
     }
@@ -82,8 +102,9 @@ export default function Reports() {
       .slice(0, 7);
 
     const maxHeat = heat.reduce((m,row)=>Math.max(m, ...row), 0);
-    return { perRuleData: perRule, hourlyData: hourly, heatmap: heat, tagStats: tagAgg, maxHeat };
-  }, [rules]);
+    const topTags = Object.entries(tagAgg).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    return { perRuleData: perRule, hourlyData: hourly, heatmap: heat, tagStats: tagAgg, maxHeat, topTags };
+  }, [rules, selectedTags]);
 
   // Top risky hours from heatmap
   const topRiskyHours = useMemo(() => {
@@ -164,6 +185,63 @@ export default function Reports() {
     return { weaknesses: w, recommendations: r };
   }, [emotionData, weeklyData, progress.disciplineScore, tagStats]);
 
+  const allTags = useMemo(() => Array.from(new Set(rules.flatMap(r => (r.tags||[]).map(t=>t.toLowerCase())))), [rules]);
+
+  const toggleTag = (t: string) => {
+    setSelectedTags(prev => prev.includes(t) ? prev.filter(x=>x!==t) : [...prev, t]);
+  };
+
+  const buildShareCard = async () => {
+    const width = 1200, height = 630;
+    const canvas = document.createElement('canvas');
+    canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    // Background
+    const grad = ctx.createLinearGradient(0,0,width,height);
+    grad.addColorStop(0, '#0ea5e9');
+    grad.addColorStop(1, '#8b5cf6');
+    ctx.fillStyle = grad; ctx.fillRect(0,0,width,height);
+    // Card panel
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillRect(40,40,width-80,height-80);
+    ctx.fillStyle = '#111827';
+    ctx.font = 'bold 42px Inter, system-ui, -apple-system, Segoe UI, Roboto';
+    ctx.fillText('RuleGuard Weekly Report', 70, 110);
+    // Discipline
+    ctx.font = '600 28px Inter';
+    ctx.fillText(`Discipline Score: ${progress.disciplineScore}%`, 70, 160);
+    // Top risky hours
+    ctx.font = 'bold 24px Inter'; ctx.fillText('Top Risky Hours', 70, 220);
+    ctx.font = '400 22px Inter';
+    topRiskyHours.slice(0,3).forEach((e, i) => {
+      ctx.fillText(`${i+1}. ${e.day} ${e.hour}:00 (${e.count})`, 70, 255 + i*30);
+    });
+    // Top tags
+    ctx.font = 'bold 24px Inter'; ctx.fillText('Top Tags', 520, 220);
+    ctx.font = '400 22px Inter';
+    topTags.slice(0,3).forEach(([tag, cnt], i) => {
+      ctx.fillText(`${i+1}. ${tag} (${cnt})`, 520, 255 + i*30);
+    });
+    // Footer
+    ctx.font = '400 18px Inter';
+    ctx.fillStyle = '#374151';
+    ctx.fillText('ruleguard.app • Share your discipline progress', 70, height-70);
+    const url = canvas.toDataURL('image/png');
+    setShareUrl(url);
+    try {
+      if (navigator.share && navigator.canShare) {
+        // Attempt Web Share with data URL converted to blob
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const file = new File([blob], 'ruleguard-report.png', { type: 'image/png' });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], text: 'My RuleGuard Weekly Report' });
+        }
+      }
+    } catch {}
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
@@ -206,6 +284,25 @@ export default function Reports() {
         {/* Weekly Report */}
         {activeReport === 'weekly' && (
           <>
+            {/* Tag Filters */}
+            <div className="bg-white rounded-2xl p-4 shadow-sm">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm text-gray-700 font-medium mr-2">Tag Filter:</span>
+                {allTags.length === 0 && <span className="text-xs text-gray-500">No tags yet</span>}
+                {allTags.map(tag => (
+                  <button
+                    key={tag}
+                    onClick={() => toggleTag(tag)}
+                    className={`px-2 py-1 rounded-full text-xs border ${selectedTags.includes(tag) ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'}`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+                {selectedTags.length > 0 && (
+                  <button className="ml-2 text-sm text-gray-600 hover:text-gray-900" onClick={() => setSelectedTags([])}>Clear</button>
+                )}
+              </div>
+            </div>
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="bg-white rounded-2xl p-6 shadow-sm">
@@ -318,6 +415,14 @@ export default function Reports() {
             {/* AI Insights */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h3 className="text-lg font-bold text-gray-900 mb-4">AI Insights</h3>
+              {topTags.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap mb-3">
+                  <span className="text-xs text-gray-600">Top tags:</span>
+                  {topTags.slice(0,5).map(([tag, count]) => (
+                    <span key={tag} className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700 border border-gray-200">{tag} ({count})</span>
+                  ))}
+                </div>
+              )}
               <div className="bg-blue-50 rounded-xl p-4">
                 <h4 className="font-medium text-blue-800 mb-2">Weekly Summary</h4>
                 <p className="text-blue-700 text-sm mb-3">
@@ -447,7 +552,35 @@ export default function Reports() {
                 >
                   Generate 1-Week Plan
                 </button>
+                <button
+                  className="ml-3 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900"
+                  onClick={buildShareCard}
+                >
+                  Create Share Card
+                </button>
               </div>
+              {shareUrl && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-semibold text-gray-800 mb-2">Share Preview</h4>
+                  <img src={shareUrl} alt="Share card" className="w-full max-w-2xl rounded-lg border" />
+                  <div className="mt-2 flex gap-2">
+                    <a href={shareUrl} download="ruleguard-report.png" className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Download PNG</a>
+                    <button
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+                      onClick={async () => {
+                        try {
+                          const res = await fetch(shareUrl);
+                          const blob = await res.blob();
+                          // @ts-ignore
+                          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                        } catch {}
+                      }}
+                    >
+                      Copy Image
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         )}
