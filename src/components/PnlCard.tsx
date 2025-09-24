@@ -13,6 +13,7 @@ type PnlCardProps = {
   timeframe?: string;
   date?: string;
   className?: string;
+  variant?: 'card' | 'tile';
 };
 
 export default function PnlCard({
@@ -27,7 +28,8 @@ export default function PnlCard({
   avatar,
   timeframe,
   date,
-  className = ''
+  className = '',
+  variant = 'card'
 }: PnlCardProps) {
   const isGain = pnl >= 0;
   const bgFrom = isGain ? 'from-emerald-800' : 'from-rose-800';
@@ -36,6 +38,36 @@ export default function PnlCard({
   const pillColor = isGain ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-rose-100 text-rose-800 border-rose-200';
 
   const avatarChar = avatar || (typeof window !== 'undefined' ? (localStorage.getItem('user_avatar') || '👤') : '👤');
+
+  if (variant === 'tile') {
+    // Compact white tile to blend with metric tiles
+    return (
+      <div className={`h-full bg-white rounded-2xl p-6 shadow-sm border border-gray-100 ${className}`}>
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-xs text-gray-500">{timeframe || 'This Week'}</p>
+            <h3 className="text-base font-bold text-gray-900">{title}</h3>
+            {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
+          </div>
+          <div className="relative w-10 h-10">
+            <div className="absolute inset-0 rounded-full" style={{ boxShadow: isGain ? '0 0 14px rgba(16,185,129,0.35)' : '0 0 14px rgba(239,68,68,0.35)' }} />
+            <div className="relative w-10 h-10 rounded-full overflow-hidden border border-white">
+              {avatarChar.startsWith('data:') || avatarChar.startsWith('http') || /\.(png|jpg|jpeg|webp|svg)$/.test(avatarChar) ? (
+                <img src={avatarChar} alt="avatar" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full grid place-items-center text-xl"><span>{avatarChar}</span></div>
+              )}
+              <div className={`absolute inset-0 ${isGain ? 'bg-emerald-400/10' : 'bg-rose-400/10'}`}></div>
+            </div>
+          </div>
+        </div>
+        <div className={`mt-3 text-3xl font-extrabold ${isGain ? 'text-emerald-600' : 'text-rose-600'}`}>{`${isGain ? '+' : '-'}$${Math.abs(pnl).toLocaleString()}`}</div>
+        {typeof rr === 'number' && rr > 0 && (
+          <div className={`inline-flex items-center mt-2 px-2 py-0.5 rounded-full text-[11px] border ${pillColor}`}>Avg R:R 1:{rr.toFixed(2)}</div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={`relative overflow-hidden rounded-2xl shadow-sm bg-gradient-to-br ${bgFrom} ${bgTo} ${className}`}>
