@@ -545,6 +545,29 @@ export default function Journal() {
                       }}
                     />
                   )}
+                  
+                  {/* Chart Analysis for completed trades */}
+                  {trade.symbol && (
+                    <div className="mt-3">
+                      <details className="group">
+                        <summary className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-gray-900">
+                          <BarChart3 className="h-4 w-4" />
+                          <span>View Chart Analysis</span>
+                          <span className="text-xs text-gray-400 group-open:hidden">(Click to expand)</span>
+                        </summary>
+                        <div className="mt-3">
+                          <StockChart 
+                            symbol={trade.symbol}
+                            showLevels={true}
+                            entryPrice={trade.entry || undefined}
+                            exitPrice={trade.exit || undefined}
+                            targetPrice={trade.target || undefined}
+                            stopPrice={trade.stop || undefined}
+                          />
+                        </div>
+                      </details>
+                    </div>
+                  )}
 
                   <div className="mt-3 flex justify-between items-center">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
