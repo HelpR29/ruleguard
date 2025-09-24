@@ -427,13 +427,14 @@ export default function Reports() {
                   <button
                     key={tag}
                     onClick={() => toggleTag(tag)}
+                    type="button"
                     className={`px-2 py-1 rounded-full text-xs ${selectedTags.includes(tag) ? 'accent-chip-selected' : 'chip'}`}
                   >
                     {tag}
                   </button>
                 ))}
                 {selectedTags.length > 0 && (
-                  <button className="ml-2 text-sm text-gray-600 hover:text-gray-900" onClick={() => setSelectedTags([])}>Clear</button>
+                  <button type="button" className="ml-2 text-sm text-gray-600 hover:text-gray-900" onClick={() => setSelectedTags([])}>Clear</button>
                 )}
               </div>
             </div>
