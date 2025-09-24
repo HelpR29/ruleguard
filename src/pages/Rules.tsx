@@ -3,40 +3,12 @@ import { Plus, Edit, Trash2, Shield, CheckCircle, XCircle } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 
 export default function Rules() {
-  const { settings, progress } = useUser();
+  const { progress, rules, addRule, editRule, deleteRule, toggleRuleActive, recordViolation } = useUser();
   const [showAddRule, setShowAddRule] = useState(false);
   const [newRule, setNewRule] = useState('');
 
-  const mockRules = [
-    {
-      id: 1,
-      rule: 'Never risk more than 2% per trade',
-      active: true,
-      violations: 2,
-      lastViolation: '3 days ago'
-    },
-    {
-      id: 2,
-      rule: 'Only trade setups with 2:1 RR or better',
-      active: true,
-      violations: 0,
-      lastViolation: null
-    },
-    {
-      id: 3,
-      rule: 'Maximum 3 trades per day',
-      active: true,
-      violations: 1,
-      lastViolation: '1 week ago'
-    },
-    {
-      id: 4,
-      rule: 'No revenge trading after losses',
-      active: false,
-      violations: 5,
-      lastViolation: '2 days ago'
-    }
-  ];
+  const activeCount = rules.filter(r => r.active).length;
+  const totalViolations = rules.reduce((sum, r) => sum + r.violations, 0);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -70,42 +42,50 @@ export default function Rules() {
             </div>
             <div className="bg-amber-50 rounded-xl p-4">
               <p className="text-amber-600 text-sm mb-1">Active Rules</p>
-              <p className="text-2xl font-bold text-amber-700">
-                {mockRules.filter(r => r.active).length}
-              </p>
+              <p className="text-2xl font-bold text-amber-700">{activeCount}</p>
             </div>
             <div className="bg-red-50 rounded-xl p-4">
               <p className="text-red-600 text-sm mb-1">Total Violations</p>
-              <p className="text-2xl font-bold text-red-700">
-                {mockRules.reduce((sum, r) => sum + r.violations, 0)}
-              </p>
+              <p className="text-2xl font-bold text-red-700">{totalViolations}</p>
             </div>
           </div>
         </div>
 
         {/* Rules List */}
         <div className="space-y-4">
-          {mockRules.map((rule) => (
+          {rules.length === 0 && (
+            <div className="bg-white rounded-2xl p-12 shadow-sm text-center text-gray-600">
+              No rules yet. Click "Add Rule" to create your first trading rule.
+            </div>
+          )}
+          {rules.map((rule) => (
             <div key={rule.id} className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
                     <div className={`w-3 h-3 rounded-full ${rule.active ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                    <h3 className="text-lg font-semibold text-gray-900">{rule.rule}</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      rule.active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
+                    <h3 className="text-lg font-semibold text-gray-900">{rule.text}</h3>
+                    <button
+                      onClick={() => toggleRuleActive(rule.id)}
+                      className={`px-2 py-1 rounded-full text-xs font-medium border transition-colors ${
+                        rule.active
+                          ? 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200'
+                          : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
+                      }`}
+                    >
                       {rule.active ? 'Active' : 'Inactive'}
-                    </span>
+                    </button>
                   </div>
                   
                   <div className="flex items-center gap-6 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
+                    <button
+                      className="flex items-center gap-1 hover:text-red-600"
+                      onClick={() => recordViolation(rule.id)}
+                      title="Record a violation for this rule"
+                    >
                       <XCircle className="h-4 w-4 text-red-500" />
                       <span>{rule.violations} violations</span>
-                    </div>
+                    </button>
                     {rule.lastViolation && (
                       <div>
                         Last violation: {rule.lastViolation}
@@ -115,10 +95,23 @@ export default function Rules() {
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                  <button
+                    className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                    onClick={() => {
+                      const updated = prompt('Edit rule text:', rule.text);
+                      if (updated !== null) editRule(rule.id, updated);
+                    }}
+                    title="Edit rule"
+                  >
                     <Edit className="h-4 w-4" />
                   </button>
-                  <button className="p-2 text-gray-400 hover:text-red-600 transition-colors">
+                  <button
+                    className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                    onClick={() => {
+                      if (confirm('Delete this rule?')) deleteRule(rule.id);
+                    }}
+                    title="Delete rule"
+                  >
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -209,9 +202,11 @@ export default function Rules() {
                 </button>
                 <button
                   onClick={() => {
-                    // Add rule logic here
-                    setNewRule('');
-                    setShowAddRule(false);
+                    if (newRule.trim()) {
+                      addRule(newRule);
+                      setNewRule('');
+                      setShowAddRule(false);
+                    }
                   }}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
                 >
