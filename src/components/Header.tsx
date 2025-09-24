@@ -45,17 +45,29 @@ export default function Header() {
     } catch {}
   }, []);
 
+  const mappedPremiumStatus: 'none' | 'discount_25' | 'discount_50' | 'free_monthly' =
+    premiumStatus === 'premium' ? 'free_monthly' : premiumStatus;
+
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
       <div className="flex items-center justify-between px-4 py-3 lg:px-6">
         {/* Left Section */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity" aria-label="Go to Dashboard">
             <Logo size={40} showText subtitle={pageName} />
           </Link>
           <div className="sm:hidden">
             <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{pageName}</h1>
           </div>
+          {/* Desktop Top Nav */}
+          <nav className="hidden lg:flex items-center gap-4 text-sm ml-2">
+            <Link to="/" className={`px-3 py-1 rounded-lg ${location.pathname==='/'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Home</Link>
+            <Link to="/rules" className={`px-3 py-1 rounded-lg ${location.pathname==='/rules'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Rules</Link>
+            <Link to="/journal" className={`px-3 py-1 rounded-lg ${location.pathname==='/journal'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Journal</Link>
+            <Link to="/reports" className={`px-3 py-1 rounded-lg ${location.pathname==='/reports'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Reports</Link>
+            <Link to="/leaderboard" className={`px-3 py-1 rounded-lg ${location.pathname==='/leaderboard'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Leaderboard</Link>
+            <Link to="/settings" className={`px-3 py-1 rounded-lg ${location.pathname==='/settings'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Settings</Link>
+          </nav>
         </div>
 
         {/* Right Section */}
@@ -111,7 +123,7 @@ export default function Header() {
             <Crown className="h-5 w-5 text-purple-600" />
           </button>
           
-          <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onClick={()=>navigate('/settings')}>
             <Settings className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
           
@@ -162,7 +174,7 @@ export default function Header() {
               selectedAvatar={userAvatar}
               onAvatarChange={setUserAvatar}
               userAchievements={achievements}
-              premiumStatus={premiumStatus}
+              premiumStatus={mappedPremiumStatus}
             />
             <div className="flex gap-3 mt-6">
               <button
