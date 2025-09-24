@@ -307,15 +307,35 @@ export default function Journal() {
                       <p className={`font-bold ${trade.pnl > 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {trade.pnl > 0 ? '+' : ''}${trade.pnl}
                       </p>
-                      <div className="flex items-center gap-1 text-sm">
-                        {trade.pnl > 0 ? (
-                          <TrendingUp className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <TrendingDown className="h-4 w-4 text-red-500" />
+                      <div className="flex items-center gap-2 justify-end">
+                        <div className="flex items-center gap-1 text-sm">
+                          {trade.pnl > 0 ? (
+                            <TrendingUp className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <TrendingDown className="h-4 w-4 text-red-500" />
+                          )}
+                          <span className="text-gray-600">
+                            {((trade.exit - trade.entry) / trade.entry * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        {typeof trade.target === 'number' && typeof trade.stop === 'number' && (
+                          (() => {
+                            const risk = trade.type === 'Long' ? (trade.entry - trade.stop) : (trade.stop - trade.entry);
+                            const reward = trade.type === 'Long' ? (trade.target - trade.entry) : (trade.entry - trade.target);
+                            const valid = risk > 0 && reward > 0;
+                            if (!valid) return null;
+                            const rr = reward / risk;
+                            const color = rr >= 2 ? 'bg-green-100 text-green-800 border-green-200' : rr >= 1 ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-red-100 text-red-800 border-red-200';
+                            return (
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-xs border ${color}`}
+                                title={"R:R = |Target − Entry| ÷ |Entry − Stop| (planned levels)"}
+                              >
+                                R:R 1:{rr.toFixed(2)}
+                              </span>
+                            );
+                          })()
                         )}
-                        <span className="text-gray-600">
-                          {((trade.exit - trade.entry) / trade.entry * 100).toFixed(1)}%
-                        </span>
                       </div>
                     </div>
                   </div>
