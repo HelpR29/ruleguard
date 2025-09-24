@@ -11,6 +11,10 @@ export default function Dashboard() {
   const [showAddCompletion, setShowAddCompletion] = useState(false);
   const [progressView, setProgressView] = useState<'icon'|'grid'>('icon');
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showNextGoal, setShowNextGoal] = useState(false);
+  const [nextGoalType, setNextGoalType] = useState<'same' | 'increase' | 'custom'>('same');
+  const [customTarget, setCustomTarget] = useState(settings.targetCompletions);
+  const [customGrowth, setCustomGrowth] = useState(settings.growthPerCompletion);
 
   const targetBalance = settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, settings.targetCompletions);
   const progressPercent = (progress.completions / settings.targetCompletions) * 100;
@@ -297,18 +301,12 @@ export default function Dashboard() {
             <div className="space-y-3">
               <button 
                 onClick={() => {
-                  // Reset for new goal
-                  updateProgress({
-                    completions: 0,
-                    currentBalance: targetBalance,
-                    disciplineScore: progress.disciplineScore,
-                    streak: progress.streak,
-                  });
                   setShowCelebration(false);
+                  setShowNextGoal(true);
                 }}
                 className="w-full accent-btn"
               >
-                Start New Goal
+                Set Next Goal
               </button>
               <button 
                 onClick={() => setShowCelebration(false)}
