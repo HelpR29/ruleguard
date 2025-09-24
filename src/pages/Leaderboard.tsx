@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Trophy, Medal, Award, Crown, TrendingUp, Users, Star, Zap } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Trophy, Medal, Award, Crown, TrendingUp, Users, Star, Zap, Calendar } from 'lucide-react';
 import { useUser } from '../context/UserContext';
+import { useToast } from '../context/ToastContext';
 
 interface LeaderboardUser {
   id: string;
@@ -13,6 +14,8 @@ interface LeaderboardUser {
   isPremium: boolean;
   rank: number;
   totalGrowth: number;
+  leaderboardBadges?: string[];
+  lastMonthRank?: number;
 }
 
 const mockLeaderboardData: LeaderboardUser[] = [
@@ -26,7 +29,9 @@ const mockLeaderboardData: LeaderboardUser[] = [
     progressObject: 'diamond',
     isPremium: true,
     rank: 1,
-    totalGrowth: 58.2
+    totalGrowth: 58.2,
+    leaderboardBadges: ['🥇'],
+    lastMonthRank: 2
   },
   {
     id: '2',
@@ -70,18 +75,92 @@ const progressObjects = {
   beer: '🍺',
   wine: '🍷',
   donut: '🍩',
-  diamond: '💎',
   trophy: '🏆'
 };
 
 export default function Leaderboard() {
   const { progress } = useUser();
-  const [activeTab, setActiveTab] = useState<'global' | 'friends' | 'objects'>('global');
-  const [timeframe, setTimeframe] = useState<'weekly' | 'monthly' | 'alltime'>('weekly');
-
-  const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="h-6 w-6 text-yellow-500" />;
-    if (rank === 2) return <Medal className="h-6 w-6 text-gray-400" />;
+  const { addToast } = useToast();
+  const [activeTab, setActiveTab] = useState<'monthly' | 'alltime'>('monthly');
+  const [timeUntilReset, setTimeUntilReset] = useState('');
+  
+  // Calculate time until next reset (30 days)
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      
+      // Get the last reset date (stored or calculated)
+      const lastResetKey = 'leaderboard_last_reset';
+      const lastReset = localStorage.getItem(lastResetKey);
+      let resetDate: Date;
+      
+      if (lastReset) {
+        resetDate = new Date(lastReset);
+      } else {
+        // First time - set reset to beginning of current month
+        resetDate = new Date(currentYear, currentMonth, 1);
+        localStorage.setItem(lastResetKey, resetDate.toISOString());
+      }
+      
+      // Calculate next reset (30 days from last reset)
+      const nextReset = new Date(resetDate.getTime() + (30 * 24 * 60 * 60 * 1000));
+      
+      // Check if we need to reset
+      if (now >= nextReset) {
+        handleLeaderboardReset();
+        resetDate = now;
+        localStorage.setItem(lastResetKey, resetDate.toISOString());
+      }
+      
+      // Calculate time remaining
+      const timeLeft = nextReset.getTime() - now.getTime();
+      const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      
+      setTimeUntilReset(`${days}d ${hours}h`);
+    };
+    
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000 * 60 * 60); // Update every hour
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  const handleLeaderboardReset = () => {
+    try {
+      // Award badges to top 3 before reset
+      const currentLeaderboard = [...mockLeaderboardData].sort((a, b) => {
+        if (activeTab === 'monthly') {
+          return b.completions - a.completions;
+        }
+        return b.totalGrowth - a.totalGrowth;
+      });
+      
+      // Award leaderboard badges
+      const userAchievements = JSON.parse(localStorage.getItem('user_achievements') || '[]');
+      const currentUser = localStorage.getItem('display_name') || 'Trading Pro';
+      
+      currentLeaderboard.slice(0, 3).forEach((user, index) => {
+        if (user.name === currentUser) {
+          const badges = ['leaderboard_1st', 'leaderboard_2nd', 'leaderboard_3rd'];
+          const badgeNames = ['🥇 Champion', '🥈 Runner-up', '🥉 Third Place'];
+          
+          if (!userAchievements.includes(badges[index])) {
+            userAchievements.push(badges[index]);
+            addToast('success', `🏆 Leaderboard Badge Earned: ${badgeNames[index]}!`);
+          }
+        }
+      });
+      
+      localStorage.setItem('user_achievements', JSON.stringify(userAchievements));
+      
+      // Reset monthly stats (in a real app, this would be server-side)
+      addToast('info', '📅 Monthly leaderboard has been reset!');
+    } catch (error) {
+      console.error('Error handling leaderboard reset:', error);
+    }
     if (rank === 3) return <Award className="h-6 w-6 text-amber-600" />;
     return <span className="text-lg font-bold text-gray-600">#{rank}</span>;
   };
