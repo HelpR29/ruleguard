@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { BarChart3, Download, Calendar, TrendingUp, TrendingDown, Award } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { BarChart3, Download, Calendar, TrendingUp, TrendingDown, Award, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { useUser } from '../context/UserContext';
 
 export default function Reports() {
   const [activeReport, setActiveReport] = useState('weekly');
+  const { progress } = useUser();
 
   const weeklyData = [
     { day: 'Mon', completions: 2, violations: 0, pnl: 450 },
@@ -19,6 +21,58 @@ export default function Reports() {
     { name: 'Fear', value: 20, color: '#ef4444' },
     { name: 'Neutral', value: 15, color: '#6b7280' },
   ];
+
+  // AI-style analysis to detect weaknesses and propose actions
+  const { weaknesses, recommendations } = useMemo(() => {
+    const w: string[] = [];
+    const r: string[] = [];
+
+    // 1) Emotion signals
+    const fomo = emotionData.find(e => e.name === 'FOMO')?.value ?? 0;
+    const fear = emotionData.find(e => e.name === 'Fear')?.value ?? 0;
+    if (fomo >= 20) {
+      w.push('FOMO-driven decision spikes');
+      r.push('Adopt a 2-minute cooldown before entries when you feel FOMO; only proceed if all checklist items are met.');
+      r.push('Place alerts and use limit orders at plan levels instead of chasing breakouts.');
+    }
+    if (fear >= 20) {
+      w.push('Elevated fear response');
+      r.push('Cut position size by 25–50% after a loss and switch to A+ setups only for the next 3 trades.');
+      r.push('Define a maximum daily loss and stop trading once reached.');
+    }
+
+    // 2) Daily performance & violations
+    const worstDays = weeklyData
+      .filter(d => d.violations > 0)
+      .map(d => d.day);
+    if (worstDays.length) {
+      w.push(`Rule violations on: ${worstDays.join(', ')}`);
+      r.push('Review the trades from those days and tag the exact violated rule. Add a pre-trade checkbox to block that error.');
+      r.push('Avoid first 15 minutes on those days if your logs show early chops; trade the first clean retest instead.');
+    }
+
+    // 3) Discipline score
+    if (progress.disciplineScore < 90) {
+      w.push('Discipline score below 90%');
+      r.push('For the next 5 sessions, require written confluence (2–3 reasons) before every trade.');
+      r.push('Set a daily cap: max 3 trades/day. Journal only after each trade before looking for the next.');
+    }
+
+    // 4) PnL risk skew (simple proxy from weekly pnl)
+    const totalPnl = weeklyData.reduce((s, d) => s + d.pnl, 0);
+    const redDays = weeklyData.filter(d => d.pnl < 0).length;
+    if (totalPnl < 0 || redDays >= 2) {
+      w.push('PnL inconsistency');
+      r.push('Tighten risk-per-trade to a fixed fraction (e.g., 0.5–1.0R) and avoid adding to losers.');
+      r.push('Pre-define take-profit partials; move stop to breakeven at +1R to protect winners.');
+    }
+
+    // Fallback
+    if (!w.length) w.push('No critical weaknesses detected this period');
+    if (!r.length) r.push('Maintain your current routine and keep journaling key lessons after each trade.');
+
+    return { weaknesses: w, recommendations: r };
+  }, [emotionData, weeklyData, progress.disciplineScore]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -180,19 +234,27 @@ export default function Reports() {
                   Strong performance this week with 8 successful rule completions. Your discipline score improved by 12% 
                   compared to last week. However, you experienced FOMO-driven trades on Tuesday and Thursday.
                 </p>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    <span className="text-green-700">Excellent risk management on Wednesday's trades</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
-                    <span className="text-amber-700">Consider reducing position sizes when feeling FOMO</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                    <span className="text-blue-700">Your Friday entries showed improved patience and timing</span>
-                  </div>
+                {/* Weaknesses */}
+                <div className="mt-4">
+                  <h5 className="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-600" /> Weaknesses Detected
+                  </h5>
+                  <ul className="list-disc pl-6 space-y-1 text-sm text-blue-900">
+                    {weaknesses.map((w, i) => (
+                      <li key={i}>{w}</li>
+                    ))}
+                  </ul>
+                </div>
+                {/* Action Plan */}
+                <div className="mt-4">
+                  <h5 className="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" /> Action Plan (Next 5 Sessions)
+                  </h5>
+                  <ol className="list-decimal pl-6 space-y-1 text-sm text-blue-900">
+                    {recommendations.map((rec, i) => (
+                      <li key={i}>{rec}</li>
+                    ))}
+                  </ol>
                 </div>
               </div>
             </div>

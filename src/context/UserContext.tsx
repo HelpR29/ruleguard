@@ -104,6 +104,54 @@ export function UserProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  // Rules CRUD + persistence
+  const persistRules = (next: UserRule[]) => {
+    try { localStorage.setItem('user_rules', JSON.stringify(next)); } catch {}
+  };
+
+  const addRule = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    setRules(prev => {
+      const next = [...prev, { id: `${Date.now()}`, text: trimmed, active: true, violations: 0, lastViolation: null }];
+      persistRules(next);
+      return next;
+    });
+  };
+
+  const editRule = (id: string, text: string) => {
+    setRules(prev => {
+      const next = prev.map(r => (r.id === id ? { ...r, text: text.trim() } : r));
+      persistRules(next);
+      return next;
+    });
+  };
+
+  const deleteRule = (id: string) => {
+    setRules(prev => {
+      const next = prev.filter(r => r.id !== id);
+      persistRules(next);
+      return next;
+    });
+  };
+
+  const toggleRuleActive = (id: string) => {
+    setRules(prev => {
+      const next = prev.map(r => (r.id === id ? { ...r, active: !r.active } : r));
+      persistRules(next);
+      return next;
+    });
+  };
+
+  const recordViolation = (id: string) => {
+    setRules(prev => {
+      const next = prev.map(r => (r.id === id ? { ...r, violations: r.violations + 1, lastViolation: 'just now' } : r));
+      persistRules(next);
+      return next;
+    });
+    updateProgress({ disciplineScore: Math.max(0, progress.disciplineScore - 1) });
+  };
+
   return (
     <UserContext.Provider value={{ settings, progress, rules, updateSettings, updateProgress, addRule, editRule, deleteRule, toggleRuleActive, recordViolation }}>
       {children}
