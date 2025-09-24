@@ -8,7 +8,7 @@ import Journal from './pages/Journal';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
-import Leaderboard from './pages/LeaderboardFixed';
+import Leaderboard from './pages/Leaderboard';
 import Premium from './pages/Premium';
 import Achievements from './pages/Achievements';
 import Onboarding from './pages/Onboarding';

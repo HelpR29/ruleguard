@@ -128,11 +128,11 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-orange-600 to-green-600 rounded-2xl p-6 text-white">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-2xl font-bold mb-2">Welcome back, Trader!</h2>
-              <p className="text-orange-100">Lock in your trading discipline</p>
+              <p className="text-blue-100">Keep building your discipline streak</p>
             </div>
             <button className="bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-xl flex items-center gap-2">
               <Crown className="h-4 w-4" />
@@ -140,20 +140,20 @@ export default function Dashboard() {
             </button>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white/20 rounded-xl p-4">
-              <p className="text-white/80 text-sm">Current Streak</p>
+            <div className="bg-blue-500/30 rounded-xl p-4">
+              <p className="text-blue-100 text-sm">Current Streak</p>
               <p className="text-2xl font-bold">{progress.streak} days</p>
             </div>
-            <div className="bg-white/20 rounded-xl p-4">
-              <p className="text-white/80 text-sm">Completions</p>
+            <div className="bg-blue-500/30 rounded-xl p-4">
+              <p className="text-blue-100 text-sm">Completions</p>
               <p className="text-2xl font-bold">{progress.completions}/{settings.targetCompletions}</p>
             </div>
-            <div className="bg-white/20 rounded-xl p-4">
-              <p className="text-white/80 text-sm">Portfolio</p>
+            <div className="bg-blue-500/30 rounded-xl p-4">
+              <p className="text-blue-100 text-sm">Portfolio</p>
               <p className="text-2xl font-bold">${(settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, progress.completions)).toFixed(2)}</p>
             </div>
-            <div className="bg-white/20 rounded-xl p-4">
-              <p className="text-white/80 text-sm">Discipline</p>
+            <div className="bg-blue-500/30 rounded-xl p-4">
+              <p className="text-blue-100 text-sm">Discipline</p>
               <p className="text-2xl font-bold">{progress.disciplineScore}%</p>
             </div>
           </div>

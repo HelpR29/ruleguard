@@ -90,11 +90,6 @@ export default function Profile() {
     if (stats.daysActive >= 30) badges.push({ name: 'Veteran', icon: '🎖️', description: '30+ days active', category: 'special' });
     if (stats.daysActive >= 100) badges.push({ name: 'Master Trader', icon: '🥇', description: '100+ days active', category: 'special' });
     
-    // Leaderboard Achievements
-    if (achievements.includes('leaderboard_1st')) badges.push({ name: 'Champion', icon: '🥇', description: '1st place on leaderboard', category: 'special' });
-    if (achievements.includes('leaderboard_2nd')) badges.push({ name: 'Runner-up', icon: '🥈', description: '2nd place on leaderboard', category: 'special' });
-    if (achievements.includes('leaderboard_3rd')) badges.push({ name: 'Third Place', icon: '🥉', description: '3rd place on leaderboard', category: 'special' });
-    
     return badges;
   }, [progress, stats, premiumStatus, achievements]);
 
@@ -154,7 +149,7 @@ export default function Profile() {
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         
         {/* Profile Header */}
-        <div className="bg-gradient-to-r from-orange-600 to-green-600 rounded-2xl p-8 text-white">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
@@ -196,11 +191,11 @@ export default function Profile() {
                     </button>
                   </div>
                 )}
-                <p className="text-orange-100">LockIn Trading Champion</p>
+                <p className="text-blue-100">Trading Discipline Champion</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-orange-100 text-sm">Member since</p>
+              <p className="text-blue-100 text-sm">Member since</p>
               <p className="text-xl font-semibold">Jan 2024</p>
             </div>
           </div>
