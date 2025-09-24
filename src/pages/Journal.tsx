@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
+import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown, BarChart3, Brain } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useUser } from '../context/UserContext';
 import { saveAttachment, getAttachment, deleteAttachment } from '../utils/db';
 import StockChart from '../components/StockChart';
+import AIInsights from '../components/AIInsights';
 
 type Trade = {
   id: number;
@@ -453,6 +454,17 @@ export default function Journal() {
               }`}
             >
               Daily Journal
+            </button>
+            <button
+              onClick={() => setActiveTab('insights')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeTab === 'insights'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'text-gray-600 hover:text-blue-600'
+              }`}
+            >
+              <Brain className="h-4 w-4" />
+              AI Insights
             </button>
           </div>
 
