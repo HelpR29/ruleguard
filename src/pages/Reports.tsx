@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { BarChart3, Download, Calendar, TrendingUp, TrendingDown, Award, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { BarChart3, Download, TrendingUp, TrendingDown, Award, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useUser } from '../context/UserContext';
+import PnlCard from '../components/PnlCard';
 
 export default function Reports() {
   const [activeReport, setActiveReport] = useState('weekly');
@@ -427,15 +428,15 @@ export default function Reports() {
                 <p className="text-red-600 text-sm">↓ 1 from last week</p>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center gap-3 mb-2">
-                  <Calendar className="h-8 w-8 text-purple-500" />
-                  <div>
-                    <p className="text-gray-600 text-sm">P&L</p>
-                    <p className="text-2xl font-bold text-gray-900">$1,080</p>
-                  </div>
-                </div>
-                <p className="text-green-600 text-sm">↑ $340 from last week</p>
+              <div className="col-span-1">
+                <PnlCard
+                  title="Weekly Performance"
+                  subtitle="Auto-themed"
+                  pnl={totalPnl}
+                  rr={averageRR || undefined}
+                  avatar={avatar || undefined}
+                  timeframe="This Week"
+                />
               </div>
 
               {/* Avg R:R */}
