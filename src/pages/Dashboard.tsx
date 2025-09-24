@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, TrendingUp, Target, Calendar, Share2, Crown, Star, CheckCircle } from 'lucide-react';
+import { useState } from 'react';
+import { TrendingUp, Plus, Crown, Share2, CheckCircle, Star } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useToast } from '../context/ToastContext';
 import AnimatedProgressIcon, { ProgressGrid } from '../components/AnimatedProgressIcon';

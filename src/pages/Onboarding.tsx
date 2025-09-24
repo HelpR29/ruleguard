@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import Logo from '../components/Logo';
 
@@ -34,7 +34,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             <Logo size={96} showText subtitle="Your trading discipline companion" />
           </div>
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to LockIn</h2>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Welcome to LockIn</h2>
             <p className="text-gray-600 text-lg max-w-md mx-auto">
               Build unbreakable trading discipline with AI-powered rule tracking, gamified progress, 
               and compounding growth visualization.
@@ -129,7 +129,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       content: (
         <div className="max-w-lg mx-auto space-y-6">
           <div className="text-center">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">What keeps you motivated?</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">What keeps you motivated?</h3>
             <p className="text-gray-600">
               Choose an object that represents your progress. Each successful rule completion removes one from your wall!
             </p>
@@ -172,7 +172,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       content: (
         <div className="max-w-md mx-auto space-y-6">
           <div className="text-center">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Your Trading Rules</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Your Trading Rules</h3>
             <p className="text-gray-600">
               Set the rules that will keep you disciplined. Our AI will check every trade against these.
             </p>
@@ -266,14 +266,14 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           </div>
           
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">You're Ready to Start!</h2>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">You're Ready to Start!</h2>
             <p className="text-gray-600 text-lg max-w-md mx-auto">
               Your LockIn is configured and ready to help you build unbreakable trading discipline.
             </p>
           </div>
 
           <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl p-6 max-w-lg mx-auto">
-            <h3 className="font-bold text-gray-900 mb-4">Your Setup Summary</h3>
+            <h3 className="font-bold text-gray-900 dark:text-white mb-4">Your Setup Summary</h3>
             <div className="space-y-3 text-left">
               <div className="flex justify-between">
                 <span className="text-gray-600">Starting Portfolio:</span>

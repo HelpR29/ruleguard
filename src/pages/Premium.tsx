@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Star, Check, Zap, Crown, TrendingUp, Shield, Users, BarChart3, Calendar, Download } from 'lucide-react';
 
 export default function Premium() {
@@ -84,7 +84,7 @@ export default function Premium() {
           <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
             <Crown className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Upgrade to LockIn Pro</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Upgrade to LockIn Pro</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Unlock advanced features, detailed analytics, and exclusive tools to master your trading discipline
           </p>
@@ -173,7 +173,7 @@ export default function Premium() {
                     <feature.icon className="h-6 w-6 text-purple-600" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900 mb-1">{feature.title}</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{feature.title}</h4>
                     <p className="text-gray-600 text-sm mb-2">{feature.description}</p>
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
@@ -210,7 +210,7 @@ export default function Premium() {
 
         {/* Testimonials */}
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8">
-          <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">What Pro Users Say</h3>
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-8">What Pro Users Say</h3>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-white rounded-xl p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -249,15 +249,15 @@ export default function Premium() {
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-8">Frequently Asked Questions</h3>
           <div className="space-y-6">
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Can I cancel anytime?</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Can I cancel anytime?</h4>
               <p className="text-gray-600">Yes, you can cancel your subscription at any time. You'll continue to have access to Pro features until the end of your billing period.</p>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">What happens to my data if I cancel?</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">What happens to my data if I cancel?</h4>
               <p className="text-gray-600">Your data remains safe and accessible. You'll revert to the free plan with basic features, but all your historical data is preserved.</p>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Is there a free trial?</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Is there a free trial?</h4>
               <p className="text-gray-600">Yes! We offer a 7-day free trial with full access to all Pro features. No credit card required to start.</p>
             </div>
           </div>

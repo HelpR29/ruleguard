@@ -28,7 +28,8 @@ const mockLeaderboardData: LeaderboardUser[] = [
     progressObject: 'diamond',
     isPremium: true,
     rank: 1,
-    totalGrowth: 58.2
+    totalGrowth: 58.2,
+    leaderboardBadges: ['gold_champion']
   },
   {
     id: '2',
@@ -172,13 +173,19 @@ export default function Leaderboard() {
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Header */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
-              <Trophy className="h-6 w-6 text-yellow-600" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+                <Trophy className="h-6 w-6 text-yellow-600" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Leaderboard</h1>
+                <p className="text-gray-600">Compete with traders worldwide</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Leaderboard</h1>
-              <p className="text-gray-600">Compete with traders worldwide</p>
+            <div className="text-right">
+              <p className="text-sm text-gray-500">Resets in</p>
+              <p className="text-lg font-bold text-orange-600">{getDaysUntilReset()} days</p>
             </div>
           </div>
 
@@ -317,6 +324,12 @@ export default function Leaderboard() {
                         Pro
                       </div>
                     )}
+                    {/* Leaderboard Badges */}
+                    {getLeaderboardBadges(user).map((badge, idx) => (
+                      <div key={idx} className="inline-flex items-center gap-1 px-2 py-1 bg-rose-100 text-rose-700 rounded-full text-xs" title={badge.title}>
+                        <span>{badge.icon}</span>
+                      </div>
+                    ))}
                   </div>
                   <div className="flex items-center gap-4 text-sm text-gray-600">
                     <span>{progressObjects[user.progressObject]} {user.completions} completions</span>
