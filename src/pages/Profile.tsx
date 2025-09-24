@@ -90,6 +90,11 @@ export default function Profile() {
     if (stats.daysActive >= 30) badges.push({ name: 'Veteran', icon: '🎖️', description: '30+ days active', category: 'special' });
     if (stats.daysActive >= 100) badges.push({ name: 'Master Trader', icon: '🥇', description: '100+ days active', category: 'special' });
     
+    // Leaderboard Achievements
+    if (achievements.includes('leaderboard_1st')) badges.push({ name: 'Champion', icon: '🥇', description: '1st place on leaderboard', category: 'special' });
+    if (achievements.includes('leaderboard_2nd')) badges.push({ name: 'Runner-up', icon: '🥈', description: '2nd place on leaderboard', category: 'special' });
+    if (achievements.includes('leaderboard_3rd')) badges.push({ name: 'Third Place', icon: '🥉', description: '3rd place on leaderboard', category: 'special' });
+    
     return badges;
   }, [progress, stats, premiumStatus, achievements]);
 

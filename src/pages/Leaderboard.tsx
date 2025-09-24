@@ -75,6 +75,7 @@ const progressObjects = {
   beer: '🍺',
   wine: '🍷',
   donut: '🍩',
+  diamond: '💎',
   trophy: '🏆'
 };
 
@@ -161,6 +162,11 @@ export default function Leaderboard() {
     } catch (error) {
       console.error('Error handling leaderboard reset:', error);
     }
+  };
+
+  const getRankIcon = (rank: number) => {
+    if (rank === 1) return <Trophy className="h-6 w-6 text-yellow-600" />;
+    if (rank === 2) return <Medal className="h-6 w-6 text-gray-500" />;
     if (rank === 3) return <Award className="h-6 w-6 text-amber-600" />;
     return <span className="text-lg font-bold text-gray-600">#{rank}</span>;
   };
@@ -187,26 +193,33 @@ export default function Leaderboard() {
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-2 mb-4">
-            {[
-              { id: 'global', label: 'Global', icon: Users },
-              { id: 'friends', label: 'Friends', icon: Star },
-              { id: 'objects', label: 'By Object', icon: Zap }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeTab === tab.id
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:text-blue-600'
-                }`}
-              >
-                <tab.icon className="h-4 w-4" />
-                {tab.label}
-              </button>
-            ))}
+          {/* Reset Timer */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex gap-2">
+              {[
+                { id: 'monthly', label: 'Monthly', icon: Calendar },
+                { id: 'alltime', label: 'All Time', icon: Trophy }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                    activeTab === tab.id
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'text-gray-600 hover:text-blue-600'
+                  }`}
+                >
+                  <tab.icon className="h-4 w-4" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            {activeTab === 'monthly' && (
+              <div className="text-sm text-gray-600">
+                <span className="font-medium">Resets in: {timeUntilReset}</span>
+              </div>
+            )}
+          </div>
           </div>
 
           {/* Timeframe */}
