@@ -229,10 +229,15 @@ export default function Reports() {
     canvas.width = width; canvas.height = height;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    // Background
+    // Determine theme by PnL
+    const totalPnl = weeklyData.reduce((s, d) => s + d.pnl, 0);
+    const isGain = totalPnl >= 0;
+    const bg1 = isGain ? '#064e3b' : '#7f1d1d';
+    const bg2 = isGain ? '#10b981' : '#ef4444';
+    // Background gradient
     const grad = ctx.createLinearGradient(0,0,width,height);
-    grad.addColorStop(0, '#0ea5e9');
-    grad.addColorStop(1, '#8b5cf6');
+    grad.addColorStop(0, bg1);
+    grad.addColorStop(1, bg2);
     ctx.fillStyle = grad; ctx.fillRect(0,0,width,height);
     // Card panel
     ctx.fillStyle = 'rgba(255,255,255,0.9)';
@@ -245,7 +250,7 @@ export default function Reports() {
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.src = '/logo-trade-game.svg';
-      await new Promise<void>((resolve, reject) => {
+      await new Promise<void>((resolve) => {
         img.onload = () => resolve();
         img.onerror = () => resolve();
       });
@@ -264,6 +269,37 @@ export default function Reports() {
     if (averageRR > 0) {
       ctx.fillText(`Avg R:R: 1:${averageRR.toFixed(2)}`, 520, 190);
     }
+
+    // Big PnL figure
+    const pnlText = `${isGain ? '+' : '−'}$${Math.abs(totalPnl).toLocaleString()}`;
+    ctx.font = 'bold 86px Inter, system-ui';
+    ctx.fillStyle = isGain ? '#10b981' : '#ef4444';
+    ctx.fillText(pnlText, 70, 260);
+
+    // Character avatar on right with glow (for free users use avatar)
+    try {
+      const savedAvatar = localStorage.getItem('user_avatar');
+      if (savedAvatar) {
+        // glow circle
+        const cx = width - 280, cy = 290, r = 140;
+        const glow = ctx.createRadialGradient(cx, cy, 20, cx, cy, r);
+        glow.addColorStop(0, (isGain ? 'rgba(16,185,129,0.35)' : 'rgba(239,68,68,0.35)'));
+        glow.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+        if (savedAvatar.startsWith('data:') || savedAvatar.startsWith('http') || savedAvatar.endsWith('.png') || savedAvatar.endsWith('.jpg') || savedAvatar.endsWith('.jpeg') || savedAvatar.endsWith('.webp') || savedAvatar.endsWith('.svg')) {
+          const aimg = new Image(); aimg.crossOrigin = 'anonymous'; aimg.src = savedAvatar;
+          await new Promise<void>((resolve)=>{aimg.onload=()=>resolve(); aimg.onerror=()=>resolve();});
+          ctx.save();
+          ctx.beginPath(); ctx.arc(cx, cy, 120, 0, Math.PI*2); ctx.clip();
+          ctx.drawImage(aimg, cx-120, cy-120, 240, 240);
+          ctx.restore();
+        } else {
+          // emoji avatar render
+          ctx.font = '140px Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji';
+          ctx.fillText(savedAvatar, width - 340, 340);
+        }
+      }
+    } catch {}
     // Top risky hours
     ctx.font = 'bold 24px Inter'; ctx.fillText('Top Risky Hours', 70, 250);
     ctx.font = '400 22px Inter';
