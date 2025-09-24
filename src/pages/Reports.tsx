@@ -10,7 +10,8 @@ export default function Reports() {
   const [planItems, setPlanItems] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [shareUrl, setShareUrl] = useState<string>('');
-  const { progress, rules } = useUser();
+  const { progress, rules, settings } = useUser() as any;
+  const [progressMode, setProgressMode] = useState<'percent'|'counts'>('percent');
 
   // Load trades from Journal for R:R and tag analytics
   const trades = useMemo(() => {
@@ -367,7 +368,7 @@ export default function Reports() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
+        <div className="rounded-2xl p-6 card-surface">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
@@ -379,11 +380,11 @@ export default function Reports() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={() => buildShareCard()} className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-xl hover:bg-gray-900 transition-colors">
+              <button onClick={() => buildShareCard()} className="flex items-center gap-2 accent-btn">
                 <Download className="h-4 w-4" />
                 Share
               </button>
-              <button onClick={() => buildShareCard(true)} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors">
+              <button onClick={() => buildShareCard(true)} className="flex items-center gap-2 accent-outline">
                 <Download className="h-4 w-4" />
                 Export PDF
               </button>
@@ -412,7 +413,7 @@ export default function Reports() {
         {activeReport === 'weekly' && (
           <>
             {/* Tag Filters */}
-            <div className="bg-white rounded-2xl p-4 shadow-sm">
+            <div className="rounded-2xl p-4 card-surface">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-sm text-gray-700 font-medium mr-2">Tag Filter:</span>
                 {allTags.length === 0 && <span className="text-xs text-gray-500">No tags yet</span>}
@@ -420,7 +421,7 @@ export default function Reports() {
                   <button
                     key={tag}
                     onClick={() => toggleTag(tag)}
-                    className={`px-2 py-1 rounded-full text-xs border ${selectedTags.includes(tag) ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'}`}
+                    className={`px-2 py-1 rounded-full text-xs ${selectedTags.includes(tag) ? 'accent-chip-selected' : 'chip'}`}
                   >
                     {tag}
                   </button>
@@ -432,18 +433,40 @@ export default function Reports() {
             </div>
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center gap-3 mb-2">
-                  <Award className="h-8 w-8 text-green-500" />
-                  <div>
-                    <p className="text-gray-600 text-sm">Completions</p>
-                    <p className="text-2xl font-bold text-gray-900">8</p>
+              {/* Progress Tracker */}
+              <div className="rounded-2xl p-6 card-surface">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <Award className="h-8 w-8 text-green-500" />
+                    <div>
+                      <p className="text-gray-600 text-sm">Progress</p>
+                      <p className="text-xs text-gray-500">This Week</p>
+                    </div>
                   </div>
+                  <button className="text-xs accent-outline" onClick={() => setProgressMode(m => m==='percent'?'counts':'percent')}>Switch View</button>
                 </div>
-                <p className="text-green-600 text-sm">↑ 2 from last week</p>
+                {(() => {
+                  const weekCompletions = weeklyData.reduce((s,d)=>s+d.completions,0);
+                  const goal = (settings && settings.targetCompletions) ? Number(settings.targetCompletions) : 10;
+                  const remaining = Math.max(0, goal - weekCompletions);
+                  if (progressMode === 'percent') {
+                    return (
+                      <div>
+                        <p className="text-2xl font-bold text-gray-900">{progress.disciplineScore}%</p>
+                        <p className="text-green-600 text-sm mt-1">Discipline</p>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div>
+                      <p className="text-2xl font-bold text-gray-900">{weekCompletions} / {goal}</p>
+                      <p className="text-sm text-gray-600 mt-1">{remaining} more to reach weekly goal</p>
+                    </div>
+                  );
+                })()}
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="rounded-2xl p-6 card-surface">
                 <div className="flex items-center gap-3 mb-2">
                   <TrendingUp className="h-8 w-8 text-blue-500" />
                   <div>
@@ -454,7 +477,7 @@ export default function Reports() {
                 <p className="text-blue-600 text-sm">↑ 5% from last week</p>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="rounded-2xl p-6 card-surface">
                 <div className="flex items-center gap-3 mb-2">
                   <TrendingDown className="h-8 w-8 text-red-500" />
                   <div>
@@ -479,7 +502,7 @@ export default function Reports() {
               </div>
 
               {/* Avg R:R */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="rounded-2xl p-6 card-surface">
                 <div className="flex items-center gap-3 mb-2">
                   <TrendingUp className="h-8 w-8 text-emerald-500" />
                   <div>
@@ -494,7 +517,7 @@ export default function Reports() {
             {/* Charts */}
             <div className="grid lg:grid-cols-2 gap-6">
               {/* Daily Performance */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="rounded-2xl p-6 card-surface">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Daily Performance</h3>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
@@ -517,7 +540,7 @@ export default function Reports() {
               </div>
 
               {/* Emotion Analysis */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="rounded-2xl p-6 card-surface">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Emotional State Analysis</h3>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
@@ -554,7 +577,7 @@ export default function Reports() {
             </div>
 
             {/* AI Insights */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div className="rounded-2xl p-6 card-surface">
               <h3 className="text-lg font-bold text-gray-900 mb-4">AI Insights</h3>
               {topTags.length > 0 && (
                 <div className="flex items-center gap-2 flex-wrap mb-3">
@@ -596,7 +619,7 @@ export default function Reports() {
             </div>
 
             {/* Per-Rule Violations */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div className="rounded-2xl p-6 card-surface">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Most Violated Rules</h3>
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
@@ -612,7 +635,7 @@ export default function Reports() {
             </div>
 
             {/* Time-of-Day Patterns */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div className="rounded-2xl p-6 card-surface">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Time-of-Day Patterns</h3>
               <p className="text-sm text-gray-600 mb-3">Distribution of completions and violations by hour (0–23)</p>
               <div className="h-72">
@@ -630,7 +653,7 @@ export default function Reports() {
             </div>
 
             {/* Weekday x Hour Heatmap */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div className="rounded-2xl p-6 card-surface">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Weekly Heatmap (Violations)</h3>
               <div className="overflow-x-auto">
                 <div className="grid" style={{ gridTemplateColumns: `80px repeat(24, minmax(14px, 1fr))` }}>
@@ -668,7 +691,7 @@ export default function Reports() {
               </div>
               <div className="mt-4 flex justify-end">
                 <button
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  className="accent-outline"
                   onClick={() => {
                     // Build a short, actionable weekly plan based on tags and risky hours
                     const items: string[] = [];
@@ -694,7 +717,7 @@ export default function Reports() {
                   Generate 1-Week Plan
                 </button>
                 <button
-                  className="ml-3 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900"
+                  className="ml-3 accent-btn"
                   onClick={() => buildShareCard()}
                 >
                   Create Share Card
