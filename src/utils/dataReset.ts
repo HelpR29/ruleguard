@@ -149,7 +149,25 @@ export const quickReset = () => {
   return success;
 };
 
+// Nuclear option - clear ALL localStorage
+export const nuclearReset = () => {
+  console.log('💥 NUCLEAR RESET - Clearing ALL localStorage...');
+  try {
+    const keyCount = localStorage.length;
+    localStorage.clear();
+    console.log(`✅ Cleared ${keyCount} localStorage keys`);
+    initializeFreshUser();
+    console.log('✅ Fresh user initialized. Refreshing page...');
+    setTimeout(() => window.location.reload(), 1000);
+    return true;
+  } catch (error) {
+    console.error('❌ Nuclear reset failed:', error);
+    return false;
+  }
+};
+
 // Make it available globally for console access
 if (typeof window !== 'undefined') {
   (window as any).quickReset = quickReset;
+  (window as any).nuclearReset = nuclearReset;
 }
