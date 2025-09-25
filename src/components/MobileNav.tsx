@@ -50,7 +50,7 @@ export default function MobileNav() {
               className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors min-w-0 ${
                 isActive
                   ? 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/20'
-                  : 'text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400'
+                  : 'text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400'
               }`}
               title={item.label}
             >

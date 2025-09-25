@@ -851,7 +851,7 @@ function Journal() {
                       return <p>Planned R:R = <span className="font-semibold">1:{rr}</span> • Risk ${risk.toFixed(2)} • Reward ${reward.toFixed(2)} per share</p>;
                     }
                   }
-                  return <p className="text-gray-600 dark:text-gray-400">Provide Entry, Target, and Stop to preview R:R.</p>;
+                  return <p className="text-gray-700 dark:text-gray-300">Provide Entry, Target, and Stop to preview R:R.</p>;
                 })()}
               </div>
               {/* Chart Toggle */}

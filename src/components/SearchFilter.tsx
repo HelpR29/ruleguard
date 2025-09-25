@@ -47,7 +47,7 @@ export function SearchInput({
   return (
     <div className={`relative ${className}`}>
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <Search className="h-4 w-4 text-gray-400" />
+        <Search className="h-4 w-4 text-gray-500 dark:text-gray-300" />
       </div>
       <input
         type="text"
@@ -56,13 +56,13 @@ export function SearchInput({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}
-        className="block w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+        className="block w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
       />
       {showClearButton && localValue && (
         <button
           type="button"
           onClick={handleClear}
-          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-200"
         >
           <X className="h-4 w-4" />
         </button>
@@ -128,7 +128,7 @@ export function SearchFilter({
 
       {/* Results Count */}
       {resultsCount !== undefined && (
-        <div className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="text-sm text-gray-600 dark:text-gray-300">
           {resultsCount} result{resultsCount !== 1 ? 's' : ''} found
         </div>
       )}
@@ -167,7 +167,7 @@ export function SearchFilter({
                       <span className="text-gray-700 dark:text-gray-300">
                         {option.label}
                         {option.count !== undefined && (
-                          <span className="ml-1 text-gray-500 dark:text-gray-400">
+                          <span className="ml-1 text-gray-500 dark:text-gray-300">
                             ({option.count})
                           </span>
                         )}

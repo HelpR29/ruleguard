@@ -95,7 +95,7 @@ export default function Header() {
           {/* Discipline Score */}
           <div className="hidden sm:flex items-center gap-2">
             <div className="text-right">
-              <p className="text-xs text-gray-500 dark:text-gray-400">Discipline Score</p>
+              <p className="text-xs text-gray-500 dark:text-gray-300">Discipline Score</p>
               <p className="text-sm font-bold text-green-600">{progress.disciplineScore}%</p>
             </div>
             <div className="w-12 h-12 relative">
@@ -228,7 +228,7 @@ export default function Header() {
                 onClick={() => setShowAvatarModal(false)}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
-                <span className="text-gray-500 dark:text-gray-400">✕</span>
+                <span className="text-gray-500 dark:text-gray-300">✕</span>
               </button>
             </div>
             <AvatarSelector
