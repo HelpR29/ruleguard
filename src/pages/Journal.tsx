@@ -290,6 +290,8 @@ function Journal() {
     ruleCompliant: true,
     imageIds: [] as number[],
     imagePreviews: [] as string[],
+  });
+
   const [showChart, setShowChart] = useState(false);
 
   const resetForm = () => {

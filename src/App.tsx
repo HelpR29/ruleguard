@@ -91,8 +91,6 @@ function App() {
 
 export default App;
 
-export default App;
-
 // Inline component to handle invite links
 function InviteAccept() {
   // using window.location because simple handler; alternatively use useParams
