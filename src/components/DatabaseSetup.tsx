@@ -262,6 +262,75 @@ export default function DatabaseSetup({ userId = 'demo-user' }: DatabaseSetupPro
           </div>
         )}
       </div>
+
+      {/* How It Works */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">How the Hybrid System Works</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-blue-600 dark:text-blue-400 font-semibold text-sm">1</span>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900 dark:text-white">Cache-First Access</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Data is served instantly from localStorage cache for immediate UI response
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-green-600 dark:text-green-400 font-semibold text-sm">2</span>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900 dark:text-white">Background Sync</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Changes are automatically synced to Supabase in the background
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-purple-600 dark:text-purple-400 font-semibold text-sm">3</span>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900 dark:text-white">Offline Support</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Works perfectly offline, syncs when connection is restored
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-orange-600 dark:text-orange-400 font-semibold text-sm">4</span>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900 dark:text-white">Multi-Device Sync</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Access your data from any device with automatic synchronization
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Benefits of Hybrid Approach</h4>
+          <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+            <li>• ⚡ Instant performance with localStorage caching</li>
+            <li>• ☁️ Reliable cloud backup and sync with Supabase</li>
+            <li>• 📱 Works offline and syncs when online</li>
+            <li>• 🔄 Automatic conflict resolution and data consistency</li>
+            <li>• 🛡️ Fallback to local storage if cloud is unavailable</li>
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
