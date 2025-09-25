@@ -348,25 +348,40 @@ function Journal() {
             <Tooltip content="Total number of trades recorded in your journal">
               <div className="bg-blue-50 rounded-xl p-4">
                 <p className="text-blue-600 text-sm mb-1">Total Trades</p>
-                <p className="text-2xl font-bold text-blue-700">247</p>
+                <p className="text-2xl font-bold text-blue-700">{trades.length}</p>
               </div>
             </Tooltip>
             <Tooltip content="Percentage of profitable trades out of total trades">
               <div className="bg-green-50 rounded-xl p-4">
                 <p className="text-green-600 text-sm mb-1">Win Rate</p>
-                <p className="text-2xl font-bold text-green-700">68%</p>
+                <p className="text-2xl font-bold text-green-700">
+                  {trades.length > 0 
+                    ? Math.round((trades.filter(t => (t.pnl || 0) > 0).length / trades.length) * 100)
+                    : 0
+                  }%
+                </p>
               </div>
             </Tooltip>
             <Tooltip content="Average profit or loss per trade">
               <div className="bg-purple-50 rounded-xl p-4">
                 <p className="text-purple-600 text-sm mb-1">Avg P&L</p>
-                <p className="text-2xl font-bold text-purple-700">$125</p>
+                <p className="text-2xl font-bold text-purple-700">
+                  ${trades.length > 0 
+                    ? Math.round(trades.reduce((sum, t) => sum + (t.pnl || 0), 0) / trades.length)
+                    : 0
+                  }
+                </p>
               </div>
             </Tooltip>
             <Tooltip content="Percentage of trades that followed your trading rules">
               <div className="bg-amber-50 rounded-xl p-4">
                 <p className="text-amber-600 text-sm mb-1">Rule Compliance</p>
-                <p className="text-2xl font-bold text-amber-700">85%</p>
+                <p className="text-2xl font-bold text-amber-700">
+                  {trades.length > 0 
+                    ? Math.round((trades.filter(t => t.ruleCompliant).length / trades.length) * 100)
+                    : 0
+                  }%
+                </p>
               </div>
             </Tooltip>
           </div>
