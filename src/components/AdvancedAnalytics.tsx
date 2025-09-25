@@ -170,7 +170,7 @@ export default function AnalyticsDashboard({
     ],
     'performance-breakdown': [
       {
-        type: 'composed',
+        type: 'line',
         dataKey: 'winRate',
         name: 'Win Rate',
         color: '#10b981'
@@ -264,7 +264,7 @@ export default function AnalyticsDashboard({
       if (trade.ruleCompliant) acc[date].completions++;
       else acc[date].violations++;
 
-      // Track emotions
+      // Track emotions (accept emotions[] or single emotion)
       const emos = Array.isArray(trade.emotions)
         ? trade.emotions
         : (trade.emotion ? [String(trade.emotion)] : []);
@@ -284,13 +284,25 @@ export default function AnalyticsDashboard({
       cumulativePnl += dayData.pnl;
 
       const totalTrades = dayData.trades.length;
-      const winningTrades = dayData.trades.filter((t: Trade) => (t.profitLoss || 0) > 0).length;
+      const winningTrades = dayData.trades.filter((t: any) => (((t.profitLoss ?? t.pnl) || 0) > 0)).length;
+
+      // Average Risk:Reward for the day if target/stop present
+      const rrTrades = dayData.trades.filter((t: any) => t.target != null && t.stop != null);
+      const avgRR = rrTrades.length
+        ? rrTrades.reduce((sum: number, t: any) => {
+            const entryPrice = Number(t.entryPrice ?? t.entry);
+            const risk = Math.abs(Number(t.stop) - entryPrice);
+            const reward = Math.abs(Number(t.target) - entryPrice);
+            return risk > 0 ? sum + (reward / risk) : sum;
+          }, 0) / rrTrades.length
+        : 0;
 
       return {
         ...dayData,
         cumulativePnl,
         winRate: totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0,
-        ruleCompliance: totalTrades > 0 ? (dayData.completions / totalTrades) * 100 : 0
+        ruleCompliance: totalTrades > 0 ? (dayData.completions / totalTrades) * 100 : 0,
+        riskReward: avgRR,
       };
     });
   }, [trades, filters]);
@@ -384,12 +396,11 @@ export default function AnalyticsDashboard({
 
   // Calculate emotion data for pie chart
   const emotionData = useMemo(() => {
-    const emotionCounts = trades.reduce((acc, trade) => {
-      if (trade.emotions) {
-        trade.emotions.forEach(emotion => {
-          acc[emotion] = (acc[emotion] || 0) + 1;
-        });
-      }
+    const emotionCounts = trades.reduce((acc: Record<string, number>, trade: any) => {
+      const emos = Array.isArray(trade.emotions) ? trade.emotions : (trade.emotion ? [String(trade.emotion)] : []);
+      emos.forEach((emotion: string) => {
+        acc[emotion] = (acc[emotion] || 0) + 1;
+      });
       return acc;
     }, {} as Record<string, number>);
 

@@ -178,25 +178,29 @@ export default function Reports() {
     start.setDate(today.getDate() - (pfRange === '7d' ? 6 : 29));
     let totalProfits = 0;
     let totalLosses = 0; // negative numbers
+    let tradesInRange = 0;
     try {
       const raw = localStorage.getItem('journal_trades');
       const arr = raw ? JSON.parse(raw) : [];
       for (const t of Array.isArray(arr) ? arr : []) {
-        const ds = (t.date || '').slice(0, 10);
-        if (!ds) continue;
-        const dsNum = Number(ds.replace(/-/g, ''));
+        const dateStr = (t.date || t.entryDate || '').slice(0, 10);
+        if (!dateStr) continue;
+        const dsNum = Number(dateStr.replace(/-/g, ''));
         const sNum = Number(start.toISOString().slice(0,10).replace(/-/g, ''));
         const eNum = Number(today.toISOString().slice(0,10).replace(/-/g, ''));
         if (dsNum >= sNum && dsNum <= eNum) {
-          const pnl = Number(t.pnl ?? t.profitLoss);
-          if (!Number.isNaN(pnl)) {
-            if (pnl > 0) totalProfits += pnl;
-            else if (pnl < 0) totalLosses += pnl; // negative accumulation
+          tradesInRange++;
+          const rawPnl = (t.pnl ?? t.profitLoss ?? 0);
+          const pnlNum = typeof rawPnl === 'number' ? rawPnl : Number(String(rawPnl).replace(/[^0-9.-]/g, ''));
+          if (Number.isFinite(pnlNum)) {
+            if (pnlNum > 0) totalProfits += pnlNum;
+            else if (pnlNum < 0) totalLosses += pnlNum; // negative accumulation
           }
         }
       }
     } catch {}
-    if (totalProfits === 0 && totalLosses === 0) return null; // no trades
+    if (tradesInRange === 0) return null; // no trades in selected window
+    if (totalProfits === 0 && totalLosses === 0) return 0; // all zero-pnl trades
     if (totalLosses === 0 && totalProfits > 0) return Infinity; // never lost -> infinite PF
     const denom = Math.abs(totalLosses);
     return denom > 0 ? (totalProfits / denom) : null;
