@@ -143,13 +143,16 @@ export default function AnalyticsDashboard({
     'pnl-trend',
     'performance-breakdown',
     'emotion-analysis',
-    'risk-reward',
-    'volume-analysis'
+    'risk-reward'
   ]);
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [hiddenKPIs, setHiddenKPIs] = useState<Set<string>>(new Set());
+
+  // Formatting helpers
+  const formatCurrencyShort = useCallback((n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 }).format(n), []);
+  const formatPercent = useCallback((n: number) => `${n.toFixed(0)}%`, []);
 
   // Chart configurations
   const chartConfigs: Record<string, ChartConfig[]> = {
@@ -196,14 +199,6 @@ export default function AnalyticsDashboard({
         dataKey: 'riskReward',
         name: 'Risk-Reward Ratio',
         color: '#ef4444'
-      }
-    ],
-    'volume-analysis': [
-      {
-        type: 'bar',
-        dataKey: 'volume',
-        name: 'Trade Volume',
-        color: '#6b7280'
       }
     ]
   };
@@ -395,23 +390,27 @@ export default function AnalyticsDashboard({
   }, [analyticsData, trades]);
 
   // Calculate emotion data for pie chart
-  const emotionData = useMemo(() => {
-    const emotionCounts = trades.reduce((acc: Record<string, number>, trade: any) => {
+  // Emotion data (counts map)
+  const emotionCounts = useMemo(() => {
+    return trades.reduce((acc: Record<string, number>, trade: any) => {
       const emos = Array.isArray(trade.emotions) ? trade.emotions : (trade.emotion ? [String(trade.emotion)] : []);
       emos.forEach((emotion: string) => {
         acc[emotion] = (acc[emotion] || 0) + 1;
       });
       return acc;
     }, {} as Record<string, number>);
+  }, [trades]);
 
+  const [emotionMode, setEmotionMode] = useState<'percent' | 'count'>('percent');
+  const emotionChartData = useMemo(() => {
     const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'];
-
-    return Object.entries(emotionCounts).map(([name, value], index) => ({
+    const total = Object.values(emotionCounts).reduce((s, v) => s + v, 0) || 1;
+    return Object.entries(emotionCounts).map(([name, count], index) => ({
       name,
-      value: (value / trades.length) * 100,
+      value: emotionMode === 'percent' ? (count / total) * 100 : count,
       color: colors[index % colors.length]
     }));
-  }, [trades]);
+  }, [emotionCounts, emotionMode]);
 
   // Handle filter changes
   const handleFilterChange = useCallback((newFilters: Partial<AnalyticsFilters>) => {
@@ -485,12 +484,18 @@ export default function AnalyticsDashboard({
         <BarChart {...chartProps}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
           <XAxis dataKey="date" stroke="#666" fontSize={12} />
-          <YAxis stroke="#666" fontSize={12} />
+          <YAxis stroke="#666" fontSize={12}
+            tickFormatter={(v: number) => chartId === 'pnl-trend' ? formatCurrencyShort(v) : String(v)}
+          />
           <Tooltip
             contentStyle={{
               backgroundColor: '#fff',
               border: '1px solid #e5e7eb',
               borderRadius: '8px'
+            }}
+            formatter={(value: number, name: string) => {
+              if (chartId === 'pnl-trend') return [formatCurrencyShort(value), name];
+              return [value, name];
             }}
           />
           {config.map((chartConfig, index) => (
@@ -503,11 +508,18 @@ export default function AnalyticsDashboard({
         <LineChart {...chartProps}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
           <XAxis dataKey="date" stroke="#666" fontSize={12} />
-          <YAxis stroke="#666" fontSize={12} />
-          <Tooltip />
+          <YAxis stroke="#666" fontSize={12}
+            domain={chartId === 'performance-breakdown' ? [0, 100] : undefined}
+            tickFormatter={(v: number) => chartId === 'performance-breakdown' ? formatPercent(v) : String(v)}
+          />
+          <Tooltip formatter={(v: number, name: string) => chartId === 'performance-breakdown' ? [formatPercent(v), name] : [v, name]} />
           {config.map((chartConfig, index) => (
             <Line key={index} type="monotone" dataKey={chartConfig.dataKey} stroke={chartConfig.color} strokeWidth={2} name={chartConfig.name} dot={{ r: 4 }} />
           ))}
+          {chartId === 'performance-breakdown' && (
+            <ReferenceLine y={50} stroke="#e5e7eb" strokeDasharray="3 3" />
+          )}
+          <Legend verticalAlign="top" height={24} />
         </LineChart>
       );
     } else if (primary === 'area') {
@@ -515,10 +527,21 @@ export default function AnalyticsDashboard({
         <AreaChart {...chartProps}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
           <XAxis dataKey="date" stroke="#666" fontSize={12} />
-          <YAxis stroke="#666" fontSize={12} />
-          <Tooltip />
+          <YAxis stroke="#666" fontSize={12} tickFormatter={(v: number) => chartId === 'pnl-trend' ? formatCurrencyShort(v) : String(v)} />
+          <Tooltip formatter={(v: number, name: string) => chartId === 'pnl-trend' ? [formatCurrencyShort(v), name] : [v, name]} />
+          {chartId === 'pnl-trend' && (
+            <>
+              <defs>
+                <linearGradient id="pnlGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.35}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.05}/>
+                </linearGradient>
+              </defs>
+              <ReferenceLine y={0} stroke="#e5e7eb" />
+            </>
+          )}
           {config.map((chartConfig, index) => (
-            <Area key={index} type="monotone" dataKey={chartConfig.dataKey} stroke={chartConfig.color} fill={chartConfig.color} fillOpacity={0.3} name={chartConfig.name} />
+            <Area key={index} type="monotone" dataKey={chartConfig.dataKey} stroke={chartConfig.color} fill={chartId==='pnl-trend' && index===0 ? 'url(#pnlGradient)' : chartConfig.color} fillOpacity={chartId==='pnl-trend' && index===0 ? 1 : 0.3} name={chartConfig.name} />
           ))}
         </AreaChart>
       );
@@ -528,17 +551,18 @@ export default function AnalyticsDashboard({
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
           <XAxis dataKey="date" stroke="#666" fontSize={12} />
           <YAxis stroke="#666" fontSize={12} />
-          <Tooltip />
+          <Tooltip formatter={(v: number, name: string) => name.toLowerCase().includes('risk') ? [`1:${Number(v).toFixed(2)}`, 'R:R'] : [v, name]} />
           {config.map((chartConfig, index) => (
             <Scatter key={index} dataKey={chartConfig.dataKey} fill={chartConfig.color} name={chartConfig.name} />
           ))}
+          <ReferenceLine y={2} stroke="#94a3b8" strokeDasharray="4 4" />
         </ScatterChart>
       );
     } else if (primary === 'pie') {
       child = (
         <PieChart>
           <Pie
-            data={emotionData}
+            data={emotionChartData}
             cx="50%"
             cy="50%"
             innerRadius={60}
@@ -547,15 +571,15 @@ export default function AnalyticsDashboard({
             label={(props: PieLabelRenderProps) => {
               const val = Number((props as any).value ?? 0);
               const name = (props as any).name ?? '';
-              return `${name}: ${val.toFixed(1)}%`;
+              return emotionMode === 'percent' ? `${name}: ${val.toFixed(1)}%` : `${name}: ${val}`;
             }}
             labelLine={false}
           >
-            {emotionData.map((entry, index) => (
+            {emotionChartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
-          <Tooltip formatter={(value: number) => `${value}%`} />
+          <Tooltip formatter={(value: number) => emotionMode === 'percent' ? `${value}%` : `${value}`} />
         </PieChart>
       );
     }
@@ -567,7 +591,7 @@ export default function AnalyticsDashboard({
         </ResponsiveContainer>
       </div>
     );
-  }, [analyticsData, emotionData, chartConfigs]);
+  }, [analyticsData, emotionChartData, chartConfigs, emotionMode]);
 
   if (isLoading) {
     return (
@@ -711,6 +735,23 @@ export default function AnalyticsDashboard({
               {chartId.replace('-', ' ')}
             </button>
           ))}
+        </div>
+
+        {/* Emotion mode toggle (only affects emotion-analysis) */}
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-sm text-gray-600 dark:text-gray-400">Emotions:</span>
+          <div className="relative inline-flex items-center bg-gray-100 dark:bg-gray-700 rounded-full p-1">
+            <button
+              type="button"
+              onClick={() => setEmotionMode('percent')}
+              className={`px-2 py-0.5 text-xs rounded-full ${emotionMode==='percent' ? 'bg-white dark:bg-gray-800 shadow font-medium' : 'text-gray-600 dark:text-gray-300'}`}
+            >%</button>
+            <button
+              type="button"
+              onClick={() => setEmotionMode('count')}
+              className={`px-2 py-0.5 text-xs rounded-full ${emotionMode==='count' ? 'bg-white dark:bg-gray-800 shadow font-medium' : 'text-gray-600 dark:text-gray-300'}`}
+            >#</button>
+          </div>
         </div>
       </div>
 
