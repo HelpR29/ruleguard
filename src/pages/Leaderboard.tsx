@@ -55,18 +55,7 @@ const mockLeaderboardData: LeaderboardUser[] = [
     rank: 3,
     totalGrowth: 45.3
   },
-  {
-    id: '4',
-    name: 'You',
-    avatar: '👤',
-    completions: 12,
-    disciplineScore: 85,
-    streak: 7,
-    progressObject: 'beer',
-    isPremium: false,
-    rank: 847,
-    totalGrowth: 12.7
-  }
+  // User data will be added dynamically in component
 ];
 
 const progressObjects = {
@@ -122,7 +111,7 @@ export default function Leaderboard() {
       completions: progress.completions,
       disciplineScore: progress.disciplineScore,
       streak: progress.streak,
-      progressObject: 'beer',
+      progressObject: settings.progressObject,
       isPremium: (localStorage.getItem('premium_status') || 'none') === 'premium',
       rank: 0,
       totalGrowth: totalGrowthPct,

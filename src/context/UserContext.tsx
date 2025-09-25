@@ -53,10 +53,10 @@ const defaultSettings: UserSettings = {
 };
 
 const defaultProgress: UserProgress = {
-  completions: 12,
-  currentBalance: 112.68,
-  disciplineScore: 85,
-  streak: 7,
+  completions: 0,
+  currentBalance: 100, // Will be calculated from startingPortfolio
+  disciplineScore: 0,
+  streak: 0,
   nextProgressPct: 0
 };
 
@@ -92,9 +92,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [progress, setProgress] = useState<UserProgress>(() => {
     try {
       const raw = localStorage.getItem('user_progress');
-      if (raw) return { ...defaultProgress, ...JSON.parse(raw) } as UserProgress;
+      if (raw) {
+        const stored = JSON.parse(raw) as UserProgress;
+        // Ensure currentBalance matches startingPortfolio if completions is 0
+        if (stored.completions === 0) {
+          stored.currentBalance = settings.startingPortfolio;
+        }
+        return { ...defaultProgress, ...stored };
+      }
     } catch {}
-    return defaultProgress;
+    // Set currentBalance to match startingPortfolio
+    return { ...defaultProgress, currentBalance: settings.startingPortfolio };
   });
 
   const updateSettings = (newSettings: Partial<UserSettings>) => {
