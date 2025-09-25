@@ -81,25 +81,30 @@ export default function Leaderboard() {
         leaderboardBadges: JSON.parse(localStorage.getItem('user_achievements') || '[]').filter((a: string)=>/_(champion)$/.test(a))
       };
 
-    // Merge and compute ranks
-    const merged = [...mockLeaderboardData.filter(u=>u.id!=='you'), you];
-    merged.sort((a,b)=>{
-      // Primary: completions
-      if (b.completions !== a.completions) return b.completions - a.completions;
-      // Secondary: discipline
-      if (b.disciplineScore !== a.disciplineScore) return b.disciplineScore - a.disciplineScore;
-      // Tertiary: streak
-      if (b.streak !== a.streak) return b.streak - a.streak;
-      // Finally: growth
-      return (b.totalGrowth || 0) - (a.totalGrowth || 0);
-    });
-    const ranked = merged.map((u, idx)=> ({...u, rank: idx+1}));
-    setUsers(ranked);
-    try {
-      const yourRank = ranked.find(u=>u.id==='you' || u.name===dn)?.rank || ranked.length;
-      localStorage.setItem('current_user_rank', String(yourRank));
-      localStorage.setItem('monthly_leaderboard_data', JSON.stringify(ranked));
-    } catch {}
+      // Merge and compute ranks
+      const merged = [...mockLeaderboardData.filter(u=>u.id!=='you'), you];
+      merged.sort((a,b)=>{
+        // Primary: completions
+        if (b.completions !== a.completions) return b.completions - a.completions;
+        // Secondary: discipline
+        if (b.disciplineScore !== a.disciplineScore) return b.disciplineScore - a.disciplineScore;
+        // Tertiary: streak
+        if (b.streak !== a.streak) return b.streak - a.streak;
+        // Finally: growth
+        return (b.totalGrowth || 0) - (a.totalGrowth || 0);
+      });
+      const ranked = merged.map((u, idx)=> ({...u, rank: idx+1}));
+      setUsers(ranked);
+      
+      try {
+        const yourRank = ranked.find(u=>u.id==='you' || u.name===dn)?.rank || ranked.length;
+        localStorage.setItem('current_user_rank', String(yourRank));
+        localStorage.setItem('monthly_leaderboard_data', JSON.stringify(ranked));
+      } catch {}
+    } catch (error) {
+      console.error('Error building leaderboard:', error);
+      setUsers([]);
+    }
   };
 
   // Check if leaderboard should reset (30 days)
