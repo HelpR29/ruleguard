@@ -6,13 +6,22 @@ interface LogoProps {
   frame?: 'none' | 'card';
 }
 
-// Uses branded asset from public/ with fallback text
+/**
+ * Logo component with accessibility features
+ *
+ * @param showText - Whether to display the text portion of the logo
+ * @param subtitle - Optional subtitle text to display
+ * @param frame - Frame style for the logo ('none' or 'card')
+ * @returns JSX.Element
+ */
 export default function Logo({ showText = false, subtitle, frame = 'card' }: LogoProps) {
   const ver = 'v2';
   return (
     <div className="flex items-center gap-3 select-none" aria-label="LockIn logo">
       <div
         className={`${frame === 'card' ? 'rounded-lg' : ''} w-10 h-10 lg:w-12 lg:h-12 overflow-hidden relative`}
+        role="img"
+        aria-label="LockIn company logo"
       >
         <img
           src={`/lockin-logo.png.png?${ver}`}
@@ -37,7 +46,9 @@ export default function Logo({ showText = false, subtitle, frame = 'card' }: Log
             <span className="text-gray-900 dark:text-white">Lock</span>
             <span className="text-emerald-500">In</span>
           </h1>
-          <p className="text-xs text-gray-500 dark:text-gray-300">{subtitle ?? 'Lock in your trading discipline'}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-300" aria-label={`LockIn tagline: ${subtitle ?? 'Lock in your trading discipline'}`}>
+            {subtitle ?? 'Lock in your trading discipline'}
+          </p>
         </div>
       )}
     </div>
