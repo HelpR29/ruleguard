@@ -8,6 +8,8 @@ import AIInsights from '../components/AIInsights';
 import AdvancedAnalytics from '../components/AdvancedAnalytics';
 import AnalyticsFilters from '../components/AnalyticsFilters';
 import SymbolAutocomplete from '../components/SymbolAutocomplete';
+import TradeImagesDisplay from '../components/TradeImages';
+import LiveTradeChartDisplay from '../components/LiveTradeChart';
 import { Tooltip } from '../components/Tooltip';
 
 // Local interface for journal trades (matches the expected usage)
@@ -589,7 +591,7 @@ function Journal() {
 
                   {/* Attachments */}
                   {Array.isArray(trade.imageIds) && trade.imageIds.length > 0 && (
-                    <TradeImages
+                    <TradeImagesDisplay
                       ids={trade.imageIds}
                       onRemove={async (idx) => {
                         try {
@@ -947,7 +949,7 @@ function Journal() {
                     stopPrice={form.stop ? parseFloat(form.stop) : undefined}
                   />
                 ) : (
-                  <LiveTradeChart entry={form.entry} exit={form.exit} target={form.target} stop={form.stop} />
+                  <LiveTradeChartDisplay entry={form.entry} exit={form.exit} target={form.target} stop={form.stop} />
                 )}
               </div>
             </div>
