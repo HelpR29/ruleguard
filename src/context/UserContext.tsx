@@ -13,6 +13,8 @@ interface UserProgress {
   currentBalance: number;
   disciplineScore: number;
   streak: number;
+  // Accumulated positive trade % toward the next completion (0..growthPerCompletion)
+  nextProgressPct: number;
 }
 
 interface UserContextType {
@@ -28,6 +30,8 @@ interface UserContextType {
   toggleRuleActive: (id: string) => void;
   recordViolation: (id: string) => void;
   recordCompletion: () => void;
+  // Adds trade percentage toward next completion; compliant trades with positive % contribute.
+  recordTradeProgress: (gainPct: number, compliant: boolean) => void;
   markCompliance: (id: string) => void;
 }
 
@@ -52,7 +56,8 @@ const defaultProgress: UserProgress = {
   completions: 12,
   currentBalance: 112.68,
   disciplineScore: 85,
-  streak: 7
+  streak: 7,
+  nextProgressPct: 0
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -98,6 +103,37 @@ export function UserProvider({ children }: { children: ReactNode }) {
       try { localStorage.setItem('user_settings', JSON.stringify(merged)); } catch {}
       return merged;
     });
+  };
+
+  // Accumulate trade % toward next completion threshold.
+  const recordTradeProgress = (gainPct: number, compliant: boolean) => {
+    // Only compliant positive trades count toward progress
+    if (!compliant || gainPct <= 0) return;
+    const goal = settings.growthPerCompletion; // e.g., 5%
+    let carry = progress.nextProgressPct + gainPct;
+    let addCount = 0;
+    while (carry >= goal && (progress.completions + addCount) < settings.targetCompletions) {
+      carry -= goal;
+      addCount += 1;
+    }
+
+    if (addCount > 0) {
+      const rate = settings.growthPerCompletion / 100;
+      const newCompletions = Math.min(progress.completions + addCount, settings.targetCompletions);
+      // Apply compounded growth for each completion added
+      const newBalance = progress.currentBalance * Math.pow(1 + rate, addCount);
+      const newDiscipline = Math.min(100, progress.disciplineScore + addCount);
+      const newStreak = progress.streak + 1; // per trading day; keep simple increment here
+      updateProgress({
+        completions: newCompletions,
+        currentBalance: Number(newBalance.toFixed(2)),
+        disciplineScore: newDiscipline,
+        streak: newStreak,
+        nextProgressPct: carry,
+      });
+    } else {
+      updateProgress({ nextProgressPct: carry });
+    }
   };
 
   const updateProgress = (newProgress: Partial<UserProgress>) => {
@@ -184,6 +220,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       currentBalance: Number(newBalance.toFixed(2)),
       disciplineScore: newDiscipline,
       streak: newStreak,
+      nextProgressPct: 0,
     });
     // Increment daily stats
     try {
@@ -213,7 +250,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <UserContext.Provider value={{ settings, progress, rules, updateSettings, updateProgress, addRule, editRule, updateRuleMeta, deleteRule, toggleRuleActive, recordViolation, recordCompletion, markCompliance }}>
+    <UserContext.Provider value={{ settings, progress, rules, updateSettings, updateProgress, addRule, editRule, updateRuleMeta, deleteRule, toggleRuleActive, recordViolation, recordCompletion, recordTradeProgress, markCompliance }}>
       {children}
     </UserContext.Provider>
   );

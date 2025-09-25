@@ -141,7 +141,7 @@ export default function Journal() {
   const [activeTab, setActiveTab] = useState('trades');
   const [showNewEntry, setShowNewEntry] = useState(false);
   const { addToast } = useToast();
-  const { recordCompletion } = useUser();
+  const { recordCompletion, recordTradeProgress } = useUser();
   const [premiumStatus, setPremiumStatus] = useState<string>(() => {
     try { return localStorage.getItem('premium_status') || 'none'; } catch { return 'none'; }
   });
@@ -361,6 +361,9 @@ export default function Journal() {
       addToast('info', 'Note: Exit equals Target — treating Exit as the actual filled price and Target as your planned TP.');
     }
     const pnl = Number(((exitNum - entryNum) * sizeNum).toFixed(2));
+    // Compute percent gain for contribution toward next completion
+    const rawPct = ((exitNum - entryNum) / entryNum) * 100;
+    const gainPct = form.type === 'Long' ? rawPct : ((entryNum - exitNum) / entryNum) * 100;
     const newTrade = {
       id: Date.now(),
       date: form.date,
@@ -383,7 +386,8 @@ export default function Journal() {
       setJournals(prev => [{ id: Date.now(), date: form.date, entry: form.notes.trim(), mood: form.emotion, disciplineScore: form.ruleCompliant ? 90 : 60 }, ...prev]);
     }
     if (form.ruleCompliant) {
-      recordCompletion();
+      // Contribute positive percent toward automated progress
+      if (gainPct > 0) recordTradeProgress(Number(gainPct.toFixed(2)), true);
     }
     addToast('success', 'Journal entry added.');
     setShowNewEntry(false);

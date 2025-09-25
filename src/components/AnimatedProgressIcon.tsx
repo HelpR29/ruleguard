@@ -271,34 +271,24 @@ interface ProgressGridProps {
 export function ProgressGrid({ onComplete, onViolation }: ProgressGridProps) {
   const { settings, progress } = useUser();
   const [animatingItems, setAnimatingItems] = useState<Set<number>>(new Set());
+  const [nextPulse, setNextPulse] = useState(false);
 
   const object = progressObjects[settings.progressObject];
   const total = settings.targetCompletions;
   const completed = progress.completions;
+  const nextPct = Math.max(0, Math.min(100, (progress.nextProgressPct / Math.max(1e-9, settings.growthPerCompletion)) * 100));
 
-  const handleItemClick = (index: number) => {
-    const isDone = index < completed;
-    const isNext = index === completed;
-    
-    if (isNext || isDone) {
-      // Add breaking animation
-      setAnimatingItems(prev => new Set([...prev, index]));
-      
-      setTimeout(() => {
-        if (isNext) onComplete();
-        if (isDone) onViolation();
-        
-        // Remove animation after action
-        setTimeout(() => {
-          setAnimatingItems(prev => {
-            const next = new Set(prev);
-            next.delete(index);
-            return next;
-          });
-        }, 500);
-      }, 200);
+  // Subtle pulse when partial progress increases or a completion is added
+  const prevRef = React.useRef({ completions: progress.completions, nextPctRaw: progress.nextProgressPct });
+  React.useEffect(() => {
+    const prev = prevRef.current;
+    if (progress.completions !== prev.completions || progress.nextProgressPct > prev.nextPctRaw) {
+      setNextPulse(true);
+      const t = setTimeout(() => setNextPulse(false), 700);
+      return () => clearTimeout(t);
     }
-  };
+    prevRef.current = { completions: progress.completions, nextPctRaw: progress.nextProgressPct };
+  }, [progress.completions, progress.nextProgressPct]);
 
   return (
     <div className="grid grid-cols-10 gap-2 max-w-lg mx-auto">
@@ -318,7 +308,7 @@ export function ProgressGrid({ onComplete, onViolation }: ProgressGridProps) {
             } ${
               isAnimating ? (isDone ? 'animate-shake' : 'animate-bounce') : ''
             }`}
-            title={isNext ? 'Add completion' : isDone ? 'Undo (violation)' : 'Not available yet'}
+            title={isNext ? `Next item progress: ${nextPct.toFixed(0)}% (need ${(Math.max(0, 100 - nextPct)).toFixed(0)}%)` : isDone ? 'Undo (violation)' : 'Not available yet'}
             disabled={!isNext && !isDone}
           >
             <span className={`transition-all duration-300 ${
@@ -348,13 +338,24 @@ export function ProgressGrid({ onComplete, onViolation }: ProgressGridProps) {
               </div>
             )}
             
+            {/* Partial progress bar for the next item */}
+            {isNext && (
+              <div className="absolute left-0 right-0 bottom-0 h-1.5 bg-blue-100 overflow-hidden rounded-b-[6px]">
+                <div
+                  className="h-full bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-300"
+                  style={{ width: `${nextPct}%` }}
+                />
+              </div>
+            )}
+
             {/* Completion sparkles */}
-            {isAnimating && isNext && (
+            {/* Passive celebratory ping when next progress pulses */}
+            {isNext && nextPulse && (
               <div className="absolute inset-0 grid place-items-center">
                 <div className="text-yellow-400 text-xl animate-ping">✨</div>
               </div>
             )}
-          </button>
+          </div>
         );
       })}
     </div>
