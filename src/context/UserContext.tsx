@@ -113,49 +113,47 @@ export function UserProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  // Accumulate trade % toward next completion threshold.
+  // Option B: Fractional completions — award progress immediately per trade
   const recordTradeProgress = (gainPct: number, compliant: boolean) => {
     // Only compliant positive trades count toward progress
     if (!compliant || gainPct <= 0) return;
-    const goal = settings.growthPerCompletion; // e.g., 5%
-    let carry = progress.nextProgressPct + gainPct;
-    let addCount = 0;
-    while (carry >= goal && (progress.completions + addCount) < settings.targetCompletions) {
-      carry -= goal;
-      addCount += 1;
-    }
+    const goal = settings.growthPerCompletion; // e.g., 5% to earn 1 completion
+    if (goal <= 0) return;
 
-    if (addCount > 0) {
-      const rate = settings.growthPerCompletion / 100;
-      const newCompletions = Math.min(progress.completions + addCount, settings.targetCompletions);
-      // Apply compounded growth for each completion added
-      const newBalance = progress.currentBalance * Math.pow(1 + rate, addCount);
-      const newDiscipline = Math.min(100, progress.disciplineScore + addCount);
-      const newStreak = progress.streak + 1; // per trading day; keep simple increment here
-      // Reflect completions in daily_stats and activity_log for Reports/Insights
-      try {
-        const key = new Date().toISOString().slice(0,10);
-        const stats = JSON.parse(localStorage.getItem('daily_stats') || '{}');
-        const today = stats[key] || { completions: 0, violations: 0 };
-        today.completions += addCount;
-        stats[key] = today;
-        localStorage.setItem('daily_stats', JSON.stringify(stats));
-        const log = JSON.parse(localStorage.getItem('activity_log') || '[]');
-        for (let i = 0; i < addCount; i++) {
-          log.push({ ts: Date.now(), type: 'completion' });
-        }
-        localStorage.setItem('activity_log', JSON.stringify(log));
-      } catch {}
-      updateProgress({
-        completions: newCompletions,
-        currentBalance: Number(newBalance.toFixed(2)),
-        disciplineScore: newDiscipline,
-        streak: newStreak,
-        nextProgressPct: carry,
-      });
-    } else {
-      updateProgress({ nextProgressPct: carry });
-    }
+    // Fractional completions earned this trade
+    const inc = gainPct / goal; // e.g., 2.5% / 5% = 0.5 completion
+    const rate = settings.growthPerCompletion / 100;
+
+    // New totals (cap at targetCompletions)
+    const target = settings.targetCompletions;
+    const rawCompletions = progress.completions + inc;
+    const newCompletions = Math.min(rawCompletions, target);
+
+    // Compound balance proportionally by (1+rate)^inc
+    const newBalance = progress.currentBalance * Math.pow(1 + rate, inc);
+    const newDiscipline = Math.min(100, progress.disciplineScore + inc);
+    const newStreak = progress.streak + 1; // simple daily increment
+
+    // Persist fractional completions into daily_stats and activity_log
+    try {
+      const key = new Date().toISOString().slice(0,10);
+      const stats = JSON.parse(localStorage.getItem('daily_stats') || '{}');
+      const today = stats[key] || { completions: 0, violations: 0 };
+      today.completions = (today.completions || 0) + inc;
+      stats[key] = today;
+      localStorage.setItem('daily_stats', JSON.stringify(stats));
+      const log = JSON.parse(localStorage.getItem('activity_log') || '[]');
+      log.push({ ts: Date.now(), type: 'completion', amount: inc });
+      localStorage.setItem('activity_log', JSON.stringify(log));
+    } catch {}
+
+    updateProgress({
+      completions: newCompletions,
+      currentBalance: Number(newBalance.toFixed(2)),
+      disciplineScore: Number(newDiscipline.toFixed(2)),
+      streak: newStreak,
+      nextProgressPct: 0, // no longer used in fractional mode
+    });
   };
 
   const updateProgress = (newProgress: Partial<UserProgress>) => {
