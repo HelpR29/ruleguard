@@ -236,7 +236,7 @@ export default function AIInsights({ trades, period, isLoading = false, onAnalys
           >
             <div className="flex items-start gap-3">
               <div className={`${getIconColor(insight.type)} mt-0.5 flex-shrink-0`}>
-                {insight.icon}
+                <insight.icon className="h-5 w-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-2">

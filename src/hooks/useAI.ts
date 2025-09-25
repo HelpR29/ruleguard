@@ -11,6 +11,7 @@ import {
   PredictiveSignal
 } from '../types';
 import { AIAnalysisService, AIModelConfig } from '../services/aiAnalysis';
+import { CheckCircle, TrendingUp, TrendingDown, AlertTriangle, Calendar, BarChart3, Target, Brain, Clock } from 'lucide-react';
 
 interface UseAIAnalysisReturn {
   // Analysis results
@@ -46,7 +47,7 @@ interface UseAIInsightsReturn {
     type: 'positive' | 'negative' | 'neutral' | 'warning';
     title: string;
     description: string;
-    icon: React.ReactNode;
+    icon: React.ComponentType<any>;
     metric?: string;
     recommendation?: string;
   }>;
@@ -214,7 +215,7 @@ export function useAIInsights(): UseAIInsightsReturn {
     type: 'positive' | 'negative' | 'neutral' | 'warning';
     title: string;
     description: string;
-    icon: React.ReactNode;
+    icon: React.ComponentType<any>;
     metric?: string;
     recommendation?: string;
   }>>([]);
@@ -230,7 +231,7 @@ export function useAIInsights(): UseAIInsightsReturn {
         type: 'positive' | 'negative' | 'neutral' | 'warning';
         title: string;
         description: string;
-        icon: React.ReactNode;
+        icon: React.ComponentType<any>;
         metric?: string;
         recommendation?: string;
       }> = [];
@@ -240,7 +241,7 @@ export function useAIInsights(): UseAIInsightsReturn {
           type: 'neutral',
           title: 'No Trading Activity',
           description: `No trades found in the last ${period === 'weekly' ? 'week' : 'month'}.`,
-          icon: <Calendar className="h-5 w-5" />,
+          icon: Calendar,
           recommendation: 'Consider reviewing your trading plan and market opportunities.'
         });
         setInsights(newInsights);
@@ -259,7 +260,7 @@ export function useAIInsights(): UseAIInsightsReturn {
           type: 'positive',
           title: 'Excellent Win Rate',
           description: `Your win rate of ${winRate.toFixed(1)}% is exceptional. You're consistently picking winning trades.`,
-          icon: <CheckCircle className="h-5 w-5" />,
+          icon: CheckCircle,
           metric: `${winRate.toFixed(1)}%`,
           recommendation: 'Maintain your current strategy and consider increasing position sizes gradually.'
         });
@@ -268,7 +269,7 @@ export function useAIInsights(): UseAIInsightsReturn {
           type: 'positive',
           title: 'Solid Win Rate',
           description: `Your ${winRate.toFixed(1)}% win rate shows good trade selection skills.`,
-          icon: <TrendingUp className="h-5 w-5" />,
+          icon: TrendingUp,
           metric: `${winRate.toFixed(1)}%`,
           recommendation: 'Focus on improving risk management to maximize profits from winning trades.'
         });
@@ -277,7 +278,7 @@ export function useAIInsights(): UseAIInsightsReturn {
           type: 'warning',
           title: 'Low Win Rate',
           description: `Your win rate of ${winRate.toFixed(1)}% needs improvement. Consider reviewing your entry criteria.`,
-          icon: <AlertTriangle className="h-5 w-5" />,
+          icon: AlertTriangle,
           metric: `${winRate.toFixed(1)}%`,
           recommendation: 'Analyze your losing trades for common patterns and tighten your entry rules.'
         });
@@ -289,7 +290,7 @@ export function useAIInsights(): UseAIInsightsReturn {
           type: 'positive',
           title: 'Profitable Period',
           description: `You generated $${totalPnL.toFixed(2)} in profits this ${period}.`,
-          icon: <TrendingUp className="h-5 w-5" />,
+          icon: TrendingUp,
           metric: `+$${totalPnL.toFixed(2)}`,
           recommendation: 'Great work! Document what strategies worked best for future reference.'
         });
@@ -298,7 +299,7 @@ export function useAIInsights(): UseAIInsightsReturn {
           type: 'negative',
           title: 'Losses This Period',
           description: `You had a net loss of $${Math.abs(totalPnL).toFixed(2)} this ${period}.`,
-          icon: <TrendingDown className="h-5 w-5" />,
+          icon: TrendingDown,
           metric: `-$${Math.abs(totalPnL).toFixed(2)}`,
           recommendation: 'Review your risk management and consider reducing position sizes until you find your edge again.'
         });
@@ -318,7 +319,7 @@ export function useAIInsights(): UseAIInsightsReturn {
             type: 'positive',
             title: 'Excellent Risk-Reward',
             description: `Your average risk-reward ratio of 1:${avgRR.toFixed(2)} is excellent.`,
-            icon: <Target className="h-5 w-5" />,
+            icon: Target,
             metric: `1:${avgRR.toFixed(2)}`,
             recommendation: 'Maintain this disciplined approach to risk management.'
           });
@@ -327,7 +328,7 @@ export function useAIInsights(): UseAIInsightsReturn {
             type: 'positive',
             title: 'Good Risk-Reward',
             description: `Your risk-reward ratio of 1:${avgRR.toFixed(2)} is solid.`,
-            icon: <Target className="h-5 w-5" />,
+            icon: Target,
             metric: `1:${avgRR.toFixed(2)}`,
             recommendation: 'Try to find setups with even better risk-reward ratios when possible.'
           });
@@ -336,7 +337,7 @@ export function useAIInsights(): UseAIInsightsReturn {
             type: 'warning',
             title: 'Poor Risk-Reward',
             description: `Your risk-reward ratio of 1:${avgRR.toFixed(2)} is too low for consistent profitability.`,
-            icon: <AlertTriangle className="h-5 w-5" />,
+            icon: AlertTriangle,
             metric: `1:${avgRR.toFixed(2)}`,
             recommendation: 'Look for trades with at least 1:2 risk-reward ratio or improve your exit strategy.'
           });
@@ -352,7 +353,7 @@ export function useAIInsights(): UseAIInsightsReturn {
           type: 'positive',
           title: 'Excellent Discipline',
           description: `${complianceRate.toFixed(1)}% rule compliance shows strong trading discipline.`,
-          icon: <CheckCircle className="h-5 w-5" />,
+          icon: CheckCircle,
           metric: `${complianceRate.toFixed(1)}%`,
           recommendation: 'Your discipline is paying off. Keep following your rules consistently.'
         });
@@ -361,7 +362,7 @@ export function useAIInsights(): UseAIInsightsReturn {
           type: 'neutral',
           title: 'Good Discipline',
           description: `${complianceRate.toFixed(1)}% rule compliance is decent but has room for improvement.`,
-          icon: <BarChart3 className="h-5 w-5" />,
+          icon: BarChart3,
           metric: `${complianceRate.toFixed(1)}%`,
           recommendation: 'Identify what causes rule violations and work on eliminating those triggers.'
         });
@@ -370,7 +371,7 @@ export function useAIInsights(): UseAIInsightsReturn {
           type: 'negative',
           title: 'Poor Discipline',
           description: `Only ${complianceRate.toFixed(1)}% rule compliance indicates discipline issues.`,
-          icon: <AlertTriangle className="h-5 w-5" />,
+          icon: AlertTriangle,
           metric: `${complianceRate.toFixed(1)}%`,
           recommendation: 'Focus on following your trading rules. Consider reducing position sizes until discipline improves.'
         });
@@ -378,7 +379,9 @@ export function useAIInsights(): UseAIInsightsReturn {
 
       // Emotional Analysis
       const emotions = trades.reduce((acc, trade) => {
-        acc[trade.emotion] = (acc[trade.emotion] || 0) + 1;
+        trade.emotions.forEach(emotion => {
+          acc[emotion] = (acc[emotion] || 0) + 1;
+        });
         return acc;
       }, {} as Record<string, number>);
 
@@ -387,21 +390,21 @@ export function useAIInsights(): UseAIInsightsReturn {
         const [emotion, count] = dominantEmotion;
         const percentage = (count / trades.length) * 100;
 
-        if (emotion === 'Confident' || emotion === 'Calm') {
+        if (emotion === 'confident' || emotion === 'neutral') {
           newInsights.push({
             type: 'positive',
             title: 'Positive Emotional State',
             description: `${percentage.toFixed(1)}% of your trades were made with ${emotion.toLowerCase()} emotions.`,
-            icon: <Brain className="h-5 w-5" />,
+            icon: Brain,
             metric: `${emotion} ${percentage.toFixed(1)}%`,
             recommendation: 'Your emotional control is contributing to your trading success.'
           });
-        } else if (emotion === 'Fear' || emotion === 'Greed' || emotion === 'Frustrated') {
+        } else if (emotion === 'fearful' || emotion === 'greedy' || emotion === 'frustrated') {
           newInsights.push({
             type: 'warning',
             title: 'Emotional Trading Detected',
             description: `${percentage.toFixed(1)}% of your trades were influenced by ${emotion.toLowerCase()}.`,
-            icon: <Brain className="h-5 w-5" />,
+            icon: Brain,
             metric: `${emotion} ${percentage.toFixed(1)}%`,
             recommendation: 'Work on emotional control. Consider meditation or taking breaks when feeling emotional.'
           });
@@ -415,7 +418,7 @@ export function useAIInsights(): UseAIInsightsReturn {
           type: 'warning',
           title: 'High Trading Frequency',
           description: `You're averaging ${avgTradesPerDay.toFixed(1)} trades per day, which may indicate overtrading.`,
-          icon: <Clock className="h-5 w-5" />,
+          icon: Clock,
           metric: `${avgTradesPerDay.toFixed(1)}/day`,
           recommendation: 'Consider being more selective with your trades. Quality over quantity often leads to better results.'
         });
@@ -424,7 +427,7 @@ export function useAIInsights(): UseAIInsightsReturn {
           type: 'neutral',
           title: 'Low Trading Activity',
           description: `You're averaging ${avgTradesPerDay.toFixed(1)} trades per day. This could indicate missed opportunities or good selectivity.`,
-          icon: <Clock className="h-5 w-5" />,
+          icon: Clock,
           metric: `${avgTradesPerDay.toFixed(1)}/day`,
           recommendation: 'Ensure you\'re not missing good setups due to over-analysis or fear.'
         });
@@ -454,5 +457,3 @@ export function useAIInsights(): UseAIInsightsReturn {
   };
 }
 
-// Import icons for JSX
-import { CheckCircle, TrendingUp, TrendingDown, AlertTriangle, Calendar, BarChart3, Target, Brain, Clock } from 'lucide-react';
