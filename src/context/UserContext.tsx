@@ -29,7 +29,6 @@ interface UserContextType {
   deleteRule: (id: string) => void;
   toggleRuleActive: (id: string) => void;
   recordViolation: (id: string) => void;
-  recordCompletion: () => void;
   // Adds trade percentage toward next completion; compliant trades with positive % contribute.
   recordTradeProgress: (gainPct: number, compliant: boolean) => void;
   markCompliance: (id: string) => void;
@@ -209,33 +208,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
     } catch {}
   };
 
-  const recordCompletion = () => {
-    const rate = settings.growthPerCompletion / 100;
-    const newCompletions = Math.min(progress.completions + 1, settings.targetCompletions);
-    const newBalance = progress.currentBalance * (1 + rate);
-    const newDiscipline = Math.min(100, progress.disciplineScore + 1);
-    const newStreak = progress.streak + 1;
-    updateProgress({
-      completions: newCompletions,
-      currentBalance: Number(newBalance.toFixed(2)),
-      disciplineScore: newDiscipline,
-      streak: newStreak,
-      nextProgressPct: 0,
-    });
-    // Increment daily stats
-    try {
-      const key = new Date().toISOString().slice(0,10);
-      const stats = JSON.parse(localStorage.getItem('daily_stats') || '{}');
-      const today = stats[key] || { completions: 0, violations: 0 };
-      today.completions += 1;
-      stats[key] = today;
-      localStorage.setItem('daily_stats', JSON.stringify(stats));
-      const log = JSON.parse(localStorage.getItem('activity_log') || '[]');
-      log.push({ ts: Date.now(), type: 'completion' });
-      localStorage.setItem('activity_log', JSON.stringify(log));
-    } catch {}
-  };
-
   const markCompliance = (id: string) => {
     setRules(prev => {
       const next = prev.map(r => (
@@ -250,7 +222,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <UserContext.Provider value={{ settings, progress, rules, updateSettings, updateProgress, addRule, editRule, updateRuleMeta, deleteRule, toggleRuleActive, recordViolation, recordCompletion, recordTradeProgress, markCompliance }}>
+    <UserContext.Provider value={{ settings, progress, rules, updateSettings, updateProgress, addRule, editRule, updateRuleMeta, deleteRule, toggleRuleActive, recordViolation, recordTradeProgress, markCompliance }}>
       {children}
     </UserContext.Provider>
   );

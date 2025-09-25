@@ -46,25 +46,16 @@ const progressObjects = {
 };
 
 interface AnimatedProgressIconProps {
-  onComplete?: () => void;
-  onViolation?: () => void;
   size?: 'small' | 'medium' | 'large' | 'xl';
 }
 
-export default function AnimatedProgressIcon({ onComplete, onViolation, size = 'xl' }: AnimatedProgressIconProps) {
+export default function AnimatedProgressIcon({ size = 'xl' }: AnimatedProgressIconProps) {
   const { settings } = useUser();
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationType, setAnimationType] = useState<'complete' | 'violation' | 'idle' | null>(null);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; emoji: string; delay: number }>>([]);
 
   const object = progressObjects[settings.progressObject];
-  
-  const sizeClasses = {
-    small: 'w-20 h-20',
-    medium: 'w-28 h-28',
-    large: 'w-36 h-36',
-    xl: 'w-80 h-80'
-  };
 
   // Idle animation cycle
   useEffect(() => {
@@ -100,8 +91,6 @@ export default function AnimatedProgressIcon({ onComplete, onViolation, size = '
       setIsAnimating(false);
       setAnimationType(null);
       setParticles([]);
-      if (type === 'complete' && onComplete) onComplete();
-      if (type === 'violation' && onViolation) onViolation();
     }, 3000);
   };
 
@@ -123,11 +112,9 @@ export default function AnimatedProgressIcon({ onComplete, onViolation, size = '
   const renderGenericObject = () => (
     <div className={`
       ${sizeClasses[size]} 
-      flex items-center justify-center relative cursor-pointer text-9xl
+      flex items-center justify-center relative text-9xl
       ${getAnimationClasses()}
-    `}
-    onClick={() => triggerAnimation('complete')}
-    onDoubleClick={() => triggerAnimation('violation')}>
+    `}>
       
       {/* Background Glow */}
       {animationType === 'complete' && (
@@ -186,11 +173,9 @@ export default function AnimatedProgressIcon({ onComplete, onViolation, size = '
 }
 
 interface ProgressGridProps {
-  onComplete: () => void;
-  onViolation: () => void;
 }
 
-export function ProgressGrid({ onComplete, onViolation }: ProgressGridProps) {
+export function ProgressGrid({}: ProgressGridProps) {
   const { settings, progress } = useUser();
   const [animatingItems, setAnimatingItems] = useState<Set<number>>(new Set());
   const [nextPulse, setNextPulse] = useState(false);
@@ -199,28 +184,6 @@ export function ProgressGrid({ onComplete, onViolation }: ProgressGridProps) {
   const total = settings.targetCompletions;
   const completed = progress.completions;
   const nextPct = Math.max(0, Math.min(100, (progress.nextProgressPct / Math.max(1e-9, settings.growthPerCompletion)) * 100));
-
-  const handleItemClick = (i: number) => {
-    const isDone = i < completed;
-    const isNext = i === completed;
-    setAnimatingItems(prev => {
-      const n = new Set(prev);
-      n.add(i);
-      return n;
-    });
-    setTimeout(() => {
-      setAnimatingItems(prev => {
-        const n = new Set(prev);
-        n.delete(i);
-        return n;
-      });
-    }, 700);
-    if (isDone) {
-      onViolation?.();
-    } else if (isNext) {
-      onComplete?.();
-    }
-  };
 
   // Subtle pulse when partial progress increases or a completion is added
   const prevRef = React.useRef({ completions: progress.completions, nextPctRaw: progress.nextProgressPct });
@@ -242,18 +205,16 @@ export function ProgressGrid({ onComplete, onViolation }: ProgressGridProps) {
         const isAnimating = animatingItems.has(i);
         
         return (
-          <button
+          <div
             key={i}
-            onClick={() => handleItemClick(i)}
             className={`relative w-12 h-12 rounded-lg grid place-items-center text-3xl transition-all duration-200 ${
               isDone ? 'bg-green-50 border-2 border-green-200' : 
-              isNext ? 'bg-blue-50 border-2 border-blue-300 hover:bg-blue-100' : 
+              isNext ? 'bg-blue-50 border-2 border-blue-300' : 
               'bg-gray-100 border-2 border-gray-200 opacity-50'
             } ${
               isAnimating ? (isDone ? 'animate-shake' : 'animate-bounce') : ''
             }`}
-            title={isNext ? `Next item progress: ${nextPct.toFixed(0)}% (need ${(Math.max(0, 100 - nextPct)).toFixed(0)}%)` : isDone ? 'Undo (violation)' : 'Not available yet'}
-            disabled={!isNext && !isDone}
+            title={isNext ? `Next item progress: ${nextPct.toFixed(0)}% (need ${(Math.max(0, 100 - nextPct)).toFixed(0)}%)` : isDone ? 'Completed' : 'Not available yet'}
           >
             <span className={`transition-all duration-300 ${
               isDone ? 'opacity-40 scale-75' : 
@@ -299,7 +260,7 @@ export function ProgressGrid({ onComplete, onViolation }: ProgressGridProps) {
                 <div className="text-yellow-400 text-xl animate-ping">✨</div>
               </div>
             )}
-          </button>
+          </div>
         );
       })}
     </div>

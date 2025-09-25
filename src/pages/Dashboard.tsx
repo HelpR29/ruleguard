@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TrendingUp, Plus, Crown, Share2, CheckCircle, Star } from 'lucide-react';
+import { TrendingUp, CheckCircle, Star, Share2 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useToast } from '../context/ToastContext';
 import AnimatedProgressIcon, { ProgressGrid } from '../components/AnimatedProgressIcon';
@@ -10,7 +10,6 @@ import RecentActivity from '../components/RecentActivity';
 export default function Dashboard() {
   const { settings, progress, updateProgress, updateSettings } = useUser();
   const { addToast } = useToast();
-  const [showAddCompletion, setShowAddCompletion] = useState(false);
   const [progressView, setProgressView] = useState<'icon'|'grid'>('icon');
   const [showCelebration, setShowCelebration] = useState(false);
   const [showNextGoal, setShowNextGoal] = useState(false);
@@ -20,109 +19,6 @@ export default function Dashboard() {
 
   const targetBalance = settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, settings.targetCompletions);
   const progressPercent = (progress.completions / settings.targetCompletions) * 100;
-
-  const addCompletion = () => {
-    // Don't allow completions beyond target
-    if (progress.completions >= settings.targetCompletions) {
-      return;
-    }
-    
-    const newCompletions = Math.min(progress.completions + 1, settings.targetCompletions);
-    const newBalance = settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, newCompletions);
-    const newDiscipline = Math.min(100, progress.disciplineScore + 1);
-    const newStreak = progress.streak + 1;
-    updateProgress({
-      completions: newCompletions,
-      currentBalance: Number(newBalance.toFixed(2)),
-      disciplineScore: newDiscipline,
-      streak: newStreak,
-    });
-    
-    // Check for other achievements
-    try {
-      const currentAchievements = JSON.parse(localStorage.getItem('user_achievements') || '[]');
-      let newAchievements = false;
-      
-      // Progress milestones
-      if (newCompletions >= 10 && !currentAchievements.includes('first_steps')) {
-        currentAchievements.push('first_steps');
-        addToast('success', '🎯 Achievement Unlocked: First Steps!');
-        newAchievements = true;
-      }
-      if (newCompletions >= 25 && !currentAchievements.includes('quarter_master')) {
-        currentAchievements.push('quarter_master');
-        addToast('success', '🏆 Achievement Unlocked: Quarter Master!');
-        newAchievements = true;
-      }
-      if (newCompletions >= 100 && !currentAchievements.includes('century_club')) {
-        currentAchievements.push('century_club');
-        addToast('success', '💯 Achievement Unlocked: Century Club!');
-        newAchievements = true;
-      }
-      
-      // Streak achievements
-      if (newStreak >= 7 && !currentAchievements.includes('week_warrior')) {
-        currentAchievements.push('week_warrior');
-        addToast('success', '🔥 Achievement Unlocked: Week Warrior!');
-        newAchievements = true;
-      }
-      if (newStreak >= 30 && !currentAchievements.includes('monthly_master')) {
-        currentAchievements.push('monthly_master');
-        addToast('success', '👑 Achievement Unlocked: Monthly Master!');
-        newAchievements = true;
-      }
-      
-      // Discipline achievements
-      if (newDiscipline >= 90 && !currentAchievements.includes('discipline_demon')) {
-        currentAchievements.push('discipline_demon');
-        addToast('success', '😈 Achievement Unlocked: Discipline Demon!');
-        newAchievements = true;
-      }
-      
-      if (newAchievements) {
-        localStorage.setItem('user_achievements', JSON.stringify(currentAchievements));
-      }
-    } catch {}
-    
-    // Show celebration if goal is reached
-    if (newCompletions === settings.targetCompletions) {
-      setShowCelebration(true);
-      
-      // Award achievement for goal completion
-      try {
-        const currentAchievements = JSON.parse(localStorage.getItem('user_achievements') || '[]');
-        const goalsCompleted = Math.floor(newCompletions / settings.targetCompletions);
-        
-        // Add goal completion achievements
-        if (goalsCompleted === 1 && !currentAchievements.includes('goal_getter')) {
-          currentAchievements.push('goal_getter');
-          addToast('success', '🎉 Achievement Unlocked: Goal Getter!');
-        }
-        if (goalsCompleted === 2 && !currentAchievements.includes('double_trouble')) {
-          currentAchievements.push('double_trouble');
-          addToast('success', '🎯 Achievement Unlocked: Double Trouble!');
-        }
-        if (goalsCompleted === 3 && !currentAchievements.includes('triple_threat')) {
-          currentAchievements.push('triple_threat');
-          addToast('success', '⭐ Achievement Unlocked: Triple Threat!');
-        }
-        
-        localStorage.setItem('user_achievements', JSON.stringify(currentAchievements));
-      } catch {}
-    }
-  };
-
-  const addViolation = () => {
-    const newCompletions = Math.max(progress.completions - 1, 0);
-    const newBalance = settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, newCompletions);
-    const newDiscipline = Math.max(0, progress.disciplineScore - 2);
-    updateProgress({
-      completions: newCompletions,
-      currentBalance: Number(newBalance.toFixed(2)),
-      disciplineScore: newDiscipline,
-      streak: 0,
-    });
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -135,7 +31,7 @@ export default function Dashboard() {
               <p className="text-blue-100">Keep building your discipline streak</p>
             </div>
             <button className="bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-xl flex items-center gap-2">
-              <Crown className="h-4 w-4" />
+              <Star className="h-4 w-4" />
               <span className="text-sm font-medium">Upgrade to Pro</span>
             </button>
           </div>
@@ -170,13 +66,10 @@ export default function Dashboard() {
                 <div className="flex items-center gap-2">
                   <button className="text-xs accent-outline" onClick={() => setProgressView(v => v === 'icon' ? 'grid' : 'icon')}>Switch View</button>
                   {progress.completions < settings.targetCompletions ? (
-                    <button
-                      onClick={() => setShowAddCompletion(true)}
-                      className="flex items-center gap-2 accent-btn"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Add Completion
-                    </button>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                      Progress: {(progress.nextProgressPct / settings.growthPerCompletion * 100).toFixed(0)}%
+                    </div>
                   ) : (
                     <div className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-medium">
                       <CheckCircle className="h-4 w-4" />
@@ -188,11 +81,7 @@ export default function Dashboard() {
               
               {progressView === 'icon' ? (
                 <div className="flex flex-col items-center space-y-8">
-                  <AnimatedProgressIcon 
-                    size="xl"
-                    onComplete={addCompletion}
-                    onViolation={addViolation}
-                  />
+                  <AnimatedProgressIcon />
                     <div className="rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-600 card-surface">
                       <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                         {progress.completions}/{settings.targetCompletions}
@@ -210,15 +99,15 @@ export default function Dashboard() {
                         ></div>
                     </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Click to add completion • Double-click for violation
+                      Progress updates automatically based on your compliant trades
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center space-y-4">
-                  <ProgressGrid onComplete={addCompletion} onViolation={addViolation} />
+                  <ProgressGrid />
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Click next item for completion • Click completed item for violation
+                    Progress updates automatically based on your compliant trades
                   </p>
                 </div>
               )}
@@ -316,35 +205,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-
-      {/* Add Completion Modal */}
-      {showAddCompletion && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Add Completion</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Confirm that you've successfully completed your trading rules and discipline requirements.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowAddCompletion(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  addCompletion();
-                  setShowAddCompletion(false);
-                }}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Celebration Modal */}
       {showCelebration && (

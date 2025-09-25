@@ -44,6 +44,9 @@ export default function ProgressTracker() {
         <p className="text-gray-600">
           {settings.targetCompletions - progress.completions} {settings.progressObject}s remaining
         </p>
+        <p className="text-sm text-blue-600 mt-2">
+          Progress updates automatically based on compliant trades
+        </p>
       </div>
 
       {/* Progress Grid */}
