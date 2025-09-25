@@ -510,14 +510,6 @@ export default function Reports() {
     downloadFile(toCSV(rows), 'text/csv;charset=utf-8', `lockin-${type}-report.csv`);
   };
 
-  const exportJSON = (type: 'weekly' | 'monthly' | 'completion') => {
-    let data: any;
-    if (type === 'weekly') data = { summary: { weeklyCompletions, weeklyViolations, totalPnl }, rows: weeklyData };
-    if (type === 'monthly') data = { rows: monthlyData };
-    if (type === 'completion') data = { target: settings?.targetCompletions, rows: completionData };
-    downloadFile(JSON.stringify(data, null, 2), 'application/json', `lockin-${type}-report.json`);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
@@ -545,10 +537,6 @@ export default function Reports() {
               <button onClick={() => exportCSV(activeReport as any)} className="flex items-center gap-2 accent-outline">
                 <Download className="h-4 w-4" />
                 Export CSV
-              </button>
-              <button onClick={() => exportJSON(activeReport as any)} className="flex items-center gap-2 accent-outline">
-                <Download className="h-4 w-4" />
-                Export JSON
               </button>
             </div>
           </div>
