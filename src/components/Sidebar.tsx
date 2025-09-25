@@ -30,7 +30,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 lg:hidden">
           <div className="flex items-center gap-3">
-            <Logo size={40} showText subtitle="Menu" />
+            <Logo showText subtitle="Menu" frame="card" />
           </div>
           <button
             onClick={onClose}

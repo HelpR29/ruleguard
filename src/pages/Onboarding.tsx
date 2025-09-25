@@ -42,7 +42,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       content: (
         <div className="text-center space-y-6">
           <div className="mx-auto flex items-center justify-center">
-            <Logo showText subtitle="Your trading discipline companion" frame="none" />
+            <Logo showText subtitle="Your trading discipline companion" frame="card" />
           </div>
           <div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Welcome to LockIn</h2>
