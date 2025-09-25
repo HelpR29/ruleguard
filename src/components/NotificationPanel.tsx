@@ -59,7 +59,14 @@ const mockNotifications: Notification[] = [
 ];
 
 export default function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>(() => {
+    try {
+      const stored = localStorage.getItem('app_notifications');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const markAsRead = (id: string) => {
     setNotifications(prev => 

@@ -104,14 +104,14 @@ function Journal() {
       const raw = localStorage.getItem('journal_trades');
       if (raw) return JSON.parse(raw);
     } catch {}
-    return mockTrades;
+    return []; // Start with empty array instead of mock data
   });
   const [journals, setJournals] = useState<typeof mockJournals>(() => {
     try {
       const raw = localStorage.getItem('journal_notes');
       if (raw) return JSON.parse(raw);
     } catch {}
-    return mockJournals;
+    return []; // Start with empty array instead of mock data
   });
 
   const [analyticsFilters, setAnalyticsFilters] = useState({
