@@ -383,7 +383,7 @@ function Journal() {
       id: Date.now(),
       date: form.date,
       symbol: form.symbol.toUpperCase(),
-      type: form.type,
+      type: form.type as 'Long' | 'Short',
       entry: entryNum,
       exit: exitNum,
       target: targetNum ?? null,
