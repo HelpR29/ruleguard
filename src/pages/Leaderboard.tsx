@@ -17,46 +17,8 @@ interface LeaderboardUser {
   lastMonthRank?: number;
 }
 
-const mockLeaderboardData: LeaderboardUser[] = [
-  {
-    id: '1',
-    name: 'Alex Chen',
-    avatar: '👨‍💼',
-    completions: 47,
-    disciplineScore: 96,
-    streak: 23,
-    progressObject: 'diamond',
-    isPremium: true,
-    rank: 1,
-    totalGrowth: 58.2,
-    leaderboardBadges: ['gold_champion']
-  },
-  {
-    id: '2',
-    name: 'Sarah Johnson',
-    avatar: '👩‍💼',
-    completions: 43,
-    disciplineScore: 94,
-    streak: 18,
-    progressObject: 'trophy',
-    isPremium: true,
-    rank: 2,
-    totalGrowth: 51.8
-  },
-  {
-    id: '3',
-    name: 'Mike Rodriguez',
-    avatar: '👨‍🚀',
-    completions: 39,
-    disciplineScore: 91,
-    streak: 15,
-    progressObject: 'wine',
-    isPremium: false,
-    rank: 3,
-    totalGrowth: 45.3
-  },
-  // User data will be added dynamically in component
-];
+// Start with empty leaderboard - only real user data will be added
+const mockLeaderboardData: LeaderboardUser[] = [];
 
 const progressObjects = {
   beer: '🍺',
