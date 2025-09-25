@@ -2,16 +2,17 @@ interface LogoProps {
   size?: number;
   showText?: boolean;
   subtitle?: string;
+  frame?: 'none' | 'card';
 }
 
 // Uses branded asset from public/ with fallback text
-export default function Logo({ size = 40, showText = false, subtitle }: LogoProps) {
-  const isSmallTile = size <= 56;
+export default function Logo({ size = 40, showText = false, subtitle, frame = 'card' }: LogoProps) {
+  const isSmallTile = size <= 56 && frame === 'card';
   const ver = 'v2';
   return (
     <div className="flex items-center gap-3 select-none" aria-label="LockIn logo">
       <div
-        className={`${isSmallTile ? 'p-0' : 'p-1'} rounded-xl shadow-lg border border-red-500/20 bg-white dark:bg-gray-900 flex items-center justify-center`}
+        className={`${frame === 'card' ? `${isSmallTile ? 'p-0' : 'p-1'} rounded-xl shadow-lg border border-red-500/20 bg-white dark:bg-gray-900` : 'p-0 bg-transparent'} flex items-center justify-center`}
         style={{ width: size, height: size }}
       >
         {/* For very small sizes, render a crisp inline SVG mark for clarity */}
