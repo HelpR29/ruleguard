@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown, BarChart3, Brain, Activity } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown, BarChart3, Activity } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useUser } from '../context/UserContext';
 import { saveAttachment, getAttachment, deleteAttachment } from '../utils/db';
