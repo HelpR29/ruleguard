@@ -52,11 +52,10 @@ interface AnimatedProgressIconProps {
 }
 
 export default function AnimatedProgressIcon({ onComplete, onViolation, size = 'xl' }: AnimatedProgressIconProps) {
-  const { settings, progress } = useUser();
+  const { settings } = useUser();
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationType, setAnimationType] = useState<'complete' | 'violation' | 'idle' | null>(null);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; emoji: string; delay: number }>>([]);
-  const [showRipple, setShowRipple] = useState(false);
 
   const object = progressObjects[settings.progressObject];
   
@@ -82,7 +81,6 @@ export default function AnimatedProgressIcon({ onComplete, onViolation, size = '
   const triggerAnimation = (type: 'complete' | 'violation') => {
     setIsAnimating(true);
     setAnimationType(type);
-    setShowRipple(true);
     
     // Create enhanced particle effect
     const particleCount = type === 'complete' ? 12 : 8;
@@ -96,10 +94,7 @@ export default function AnimatedProgressIcon({ onComplete, onViolation, size = '
     
     setParticles(newParticles);
     
-    // Reset animations
-    setTimeout(() => {
-      setShowRipple(false);
-    }, 1000);
+    // Reset minor effects if any
     
     setTimeout(() => {
       setIsAnimating(false);
@@ -123,80 +118,7 @@ export default function AnimatedProgressIcon({ onComplete, onViolation, size = '
     }
   };
 
-  const renderRealisticBeer = () => (
-    <div className={`relative ${sizeClasses[size]} flex items-center justify-center cursor-pointer ${getAnimationClasses()}`}
-         onClick={() => triggerAnimation('complete')}
-         onDoubleClick={() => triggerAnimation('violation')}>
-      
-      {/* Beer Mug SVG */}
-      <svg viewBox="0 0 200 200" className="w-full h-full">
-        {/* Mug Body */}
-        <defs>
-          <linearGradient id="beerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#FFD700" />
-            <stop offset="30%" stopColor="#FFA500" />
-            <stop offset="70%" stopColor="#FF8C00" />
-            <stop offset="100%" stopColor="#B8860B" />
-          </linearGradient>
-          <linearGradient id="foamGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="50%" stopColor="#F5F5DC" />
-            <stop offset="100%" stopColor="#E6E6FA" />
-          </linearGradient>
-          <linearGradient id="handleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#D3D3D3" />
-            <stop offset="50%" stopColor="#A9A9A9" />
-            <stop offset="100%" stopColor="#696969" />
-          </linearGradient>
-        </defs>
-        
-        {/* Mug Body */}
-        <rect x="40" y="60" width="80" height="100" rx="8" ry="8" 
-              fill="url(#beerGradient)" 
-              stroke="#8B4513" 
-              strokeWidth="2"/>
-        
-        {/* Beer Foam */}
-        <ellipse cx="80" cy="65" rx="35" ry="12" 
-                 fill="url(#foamGradient)" 
-                 className={animationType === 'complete' ? 'animate-pulse' : ''}/>
-        
-        {/* Foam Bubbles */}
-        <circle cx="70" cy="58" r="3" fill="#FFFFFF" opacity="0.8"/>
-        <circle cx="85" cy="55" r="2" fill="#FFFFFF" opacity="0.6"/>
-        <circle cx="90" cy="62" r="2.5" fill="#FFFFFF" opacity="0.7"/>
-        
-        {/* Handle */}
-        <path d="M 120 80 Q 140 80 140 100 Q 140 120 120 120" 
-              fill="none" 
-              stroke="url(#handleGradient)" 
-              strokeWidth="8" 
-              strokeLinecap="round"/>
-        
-        {/* Mug Bottom */}
-        <ellipse cx="80" cy="160" rx="40" ry="8" fill="#8B4513"/>
-        
-        {/* Highlight */}
-        <rect x="45" y="65" width="8" height="80" rx="4" fill="#FFFF99" opacity="0.6"/>
-      </svg>
-      
-      {/* Spill Effect for Violations */}
-      {animationType === 'violation' && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-blue-500 text-6xl animate-bounce">💧</div>
-        </div>
-      )}
-      
-      {/* Completion Sparkles */}
-      {animationType === 'complete' && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-yellow-400 text-4xl animate-ping">✨</div>
-          <div className="text-yellow-300 text-3xl animate-ping animation-delay-300 absolute top-4 right-4">⭐</div>
-          <div className="text-yellow-500 text-2xl animate-ping animation-delay-500 absolute bottom-4 left-4">💫</div>
-        </div>
-      )}
-    </div>
-  );
+  // (Removed unused realistic mug renderer)
 
   const renderGenericObject = () => (
     <div className={`
@@ -278,6 +200,28 @@ export function ProgressGrid({ onComplete, onViolation }: ProgressGridProps) {
   const completed = progress.completions;
   const nextPct = Math.max(0, Math.min(100, (progress.nextProgressPct / Math.max(1e-9, settings.growthPerCompletion)) * 100));
 
+  const handleItemClick = (i: number) => {
+    const isDone = i < completed;
+    const isNext = i === completed;
+    setAnimatingItems(prev => {
+      const n = new Set(prev);
+      n.add(i);
+      return n;
+    });
+    setTimeout(() => {
+      setAnimatingItems(prev => {
+        const n = new Set(prev);
+        n.delete(i);
+        return n;
+      });
+    }, 700);
+    if (isDone) {
+      onViolation?.();
+    } else if (isNext) {
+      onComplete?.();
+    }
+  };
+
   // Subtle pulse when partial progress increases or a completion is added
   const prevRef = React.useRef({ completions: progress.completions, nextPctRaw: progress.nextProgressPct });
   React.useEffect(() => {
@@ -355,7 +299,7 @@ export function ProgressGrid({ onComplete, onViolation }: ProgressGridProps) {
                 <div className="text-yellow-400 text-xl animate-ping">✨</div>
               </div>
             )}
-          </div>
+          </button>
         );
       })}
     </div>
