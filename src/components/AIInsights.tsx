@@ -280,34 +280,37 @@ export default function AIInsights({ trades, period, isLoading = false, onAnalys
             </div>
             <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 text-center">
               <p className="text-xl font-bold text-green-700 dark:text-green-300">
-                {trades.filter(t => t.profitLoss > 0).length}
+                {trades.filter((t: any) => ((t.profitLoss ?? t.pnl) || 0) > 0).length}
               </p>
               <p className="text-xs text-green-600 dark:text-green-400 mt-1">Winners</p>
             </div>
             <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 text-center">
               <p className="text-xl font-bold text-purple-700 dark:text-purple-300">
-                {((trades.filter(t => t.profitLoss > 0).length / trades.length) * 100).toFixed(1)}%
+                {trades.length > 0
+                  ? (((trades.filter((t: any) => ((t.profitLoss ?? t.pnl) || 0) > 0).length) / trades.length) * 100).toFixed(1)
+                  : '0.0'
+                }%
               </p>
               <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">Win Rate</p>
             </div>
             <div className={`rounded-lg p-3 text-center ${
-              trades.reduce((sum, t) => sum + t.profitLoss, 0) >= 0
+              trades.reduce((sum: number, t: any) => sum + Number((t.profitLoss ?? t.pnl) || 0), 0) >= 0
                 ? 'bg-emerald-50 dark:bg-emerald-900/20'
                 : 'bg-red-50 dark:bg-red-900/20'
             }`}>
               <p className={`text-xl font-bold ${
-                trades.reduce((sum, t) => sum + t.profitLoss, 0) >= 0
+                trades.reduce((sum: number, t: any) => sum + Number((t.profitLoss ?? t.pnl) || 0), 0) >= 0
                   ? 'text-emerald-700 dark:text-emerald-300'
                   : 'text-red-700 dark:text-red-300'
               }`}>
-                ${Math.abs(trades.reduce((sum, t) => sum + t.profitLoss, 0)).toFixed(0)}
+                ${Math.abs(trades.reduce((sum: number, t: any) => sum + Number((t.profitLoss ?? t.pnl) || 0), 0)).toFixed(0)}
               </p>
               <p className={`text-xs mt-1 ${
-                trades.reduce((sum, t) => sum + t.profitLoss, 0) >= 0
+                trades.reduce((sum: number, t: any) => sum + Number((t.profitLoss ?? t.pnl) || 0), 0) >= 0
                   ? 'text-emerald-600 dark:text-emerald-400'
                   : 'text-red-600 dark:text-red-400'
               }`}>
-                Net {trades.reduce((sum, t) => sum + t.profitLoss, 0) >= 0 ? 'Profit' : 'Loss'}
+                Net {trades.reduce((sum: number, t: any) => sum + Number((t.profitLoss ?? t.pnl) || 0), 0) >= 0 ? 'Profit' : 'Loss'}
               </p>
             </div>
           </div>
