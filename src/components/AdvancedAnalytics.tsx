@@ -81,7 +81,7 @@ interface AnalyticsFilters {
 }
 
 interface ChartConfig {
-  type: 'bar' | 'line' | 'area' | 'scatter' | 'composed' | 'treemap' | 'funnel';
+  type: 'bar' | 'line' | 'area' | 'scatter' | 'composed' | 'treemap' | 'funnel' | 'pie';
   dataKey: string;
   name: string;
   color: string;
@@ -465,108 +465,87 @@ export default function AnalyticsDashboard({
       data: analyticsData,
       margin: { top: 5, right: 30, left: 20, bottom: 5 }
     };
+    let child: React.ReactElement | null = null;
+    const primary = config[0].type;
+
+    if (primary === 'bar') {
+      child = (
+        <BarChart {...chartProps}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis dataKey="date" stroke="#666" fontSize={12} />
+          <YAxis stroke="#666" fontSize={12} />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '8px'
+            }}
+          />
+          {config.map((chartConfig, index) => (
+            <Bar key={index} dataKey={chartConfig.dataKey} fill={chartConfig.color} name={chartConfig.name} />
+          ))}
+        </BarChart>
+      );
+    } else if (primary === 'line') {
+      child = (
+        <LineChart {...chartProps}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis dataKey="date" stroke="#666" fontSize={12} />
+          <YAxis stroke="#666" fontSize={12} />
+          <Tooltip />
+          {config.map((chartConfig, index) => (
+            <Line key={index} type="monotone" dataKey={chartConfig.dataKey} stroke={chartConfig.color} strokeWidth={2} name={chartConfig.name} dot={{ r: 4 }} />
+          ))}
+        </LineChart>
+      );
+    } else if (primary === 'area') {
+      child = (
+        <AreaChart {...chartProps}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis dataKey="date" stroke="#666" fontSize={12} />
+          <YAxis stroke="#666" fontSize={12} />
+          <Tooltip />
+          {config.map((chartConfig, index) => (
+            <Area key={index} type="monotone" dataKey={chartConfig.dataKey} stroke={chartConfig.color} fill={chartConfig.color} fillOpacity={0.3} name={chartConfig.name} />
+          ))}
+        </AreaChart>
+      );
+    } else if (primary === 'scatter') {
+      child = (
+        <ScatterChart {...chartProps}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis dataKey="date" stroke="#666" fontSize={12} />
+          <YAxis stroke="#666" fontSize={12} />
+          <Tooltip />
+          {config.map((chartConfig, index) => (
+            <Scatter key={index} dataKey={chartConfig.dataKey} fill={chartConfig.color} name={chartConfig.name} />
+          ))}
+        </ScatterChart>
+      );
+    } else if (primary === 'pie') {
+      child = (
+        <PieChart>
+          <Pie
+            data={emotionData}
+            cx="50%"
+            cy="50%"
+            innerRadius={60}
+            outerRadius={100}
+            dataKey="value"
+          >
+            {emotionData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.color} />
+            ))}
+          </Pie>
+          <Tooltip formatter={(value: number) => `${value}%`} />
+        </PieChart>
+      );
+    }
 
     return (
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
-          {config[0].type === 'bar' && (
-            <BarChart {...chartProps}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" stroke="#666" fontSize={12} />
-              <YAxis stroke="#666" fontSize={12} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#fff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px'
-                }}
-              />
-              {config.map((chartConfig, index) => (
-                <Bar
-                  key={index}
-                  dataKey={chartConfig.dataKey}
-                  fill={chartConfig.color}
-                  name={chartConfig.name}
-                />
-              ))}
-            </BarChart>
-          )}
-
-          {config[0].type === 'line' && (
-            <LineChart {...chartProps}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" stroke="#666" fontSize={12} />
-              <YAxis stroke="#666" fontSize={12} />
-              <Tooltip />
-              {config.map((chartConfig, index) => (
-                <Line
-                  key={index}
-                  type="monotone"
-                  dataKey={chartConfig.dataKey}
-                  stroke={chartConfig.color}
-                  strokeWidth={2}
-                  name={chartConfig.name}
-                  dot={{ r: 4 }}
-                />
-              ))}
-            </LineChart>
-          )}
-
-          {config[0].type === 'area' && (
-            <AreaChart {...chartProps}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" stroke="#666" fontSize={12} />
-              <YAxis stroke="#666" fontSize={12} />
-              <Tooltip />
-              {config.map((chartConfig, index) => (
-                <Area
-                  key={index}
-                  type="monotone"
-                  dataKey={chartConfig.dataKey}
-                  stroke={chartConfig.color}
-                  fill={chartConfig.color}
-                  fillOpacity={0.3}
-                  name={chartConfig.name}
-                />
-              ))}
-            </AreaChart>
-          )}
-
-          {config[0].type === 'scatter' && (
-            <ScatterChart {...chartProps}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" stroke="#666" fontSize={12} />
-              <YAxis stroke="#666" fontSize={12} />
-              <Tooltip />
-              {config.map((chartConfig, index) => (
-                <Scatter
-                  key={index}
-                  dataKey={chartConfig.dataKey}
-                  fill={chartConfig.color}
-                  name={chartConfig.name}
-                />
-              ))}
-            </ScatterChart>
-          )}
-
-          {config[0].type === 'pie' && (
-            <PieChart>
-              <Pie
-                data={emotionData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                dataKey="value"
-                label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
-              >
-                {emotionData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => `${value}%`} />
-            </PieChart>
-          )}
+          {child as React.ReactElement}
         </ResponsiveContainer>
       </div>
     );
