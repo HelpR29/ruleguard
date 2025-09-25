@@ -16,6 +16,8 @@ export default function Rules() {
   const [showRestrictionInfo, setShowRestrictionInfo] = useState(false);
   const [newTags, setNewTags] = useState('');
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [showTemplates, setShowTemplates] = useState(false);
   const { addToast } = useToast();
   const navigate = useNavigate();
 
@@ -31,6 +33,40 @@ export default function Rules() {
 
   const activeCount = rules.filter(r => r.active).length;
   const totalViolations = rules.reduce((sum, r) => sum + r.violations, 0);
+
+  // Category-based filtering
+  const filteredRules = rules.filter(r => {
+    const categoryMatch = selectedCategory === 'all' || r.category === selectedCategory;
+    const tagMatch = activeFilters.length === 0 || (r.tags || []).some(t => activeFilters.includes(t));
+    return categoryMatch && tagMatch;
+  });
+
+  // Category statistics
+  const categoryStats = useMemo(() => {
+    const stats: Record<string, { count: number; violations: number; active: number }> = {};
+    RULE_TEMPLATES.forEach(template => {
+      stats[template.category] = { count: 0, violations: 0, active: 0 };
+    });
+
+    rules.forEach(rule => {
+      if (rule.category && stats[rule.category]) {
+        stats[rule.category].count++;
+        stats[rule.category].violations += rule.violations;
+        if (rule.active) stats[rule.category].active++;
+      }
+    });
+
+    return stats;
+  }, [rules]);
+
+  const getCategoryIcon = (category: string) => {
+    const template = RULE_TEMPLATES.find(t => t.category === category);
+    return template?.categoryIcon || '📋';
+  };
+
+  const getCategoryColor = (category: string) => {
+    return CATEGORY_COLORS[category as keyof typeof CATEGORY_COLORS] || CATEGORY_COLORS.psychology;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
