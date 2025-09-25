@@ -311,6 +311,20 @@ function Journal() {
     if (form.notes.trim()) {
       setJournals(prev => [{ id: Date.now(), date: form.date, entry: form.notes.trim(), mood: form.emotion, disciplineScore: form.ruleCompliant ? 90 : 60 }, ...prev]);
     }
+    // Record non-compliance in daily_stats and activity_log for reporting
+    if (!form.ruleCompliant) {
+      try {
+        const key = (form.date ? new Date(form.date) : new Date()).toISOString().slice(0, 10);
+        const stats = JSON.parse(localStorage.getItem('daily_stats') || '{}');
+        const today = stats[key] || { completions: 0, violations: 0 };
+        today.violations += 1;
+        stats[key] = today;
+        localStorage.setItem('daily_stats', JSON.stringify(stats));
+        const log = JSON.parse(localStorage.getItem('activity_log') || '[]');
+        log.push({ ts: Date.now(), type: 'violation' });
+        localStorage.setItem('activity_log', JSON.stringify(log));
+      } catch {}
+    }
     if (form.ruleCompliant) {
       // Contribute positive percent toward automated progress
       if (gainPct > 0) recordTradeProgress(Number(gainPct.toFixed(2)), true);
