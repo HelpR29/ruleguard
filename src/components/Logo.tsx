@@ -1,4 +1,3 @@
-
 interface LogoProps {
   size?: number;
   showText?: boolean;
@@ -13,15 +12,20 @@ export default function Logo({ size = 40, showText = false, subtitle }: LogoProp
         className="rounded-xl shadow-lg border border-red-500/20 bg-white dark:bg-gray-900 flex items-center justify-center overflow-hidden"
         style={{ width: size, height: size }}
       >
-        {/* Prefer the provided asset. Place lockin-logo.png in public/. */}
+        {/* Prefer the provided asset. Place lockin-logo.png in public/. Fallback to existing svg, then hide. */}
         <img
           src="/lockin-logo.png"
           alt="LockIn logo"
           className="object-contain"
           style={{ width: Math.floor(size * 0.9), height: Math.floor(size * 0.9) }}
           onError={(e) => {
-            // Graceful fallback to simple text if asset missing
-            const target = e.currentTarget as HTMLImageElement;
+            const target = e.currentTarget as HTMLImageElement & { dataset: { fallbackTried?: string } };
+            if (target.dataset.fallbackTried !== 'true') {
+              target.dataset.fallbackTried = 'true';
+              target.src = '/logo-trade-game.svg';
+              return;
+            }
+            // Final fallback: hide image; text portion below can still render if enabled
             target.style.display = 'none';
           }}
         />
