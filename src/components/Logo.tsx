@@ -24,29 +24,30 @@ export default function Logo({ size = 40, showText = false, subtitle }: LogoProp
             <circle cx="12" cy="15" r="2" fill="#ef4444" />
           </svg>
         ) : (
-        {/* Prefer the provided asset. Place lockin-logo.png in public/. Fallback to existing svg, then hide. */}
-        <img
-          src="/lockin-logo.png"
-          alt="LockIn logo"
-          className="object-contain"
-          style={{ width: Math.floor(size * 0.9), height: Math.floor(size * 0.9) }}
-          onError={(e) => {
-            const target = e.currentTarget as HTMLImageElement & { dataset: { fallbackStep?: string } };
-            const step = Number(target.dataset.fallbackStep || '0');
-            if (step === 0) {
-              target.dataset.fallbackStep = '1';
-              target.src = '/lockin-logo.jpg';
-              return;
-            }
-            if (step === 1) {
-              target.dataset.fallbackStep = '2';
-              target.src = '/logo-trade-game.svg';
-              return;
-            }
-            // Final fallback: hide image; text portion below can still render if enabled
-            target.style.display = 'none';
-          }}
-        />
+          <>
+            <img
+              src="/lockin-logo.png"
+              alt="LockIn logo"
+              className="object-contain"
+              style={{ width: Math.floor(size * 0.9), height: Math.floor(size * 0.9) }}
+              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                const target = e.currentTarget as HTMLImageElement & { dataset: { fallbackStep?: string } };
+                const step = Number(target.dataset.fallbackStep || '0');
+                if (step === 0) {
+                  target.dataset.fallbackStep = '1';
+                  target.src = '/lockin-logo.jpg';
+                  return;
+                }
+                if (step === 1) {
+                  target.dataset.fallbackStep = '2';
+                  target.src = '/logo-trade-game.svg';
+                  return;
+                }
+                // Final fallback: hide image; text portion below can still render if enabled
+                target.style.display = 'none';
+              }}
+            />
+          </>
         )}
       </div>
 
