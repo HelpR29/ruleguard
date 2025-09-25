@@ -179,12 +179,27 @@ export default function Reports() {
     }
   }, []);
 
-  const emotionData = [
-    { name: 'Confident', value: 40, color: '#10b981' },
-    { name: 'FOMO', value: 25, color: '#f59e0b' },
-    { name: 'Fear', value: 20, color: '#ef4444' },
-    { name: 'Neutral', value: 15, color: '#6b7280' },
-  ];
+  // Emotion distribution (placeholder: use zeros when there's no activity)
+  const emotionData = useMemo(() => {
+    const anyWeekly = weeklyData.some(d => (d.completions || d.violations || d.pnl));
+    const anyTrades = Array.isArray(trades) && trades.length > 0;
+    if (!anyWeekly && !anyTrades) {
+      return [
+        { name: 'Confident', value: 0, color: '#10b981' },
+        { name: 'FOMO', value: 0, color: '#f59e0b' },
+        { name: 'Fear', value: 0, color: '#ef4444' },
+        { name: 'Neutral', value: 0, color: '#6b7280' },
+      ];
+    }
+    // If you later track emotions per trade, compute real values here.
+    // For now, keep neutral placeholders that don't sum to misleading numbers.
+    return [
+      { name: 'Confident', value: 0, color: '#10b981' },
+      { name: 'FOMO', value: 0, color: '#f59e0b' },
+      { name: 'Fear', value: 0, color: '#ef4444' },
+      { name: 'Neutral', value: 0, color: '#6b7280' },
+    ];
+  }, [weeklyData, trades]);
 
   // Per-rule, time-of-day, and weekday-hour heatmap from activity_log
   const { perRuleData, hourlyData, heatmap, tagStats, maxHeat, topTags } = useMemo(() => {
