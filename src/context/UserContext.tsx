@@ -41,6 +41,7 @@ export interface UserRule {
   violations: number;
   lastViolation: string | null;
   tags?: string[];
+  category?: 'psychology' | 'risk' | 'entry-exit' | 'analysis' | 'discipline' | 'money';
 }
 
 const defaultSettings: UserSettings = {
