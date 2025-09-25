@@ -91,7 +91,6 @@ function LiveTradeChart({ entry, exit, target, stop }: { entry: string; exit: st
       <canvas ref={canvasRef} className="w-full rounded-lg border" />
     </div>
   );
-}
 
 // Resolve image IDs to object URLs and render a grid
 function TradeImages({ ids, onRemove }: { ids: number[]; onRemove?: (idx: number) => void }) {
@@ -99,14 +98,12 @@ function TradeImages({ ids, onRemove }: { ids: number[]; onRemove?: (idx: number
   useEffect(() => {
     let active = true;
     (async () => {
-      try {
-        const arr: string[] = [];
-        for (const id of ids) {
-          const blob = await getAttachment(id);
-          if (blob) arr.push(URL.createObjectURL(blob));
-        }
-        if (active) setUrls(arr);
-      } catch {}
+      const arr: string[] = [];
+      for (const id of ids) {
+        const blob = await getAttachment(id);
+        if (blob) arr.push(URL.createObjectURL(blob));
+      }
+      if (active) setUrls(arr);
     })();
     return () => {
       setUrls(prev => {
@@ -142,11 +139,11 @@ export default function Journal() {
   const [activeTab, setActiveTab] = useState('trades');
   const [showNewEntry, setShowNewEntry] = useState(false);
   const { addToast } = useToast();
-  const { recordCompletion, recordTradeProgress } = useUser();
-  const [premiumStatus, setPremiumStatus] = useState<string>(() => {
+  const { recordTradeProgress } = useUser();
+  const [premiumStatus] = useState<string>(() => {
     try { return localStorage.getItem('premium_status') || 'none'; } catch { return 'none'; }
   });
-  const [achievements, setAchievements] = useState<string[]>(() => {
+  const [achievements] = useState<string[]>(() => {
     try { const a = JSON.parse(localStorage.getItem('user_achievements') || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
   });
 
