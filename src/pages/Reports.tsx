@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { BarChart3, Download, TrendingUp, TrendingDown, Award, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { BarChart3, Download, TrendingUp, TrendingDown, Award, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useUser } from '../context/UserContext';
 import PnlCard from '../components/PnlCard';
@@ -137,6 +137,37 @@ export default function Reports() {
     } catch {}
     const wr = total ? Math.round((wins / total) * 100) : 0;
     return { weeklyCompletions: comps, weeklyViolations: vios, weeklyWinRate: wr };
+  }, [weeklyData]);
+
+  // Weekly Profit Factor (last 7 days trades): total profits / |total losses|
+  const weeklyProfitFactor = useMemo(() => {
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(today.getDate() - 6);
+    let totalProfits = 0;
+    let totalLosses = 0; // negative numbers
+    try {
+      const raw = localStorage.getItem('journal_trades');
+      const arr = raw ? JSON.parse(raw) : [];
+      for (const t of Array.isArray(arr) ? arr : []) {
+        const ds = (t.date || '').slice(0, 10);
+        if (!ds) continue;
+        const dsNum = Number(ds.replace(/-/g, ''));
+        const sNum = Number(start.toISOString().slice(0,10).replace(/-/g, ''));
+        const eNum = Number(today.toISOString().slice(0,10).replace(/-/g, ''));
+        if (dsNum >= sNum && dsNum <= eNum) {
+          const pnl = Number(t.pnl);
+          if (!Number.isNaN(pnl)) {
+            if (pnl > 0) totalProfits += pnl;
+            else if (pnl < 0) totalLosses += pnl; // negative accumulation
+          }
+        }
+      }
+    } catch {}
+    if (totalProfits === 0 && totalLosses === 0) return null; // no trades
+    if (totalLosses === 0 && totalProfits > 0) return Infinity; // never lost -> infinite PF
+    const denom = Math.abs(totalLosses);
+    return denom > 0 ? (totalProfits / denom) : null;
   }, [weeklyData]);
 
   const totalPnl = useMemo(() => weeklyData.reduce((s, d) => s + d.pnl, 0), [weeklyData]);
@@ -564,7 +595,7 @@ export default function Reports() {
               </div>
             </div>
             {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
               <div className="rounded-2xl p-6 card-surface">
                 <div className="flex items-center gap-3 mb-2">
                   <Award className="h-8 w-8 text-green-500" />
@@ -621,6 +652,26 @@ export default function Reports() {
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm">Based on journal Target/Stop</p>
+              </div>
+
+              {/* Profit Factor */}
+              <div className="rounded-2xl p-6 card-surface">
+                <div className="flex items-center gap-3 mb-2">
+                  <Info className="h-8 w-8 text-gray-500" />
+                  <div>
+                    <p className="text-gray-600 text-sm flex items-center gap-2">
+                      Profit factor
+                      <span
+                        className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-gray-600 text-[11px]"
+                        title="Total profits divided by total losses. A profit factor above 1.0 indicates a profitable trading system."
+                      >i</span>
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {weeklyProfitFactor === null ? '—' : (weeklyProfitFactor === Infinity ? '∞' : weeklyProfitFactor.toFixed(2))}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-gray-600 text-sm">Last 7 days</p>
               </div>
             </div>
 
