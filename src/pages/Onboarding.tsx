@@ -24,6 +24,17 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     { value: 'trophy', emoji: '🏆', label: 'Trophy' },
   ];
 
+  const predefinedRules = [
+    { text: 'Never risk more than 2% per trade', description: 'Protects capital by limiting the maximum loss on any single trade.' },
+    { text: 'Only trade setups with 2:1 RR or better', description: 'Ensures that potential rewards outweigh the risks.' },
+    { text: 'Maximum 3 trades per day', description: 'Prevents over-trading and emotional decision-making.' },
+    { text: 'No revenge trading after losses', description: 'Avoids impulsive trades to win back money, which often leads to bigger losses.' },
+    { text: 'Always use stop losses', description: 'A critical rule to automatically exit a trade at a predetermined price to limit losses.' },
+    { text: 'Follow the trading plan', description: 'Stick to your pre-defined strategy, entries, and exits without deviation.' },
+    { text: 'No trading on FOMO', description: 'Avoid entering a trade based on fear of missing out on a big move.' },
+    { text: 'Review trades daily', description: 'Analyze your trades at the end of each day to learn from mistakes and successes.' },
+  ];
+
   const steps = [
     {
       title: 'Welcome to LockIn',
@@ -180,26 +191,20 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
           <div className="space-y-4">
             {/* Predefined Rules */}
-            {[
-              'Never risk more than 2% per trade',
-              'Only trade setups with 2:1 RR or better',
-              'Maximum 3 trades per day',
-              'No revenge trading after losses',
-              'Always use stop losses'
-            ].map((rule) => (
-              <label key={rule} className="flex items-center gap-3">
+            {predefinedRules.map((rule) => (
+              <label key={rule.text} className="flex items-center gap-3" title={rule.description}>
                 <input
                   type="checkbox"
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   onChange={(e) => {
                     if (e.target.checked) {
-                      setFormData({ ...formData, rules: [...formData.rules, rule] });
+                      setFormData({ ...formData, rules: [...formData.rules, rule.text] });
                     } else {
-                      setFormData({ ...formData, rules: formData.rules.filter(r => r !== rule) });
+                      setFormData({ ...formData, rules: formData.rules.filter(r => r !== rule.text) });
                     }
                   }}
                 />
-                <span className="text-gray-700">{rule}</span>
+                <span className="text-gray-700">{rule.text}</span>
               </label>
             ))}
           </div>

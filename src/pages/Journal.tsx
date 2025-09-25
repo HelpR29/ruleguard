@@ -10,6 +10,7 @@ type Trade = {
   id: number;
   date: string;
   symbol: string;
+  setup?: string;
   type: 'Long' | 'Short' | string;
   entry: number;
   exit: number;
@@ -275,6 +276,7 @@ export default function Journal() {
 
   // New Entry form state
   const [form, setForm] = useState({
+    setup: '',
     date: new Date().toISOString().slice(0,10),
     symbol: '',
     type: 'Long',
@@ -296,7 +298,7 @@ export default function Journal() {
     try { form.imagePreviews.forEach(u => URL.revokeObjectURL(u)); } catch {}
     setForm({
       date: new Date().toISOString().slice(0,10),
-      symbol: '', type: 'Long', entry: '', exit: '', target: '', stop: '', size: '', emotion: 'Neutral', notes: '', tags: '', ruleCompliant: true,
+      symbol: '', setup: '', type: 'Long', entry: '', exit: '', target: '', stop: '', size: '', emotion: 'Neutral', notes: '', tags: '', ruleCompliant: true,
       imageIds: [], imagePreviews: [],
     });
   };
@@ -365,6 +367,7 @@ export default function Journal() {
     const rawPct = ((exitNum - entryNum) / entryNum) * 100;
     const gainPct = form.type === 'Long' ? rawPct : ((entryNum - exitNum) / entryNum) * 100;
     const newTrade = {
+      setup: form.setup,
       id: Date.now(),
       date: form.date,
       symbol: form.symbol.toUpperCase(),
@@ -682,6 +685,10 @@ export default function Journal() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Symbol</label>
                 <input value={form.symbol} onChange={(e)=>setForm({...form, symbol: e.target.value})} placeholder="AAPL" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Setup</label>
+                <input value={form.setup} onChange={(e)=>setForm({...form, setup: e.target.value})} placeholder="Breakout, Pullback..." className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
