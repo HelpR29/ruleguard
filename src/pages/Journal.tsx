@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, Component, ReactNode } from 'react';
 import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown, BarChart3, Activity } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useUser } from '../context/UserContext';
@@ -31,6 +31,32 @@ interface JournalTrade {
   tags: string[];
   imageIds: number[];
   setup?: string;
+}
+
+// Error Boundary for Analytics pane to avoid app-wide crash
+class AnalyticsErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: any, info: any) {
+    try { console.error('Analytics crashed:', error, info); } catch {}
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+          <p className="font-semibold text-red-700 mb-2">Analytics failed to load</p>
+          <p className="text-sm text-red-600 mb-3">Please try again or adjust filters.</p>
+          <button onClick={() => this.setState({ hasError: false })} className="px-3 py-1 text-sm rounded bg-blue-600 text-white">Retry</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 function Journal() {
@@ -128,27 +154,6 @@ function Journal() {
   };
 
   const [showAnalyticsFilters, setShowAnalyticsFilters] = useState(false);
-
-  // Error Boundary for Analytics pane to avoid app-wide crash
-  class AnalyticsErrorBoundary extends (window as any).React?.Component<any, any> || (class extends (Object as any) {}) {
-    constructor(props: any) { super(props); this.state = { hasError: false, error: null }; }
-    static getDerivedStateFromError(error: any) { return { hasError: true, error }; }
-    componentDidCatch(error: any, info: any) { try { console.error('Analytics crashed:', error, info); } catch {} }
-    render() {
-      // @ts-ignore
-      if ((this as any).state?.hasError) {
-        return (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
-            <p className="font-semibold text-red-700 mb-2">Analytics failed to load</p>
-            <p className="text-sm text-red-600 mb-3">Please try again or adjust filters.</p>
-            <button onClick={() => this.setState({ hasError: false, error: null })} className="px-3 py-1 text-sm rounded bg-blue-600 text-white">Retry</button>
-          </div>
-        );
-      }
-      // @ts-ignore
-      return (this as any).props.children;
-    }
-  }
 
   // One-time migration: move legacy base64 images to IndexedDB and store IDs
   useEffect(() => {
