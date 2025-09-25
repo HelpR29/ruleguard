@@ -65,20 +65,21 @@ export default function Leaderboard() {
 
   // Build leaderboard from peers + current user and compute ranks
   const buildLeaderboard = () => {
-    const dn = (localStorage.getItem('display_name') || 'You').trim() || 'You';
-    const you: LeaderboardUser = {
-      id: 'you',
-      name: dn,
-      avatar: '👤',
-      completions: progress.completions,
-      disciplineScore: progress.disciplineScore,
-      streak: progress.streak,
-      progressObject: settings.progressObject,
-      isPremium: (localStorage.getItem('premium_status') || 'none') === 'premium',
-      rank: 0,
-      totalGrowth: totalGrowthPct,
-      leaderboardBadges: JSON.parse(localStorage.getItem('user_achievements') || '[]').filter((a: string)=>/_(champion)$/.test(a))
-    };
+    try {
+      const dn = (localStorage.getItem('display_name') || 'You').trim() || 'You';
+      const you: LeaderboardUser = {
+        id: 'you',
+        name: dn,
+        avatar: '👤',
+        completions: progress?.completions || 0,
+        disciplineScore: progress?.disciplineScore || 0,
+        streak: progress?.streak || 0,
+        progressObject: settings?.progressObject || 'beer',
+        isPremium: (localStorage.getItem('premium_status') || 'none') === 'premium',
+        rank: 0,
+        totalGrowth: totalGrowthPct || 0,
+        leaderboardBadges: JSON.parse(localStorage.getItem('user_achievements') || '[]').filter((a: string)=>/_(champion)$/.test(a))
+      };
 
     // Merge and compute ranks
     const merged = [...mockLeaderboardData.filter(u=>u.id!=='you'), you];
