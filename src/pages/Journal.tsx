@@ -5,7 +5,7 @@ import { useUser } from '../context/UserContext';
 import { saveAttachment, getAttachment, deleteAttachment } from '../utils/db';
 import StockChart from '../components/StockChart';
 import AIInsights from '../components/AIInsights';
-import { Skeleton, ListSkeleton } from '../components/Skeleton';
+import { Tooltip } from '../components/Tooltip';
 
 type Trade = {
   id: number;
@@ -420,30 +420,40 @@ export default function Journal() {
                 <p className="text-gray-600">Track your trades and thoughts</p>
               </div>
             </div>
-            <button onClick={() => setShowNewEntry(true)} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors">
-              <Plus className="h-4 w-4" />
-              New Entry
-            </button>
+            <Tooltip content="Add a new trade entry to your journal with details, charts, and notes">
+              <button onClick={() => setShowNewEntry(true)} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors">
+                <Plus className="h-4 w-4" />
+                New Entry
+              </button>
+            </Tooltip>
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 rounded-xl p-4">
-              <p className="text-blue-600 text-sm mb-1">Total Trades</p>
-              <p className="text-2xl font-bold text-blue-700">247</p>
-            </div>
-            <div className="bg-green-50 rounded-xl p-4">
-              <p className="text-green-600 text-sm mb-1">Win Rate</p>
-              <p className="text-2xl font-bold text-green-700">68%</p>
-            </div>
-            <div className="bg-purple-50 rounded-xl p-4">
-              <p className="text-purple-600 text-sm mb-1">Avg P&L</p>
-              <p className="text-2xl font-bold text-purple-700">$125</p>
-            </div>
-            <div className="bg-amber-50 rounded-xl p-4">
-              <p className="text-amber-600 text-sm mb-1">Rule Compliance</p>
-              <p className="text-2xl font-bold text-amber-700">85%</p>
-            </div>
+            <Tooltip content="Total number of trades recorded in your journal">
+              <div className="bg-blue-50 rounded-xl p-4">
+                <p className="text-blue-600 text-sm mb-1">Total Trades</p>
+                <p className="text-2xl font-bold text-blue-700">247</p>
+              </div>
+            </Tooltip>
+            <Tooltip content="Percentage of profitable trades out of total trades">
+              <div className="bg-green-50 rounded-xl p-4">
+                <p className="text-green-600 text-sm mb-1">Win Rate</p>
+                <p className="text-2xl font-bold text-green-700">68%</p>
+              </div>
+            </Tooltip>
+            <Tooltip content="Average profit or loss per trade">
+              <div className="bg-purple-50 rounded-xl p-4">
+                <p className="text-purple-600 text-sm mb-1">Avg P&L</p>
+                <p className="text-2xl font-bold text-purple-700">$125</p>
+              </div>
+            </Tooltip>
+            <Tooltip content="Percentage of trades that followed your trading rules">
+              <div className="bg-amber-50 rounded-xl p-4">
+                <p className="text-amber-600 text-sm mb-1">Rule Compliance</p>
+                <p className="text-2xl font-bold text-amber-700">85%</p>
+              </div>
+            </Tooltip>
           </div>
         </div>
 
