@@ -4,11 +4,27 @@ import { useToast } from '../context/ToastContext';
 import { useUser } from '../context/UserContext';
 import { saveAttachment, getAttachment, deleteAttachment } from '../utils/db';
 import StockChart from '../components/StockChart';
-import AIInsights from '../components/AIInsights';
-import AdvancedAnalytics from '../components/AdvancedAnalytics';
-import AnalyticsFilters from '../components/AnalyticsFilters';
 import { Tooltip } from '../components/Tooltip';
-import { Trade } from '../types';
+
+// Local interface for journal trades (matches the expected usage)
+interface JournalTrade {
+  id: number;
+  date: string;
+  symbol: string;
+  type: 'Long' | 'Short';
+  entry: number;
+  exit: number;
+  size: number;
+  pnl: number;
+  emotion: string;
+  notes: string;
+  ruleCompliant: boolean;
+  target: number | null;
+  stop: number | null;
+  tags: string[];
+  imageIds: number[];
+  setup?: string;
+}
 
 function LiveTradeChart({ entry, exit, target, stop }: { entry: string; exit: string; target?: string; stop?: string }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -133,7 +149,7 @@ function Journal() {
     try { const a = JSON.parse(localStorage.getItem('user_achievements') || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
   });
 
-  const mockTrades: Trade[] = [
+  const mockTrades: JournalTrade[] = [
     {
       id: 1,
       date: '2024-01-15',
@@ -148,7 +164,8 @@ function Journal() {
       ruleCompliant: true,
       target: null,
       stop: null,
-      tags: ['breakout','trend']
+      tags: ['breakout','trend'],
+      imageIds: []
     },
     {
       id: 2,
@@ -164,7 +181,8 @@ function Journal() {
       ruleCompliant: false,
       target: null,
       stop: null,
-      tags: ['momentum','reversal']
+      tags: ['momentum','reversal'],
+      imageIds: []
     }
   ];
 
@@ -185,7 +203,7 @@ function Journal() {
     }
   ];
 
-  const [trades, setTrades] = useState<Trade[]>(() => {
+  const [trades, setTrades] = useState<JournalTrade[]>(() => {
     try {
       const raw = localStorage.getItem('journal_trades');
       if (raw) return JSON.parse(raw);
@@ -218,12 +236,12 @@ function Journal() {
             }
             changed = true;
             const { images, ...rest } = t;
-            return { ...rest, imageIds: ids } as Trade;
+            return { ...rest, imageIds: ids, type: rest.type as 'Long' | 'Short' } as JournalTrade;
           }
-          return t as Trade;
+          return t as JournalTrade;
         }));
         if (changed) {
-          setTrades(next as Trade[]);
+          setTrades(next as JournalTrade[]);
           try { localStorage.setItem('journal_trades', JSON.stringify(next)); } catch {}
         }
         localStorage.setItem('journal_migrated_images_v1', 'true');
@@ -238,11 +256,11 @@ function Journal() {
       if (localStorage.getItem('journal_cleanup_images_v1') === 'true') return;
       let changed = false;
       const next = (trades as any[]).map(t => {
-        if (t && 'images' in t) { const { images, ...rest } = t; changed = true; return rest; }
+        if (t && 'images' in t) { const { images, ...rest } = t; changed = true; return { ...rest, type: rest.type as 'Long' | 'Short' }; }
         return t;
       });
       if (changed) {
-        setTrades(next as Trade[]);
+        setTrades(next as JournalTrade[]);
         try { localStorage.setItem('journal_trades', JSON.stringify(next)); } catch {}
       }
       localStorage.setItem('journal_cleanup_images_v1', 'true');
@@ -664,18 +682,11 @@ function Journal() {
           {/* Analytics Tab */}
           {activeTab === 'analytics' && (
             <div className="space-y-6">
-              <AdvancedAnalytics
-                trades={trades}
-                period="week"
-                onExport={(format) => {
-                  // Handle export functionality
-                  console.log('Exporting analytics as:', format);
-                }}
-                onFilterChange={(filters) => {
-                  // Handle filter changes
-                  console.log('Analytics filters changed:', filters);
-                }}
-              />
+              <div className="text-center py-12">
+                <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Analytics Coming Soon</h3>
+                <p className="text-gray-600">Advanced trading analytics will be available in a future update.</p>
+              </div>
             </div>
           )}
         </div>
