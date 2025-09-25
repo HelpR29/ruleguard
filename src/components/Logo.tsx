@@ -9,7 +9,7 @@ export default function Logo({ size = 40, showText = false, subtitle }: LogoProp
   return (
     <div className="flex items-center gap-3 select-none" aria-label="LockIn logo">
       <div
-        className="rounded-xl shadow-lg border border-red-500/20 bg-white dark:bg-gray-900 flex items-center justify-center overflow-hidden"
+        className="rounded-xl shadow-lg border border-red-500/20 bg-white dark:bg-gray-900 flex items-center justify-center p-1"
         style={{ width: size, height: size }}
       >
         {/* For very small sizes, render a crisp inline SVG mark for clarity */}
@@ -29,7 +29,7 @@ export default function Logo({ size = 40, showText = false, subtitle }: LogoProp
               src="/lockin-logo.png"
               alt="LockIn logo"
               className="object-contain"
-              style={{ width: Math.floor(size * 0.9), height: Math.floor(size * 0.9) }}
+              style={{ maxWidth: '90%', maxHeight: '90%', width: '100%', height: '100%' }}
               onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                 const target = e.currentTarget as HTMLImageElement & { dataset: { fallbackStep?: string } };
                 const step = Number(target.dataset.fallbackStep || '0');
