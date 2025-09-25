@@ -12,12 +12,12 @@ export default function Logo({ showText = false, subtitle, frame = 'card' }: Log
   return (
     <div className="flex items-center gap-3 select-none" aria-label="LockIn logo">
       <div
-        className={`${frame === 'card' ? 'p-1 rounded-xl shadow-lg border border-red-500/20 bg-white dark:bg-gray-900' : 'p-0 bg-transparent'} w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center`}
+        className={`${frame === 'card' ? 'p-0.5 rounded-xl shadow-lg border border-red-500/20 bg-white dark:bg-gray-900' : 'p-0 bg-transparent'} w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center overflow-hidden`}
       >
         <img
           src={`/lockin-logo.png.png?${ver}`}
           alt="LockIn logo"
-          className={'object-contain drop-shadow-sm'}
+          className={'object-cover drop-shadow-sm'}
           style={{ maxWidth: '100%', maxHeight: '100%', width: '100%', height: '100%', filter: 'brightness(1.1) contrast(1.1)' }}
           onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
             const target = e.currentTarget as HTMLImageElement & { dataset: { fallbackStep?: string } };
