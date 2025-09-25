@@ -57,6 +57,13 @@ export default function AnimatedProgressIcon({ size = 'xl' }: AnimatedProgressIc
 
   const object = progressObjects[settings.progressObject];
 
+  const sizeClasses = {
+    small: 'w-20 h-20',
+    medium: 'w-28 h-28',
+    large: 'w-36 h-36',
+    xl: 'w-80 h-80'
+  };
+
   // Idle animation cycle
   useEffect(() => {
     const idleInterval = setInterval(() => {
