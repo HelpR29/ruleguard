@@ -137,7 +137,7 @@ function TradeImages({ ids, onRemove }: { ids: number[]; onRemove?: (idx: number
   );
 }
 
-export default function Journal() {
+function Journal() {
   const [activeTab, setActiveTab] = useState('trades');
   const [showNewEntry, setShowNewEntry] = useState(false);
   const { addToast } = useToast();
@@ -911,3 +911,5 @@ export default function Journal() {
     </div>
   );
 }
+
+export default Journal;
