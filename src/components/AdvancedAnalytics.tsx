@@ -211,8 +211,11 @@ export default function AnalyticsDashboard({
   const analyticsData = useMemo(() => {
     if (!trades.length) return [];
 
-    const filteredTrades = trades.filter(trade => {
-      const tradeDate = new Date(trade.entryDate);
+    const filteredTrades = trades.filter((trade: any) => {
+      const dateStr = (trade.entryDate || trade.date) as string | undefined;
+      if (!dateStr) return false; // ignore trades without a date
+      const tradeDate = new Date(dateStr);
+      if (isNaN(tradeDate.getTime())) return false;
       const now = new Date();
 
       switch (filters.dateRange) {
@@ -230,8 +233,9 @@ export default function AnalyticsDashboard({
     });
 
     // Group by date and calculate metrics
-    const groupedData = filteredTrades.reduce((acc, trade) => {
-      const date = new Date(trade.entryDate).toISOString().split('T')[0];
+    const groupedData = filteredTrades.reduce((acc: Record<string, any>, trade: any) => {
+      const dateStr = (trade.entryDate || trade.date) as string;
+      const date = new Date(dateStr).toISOString().split('T')[0];
 
       if (!acc[date]) {
         acc[date] = {
@@ -249,23 +253,23 @@ export default function AnalyticsDashboard({
         };
       }
 
-      acc[date].pnl += trade.profitLoss || 0;
-      acc[date].volume += trade.quantity;
+      const pnl = Number((trade.profitLoss ?? trade.pnl) || 0);
+      const qty = Number((trade.quantity ?? trade.size) || 0);
+      acc[date].pnl += Number.isFinite(pnl) ? pnl : 0;
+      acc[date].volume += Number.isFinite(qty) ? qty : 0;
       acc[date].trades.push(trade);
 
       // Track rule compliance
-      if (trade.ruleCompliant) {
-        acc[date].completions++;
-      } else {
-        acc[date].violations++;
-      }
+      if (trade.ruleCompliant) acc[date].completions++;
+      else acc[date].violations++;
 
       // Track emotions
-      if (trade.emotions && trade.emotions.length > 0) {
-        trade.emotions.forEach(emotion => {
-          acc[date].emotions[emotion] = (acc[date].emotions[emotion] || 0) + 1;
-        });
-      }
+      const emos = Array.isArray(trade.emotions)
+        ? trade.emotions
+        : (trade.emotion ? [String(trade.emotion)] : []);
+      emos.forEach((emotion: string) => {
+        acc[date].emotions[emotion] = (acc[date].emotions[emotion] || 0) + 1;
+      });
 
       return acc;
     }, {} as Record<string, any>);
@@ -294,19 +298,20 @@ export default function AnalyticsDashboard({
   const kpiCards = useMemo((): KPICard[] => {
     const totalPnL = analyticsData.reduce((sum, day) => sum + day.pnl, 0);
     const totalTrades = trades.length;
-    const winningTrades = trades.filter(t => (t.profitLoss || 0) > 0).length;
+    const winningTrades = trades.filter((t: any) => ((t.profitLoss ?? t.pnl) || 0) > 0).length;
     const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
 
-    const avgRiskReward = trades
-      .filter(t => t.target && t.stop)
-      .reduce((sum, trade) => {
-        const risk = Math.abs((trade.stop || 0) - trade.entryPrice);
-        const reward = Math.abs((trade.target || 0) - trade.entryPrice);
-        return sum + (reward / risk);
-      }, 0) / Math.max(1, trades.filter(t => t.target && t.stop).length);
+    const rrTrades = trades.filter((t: any) => t.target && t.stop);
+    const avgRiskReward = rrTrades.reduce((sum: number, trade: any) => {
+      const entryPrice = Number(trade.entryPrice ?? trade.entry);
+      const risk = Math.abs(Number(trade.stop) - entryPrice);
+      const reward = Math.abs(Number(trade.target) - entryPrice);
+      if (risk > 0 && isFinite(reward / risk)) return sum + (reward / risk);
+      return sum;
+    }, 0) / Math.max(1, rrTrades.length);
 
-    const totalCompletions = trades.filter(t => t.ruleCompliant).length;
-    const totalViolations = trades.filter(t => !t.ruleCompliant).length;
+    const totalCompletions = trades.filter((t: any) => t.ruleCompliant).length;
+    const totalViolations = trades.filter((t: any) => !t.ruleCompliant).length;
 
     const profitFactor = totalViolations > 0 ?
       Math.abs(totalPnL / (totalViolations * 100)) : Infinity;
