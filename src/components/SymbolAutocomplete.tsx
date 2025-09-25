@@ -33,7 +33,8 @@ export default function SymbolAutocomplete({
         symbol.toLowerCase().includes(value.toLowerCase())
       ).slice(0, 10); // Limit to 10 suggestions
       setFilteredSymbols(filtered);
-      setIsOpen(filtered.length > 0);
+      setIsOpen(filtered.length > 0 && value.length >= 1);
+      console.log('SymbolAutocomplete Debug:', { value, filteredCount: filtered.length, isOpen: filtered.length > 0 && value.length >= 1 });
     } else {
       setFilteredSymbols([]);
       setIsOpen(false);
@@ -58,12 +59,19 @@ export default function SymbolAutocomplete({
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(e.target.value.toUpperCase());
+    const newValue = e.target.value.toUpperCase();
+    onChange(newValue);
   };
 
   const clearInput = () => {
     onChange('');
     inputRef.current?.focus();
+  };
+
+  const handleFocus = () => {
+    if (filteredSymbols.length > 0 && value.length >= 1) {
+      setIsOpen(true);
+    }
   };
 
   return (
@@ -75,11 +83,7 @@ export default function SymbolAutocomplete({
           type="text"
           value={value}
           onChange={handleInputChange}
-          onFocus={() => {
-            if (filteredSymbols.length > 0) {
-              setIsOpen(true);
-            }
-          }}
+          onFocus={handleFocus}
           placeholder={placeholder}
           className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
         />
@@ -95,7 +99,10 @@ export default function SymbolAutocomplete({
       </div>
 
       {isOpen && filteredSymbols.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+        <div className="absolute z-[100] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          <div className="p-2 text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700">
+            {filteredSymbols.length} suggestions for "{value}"
+          </div>
           {filteredSymbols.map((symbol) => (
             <button
               key={symbol}

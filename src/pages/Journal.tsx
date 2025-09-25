@@ -745,7 +745,7 @@ function Journal() {
       {/* New Entry Modal */}
       {showNewEntry && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto relative">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold">New Journal Entry</h3>
               <button onClick={() => setShowNewEntry(false)} className="text-gray-500 hover:text-gray-700">×</button>
