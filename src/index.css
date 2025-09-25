@@ -314,7 +314,7 @@ label {
 
 /* Force better text visibility - override light gray text */
 .text-gray-500 {
-  color: #6b7280 !important; /* Darker gray-600 instead of gray-500 */
+  color: #374151 !important; /* Much darker gray-700 instead of gray-500 */
 }
 
 .dark .text-gray-500 {
@@ -323,9 +323,27 @@ label {
 
 /* Ensure subtitle text is always visible */
 p[aria-label*="tagline"] {
-  color: #374151 !important; /* Force darker gray for taglines */
+  color: #111827 !important; /* Force very dark gray for taglines */
 }
 
 .dark p[aria-label*="tagline"] {
+  color: #f9fafb !important; /* Very light in dark mode */
+}
+
+/* Fix onboarding text visibility */
+.text-gray-400 {
+  color: #374151 !important; /* Make gray-400 much darker */
+}
+
+.dark .text-gray-400 {
   color: #d1d5db !important;
+}
+
+/* Force all light text to be darker */
+.text-gray-300 {
+  color: #4b5563 !important;
+}
+
+.dark .text-gray-300 {
+  color: #e5e7eb !important;
 }

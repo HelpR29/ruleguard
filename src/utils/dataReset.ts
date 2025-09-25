@@ -180,19 +180,47 @@ export const completeReset = () => {
     localStorage.clear();
     console.log(`✅ Cleared ${keyCount} localStorage keys`);
     
-    // Initialize fresh user
-    initializeFreshUser();
-    console.log('✅ Fresh user initialized');
+    // Verify it's really empty
+    const remainingKeys = Object.keys(localStorage);
+    console.log('📋 Remaining keys after clear:', remainingKeys);
+    
+    // Initialize fresh user with explicit values
+    const freshSettings = {
+      startingPortfolio: 100,
+      targetCompletions: 50,
+      growthPerCompletion: 1,
+      progressObject: 'beer',
+      rules: []
+    };
+    
+    const freshProgress = {
+      completions: 0,
+      currentBalance: 100,
+      disciplineScore: 0,
+      streak: 0,
+      nextProgressPct: 0
+    };
+    
+    localStorage.setItem('user_settings', JSON.stringify(freshSettings));
+    localStorage.setItem('user_progress', JSON.stringify(freshProgress));
+    localStorage.setItem('display_name', 'Trading Pro');
+    localStorage.setItem('premium_status', 'none');
+    localStorage.setItem('user_achievements', JSON.stringify([]));
+    
+    console.log('✅ Fresh user initialized with explicit values');
+    console.log('📊 New settings:', freshSettings);
+    console.log('📊 New progress:', freshProgress);
     
     // Show what should now be reset
     console.log('🎯 After reset, you should see:');
+    console.log('   • Dashboard: 0 days streak, 0/50 completions, $100 portfolio, 0% discipline');
     console.log('   • Journal: 0 trades, 0% win rate, $0 avg P&L, 0% compliance');
     console.log('   • Notifications: 0 unread');
-    console.log('   • Progress: 0/50 completions');
+    console.log('   • Rules: 0 active rules');
     console.log('   • Leaderboard: Only your user (Trading Pro)');
     
-    console.log('🔄 Refreshing page in 2 seconds...');
-    setTimeout(() => window.location.reload(), 2000);
+    console.log('🔄 Refreshing page in 3 seconds...');
+    setTimeout(() => window.location.reload(), 3000);
     
     return true;
   } catch (error) {
