@@ -295,8 +295,20 @@ export default function Journal() {
     try { form.imagePreviews.forEach(u => URL.revokeObjectURL(u)); } catch {}
     setForm({
       date: new Date().toISOString().slice(0,10),
-      symbol: '', setup: '', type: 'Long', entry: '', exit: '', target: '', stop: '', size: '', emotion: 'Neutral', notes: '', tags: '', ruleCompliant: true,
-      imageIds: [], imagePreviews: [],
+      symbol: '',
+      setup: '',
+      type: 'Long',
+      entry: '',
+      exit: '',
+      target: '',
+      stop: '',
+      size: '',
+      emotion: 'Neutral',
+      notes: '',
+      tags: '',
+      ruleCompliant: true,
+      imageIds: [],
+      imagePreviews: [],
     });
   };
 
@@ -847,7 +859,7 @@ export default function Journal() {
                 {showChart ? (
                   <StockChart 
                     symbol={form.symbol}
-                    onPriceSelect={(price, timestamp) => {
+                    onPriceSelect={(price) => {
                       // Auto-fill entry or exit based on current state
                       if (!form.entry) {
                         setForm(prev => ({ ...prev, entry: price.toString() }));
