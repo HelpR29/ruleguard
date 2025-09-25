@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown, BarChart3, Activity } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useUser } from '../context/UserContext';
-import { saveAttachment, getAttachment, deleteAttachment } from '../utils/db';
+import { saveAttachment, deleteAttachment } from '../utils/db';
 import StockChart from '../components/StockChart';
 import AIInsights from '../components/AIInsights';
 import AdvancedAnalytics from '../components/AdvancedAnalytics';
@@ -30,117 +30,6 @@ interface JournalTrade {
   tags: string[];
   imageIds: number[];
   setup?: string;
-}
-
-function LiveTradeChart({ entry, exit, target, stop }: { entry: string; exit: string; target?: string; stop?: string }) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const dpr = window.devicePixelRatio || 1;
-    const width = 600, height = 180;
-    canvas.width = width * dpr; canvas.height = height * dpr;
-    canvas.style.width = width + 'px'; canvas.style.height = height + 'px';
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.scale(dpr, dpr);
-
-    // Background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0,0,width,height);
-    ctx.strokeStyle = '#e5e7eb';
-    ctx.strokeRect(0,0,width,height);
-
-    // Generate fake sparkline data
-    const base = Number(entry || '100') || 100;
-    const points: number[] = [];
-    let price = base * (0.98 + Math.random()*0.04);
-    for (let i=0;i<60;i++) {
-      price += (Math.random() - 0.5) * base * 0.004;
-      points.push(price);
-    }
-    const values = [...points, Number(exit || base)];
-    const minV = Math.min(...values, Number(stop || values[0]) || values[0]) * 0.995;
-    const maxV = Math.max(...values, Number(target || values[0]) || values[0]) * 1.005;
-    const scaleY = (v: number) => height - ((v - minV) / (maxV - minV)) * (height - 20) - 10;
-
-    // Sparkline
-    ctx.strokeStyle = '#6366f1';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    points.forEach((p, i) => {
-      const x = (i / (points.length - 1)) * (width - 20) + 10;
-      const y = scaleY(p);
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-
-    // Helper to draw level
-    const drawLevel = (price: number, color: string, label: string) => {
-      const y = scaleY(price);
-      ctx.strokeStyle = color; ctx.lineWidth = 1.5;
-      ctx.setLineDash([6,4]);
-      ctx.beginPath(); ctx.moveTo(10, y); ctx.lineTo(width-10, y); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = color; ctx.font = '12px Inter, system-ui';
-      ctx.fillText(`${label}: ${price}`, 14, y - 6);
-    };
-
-    const e = Number(entry); if (!Number.isNaN(e)) drawLevel(e, '#0ea5e9', 'Entry');
-    const ex = Number(exit); if (!Number.isNaN(ex)) drawLevel(ex, '#10b981', 'Exit');
-    const t = Number(target); if (!Number.isNaN(t)) drawLevel(t, '#8b5cf6', 'Target');
-    const s = Number(stop); if (!Number.isNaN(s)) drawLevel(s, '#ef4444', 'Stop');
-  }, [entry, exit, target, stop]);
-
-  return (
-    <div>
-      <p className="text-sm text-gray-700 mb-2">Preview</p>
-      <canvas ref={canvasRef} className="w-full rounded-lg border" />
-    </div>
-  );
-}
-
-// Resolve image IDs to object URLs and render a grid
-function TradeImages({ ids, onRemove }: { ids: number[]; onRemove?: (idx: number) => void }) {
-  const [urls, setUrls] = useState<string[]>([]);
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      const arr: string[] = [];
-      for (const id of ids) {
-        const blob = await getAttachment(id);
-        if (blob) arr.push(URL.createObjectURL(blob));
-      }
-      if (active) setUrls(arr);
-    })();
-    return () => {
-      setUrls(prev => {
-        prev.forEach(u => URL.revokeObjectURL(u));
-        return [];
-      });
-    };
-  }, [ids]);
-
-  if (!urls.length) return null;
-  return (
-    <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2">
-      {urls.map((src, idx) => (
-        <div key={idx} className="relative group overflow-hidden rounded border">
-          <img src={src} alt={`img-${idx}`} className="w-full h-24 object-cover transition-transform duration-200 group-hover:scale-[1.02]" />
-          {onRemove && (
-            <button
-              type="button"
-              aria-label="Remove image"
-              onClick={() => onRemove(idx)}
-              className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white text-gray-700 border border-gray-300 rounded-full w-6 h-6 grid place-items-center text-xs"
-            >
-              ×
-            </button>
-          )}
-        </div>
-      ))}
-    </div>
-  );
 }
 
 function Journal() {
