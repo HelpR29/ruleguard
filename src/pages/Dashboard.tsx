@@ -46,7 +46,7 @@ export default function Dashboard() {
             </div>
             <div className="bg-blue-500/30 rounded-xl p-4">
               <p className="text-blue-100 text-sm">Portfolio</p>
-              <p className="text-2xl font-bold">${(settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, progress.completions)).toFixed(2)}</p>
+              <p className="text-2xl font-bold">${progress.currentBalance.toFixed(2)}</p>
             </div>
             <div className="bg-blue-500/30 rounded-xl p-4">
               <p className="text-blue-100 text-sm">Discipline</p>
@@ -68,7 +68,7 @@ export default function Dashboard() {
                   {progress.completions < settings.targetCompletions ? (
                     <div className="flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium">
                       <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                      Progress: {(progress.nextProgressPct / settings.growthPerCompletion * 100).toFixed(0)}%
+                      Progress: {progressPercent.toFixed(1)}%
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-medium">
@@ -84,7 +84,7 @@ export default function Dashboard() {
                   <AnimatedProgressIcon />
                     <div className="rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-600 card-surface">
                       <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                        {progress.completions}/{settings.targetCompletions}
+                        {progress.completions.toFixed(2)}/{settings.targetCompletions}
                       </h3>
                       <p className="text-gray-600 dark:text-gray-300 mb-3">
                         {progress.completions >= settings.targetCompletions 
@@ -151,7 +151,7 @@ export default function Dashboard() {
                   }`}>
                     {progress.completions >= settings.targetCompletions 
                       ? 'Goal Achieved! 🎉' 
-                      : `${settings.targetCompletions - progress.completions} completions`
+                      : `${(settings.targetCompletions - progress.completions).toFixed(2)} completions`
                     }
                   </span>
                 </div>
