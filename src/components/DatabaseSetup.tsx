@@ -7,8 +7,14 @@ import React, { useState } from 'react';
 import { Database, Trash2, Server, Copy, Check, AlertCircle, ExternalLink } from 'lucide-react';
 import { clearLocalDatabase, setupSupabase, getSupabaseInstructions } from '../utils/databaseSetup';
 import { isSupabaseConfigured, testConnection } from '../lib/supabase';
+import { hybridDatabase } from '../services/hybridDatabase';
+import SyncStatus from './SyncStatus';
 
-export default function DatabaseSetup() {
+interface DatabaseSetupProps {
+  userId?: string;
+}
+
+export default function DatabaseSetup({ userId = 'demo-user' }: DatabaseSetupProps) {
   const [isClearing, setIsClearing] = useState(false);
   const [clearSuccess, setClearSuccess] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
@@ -72,9 +78,12 @@ export default function DatabaseSetup() {
         <Database className="h-12 w-12 text-blue-600 mx-auto mb-4" />
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Database Setup</h1>
         <p className="text-gray-700 dark:text-gray-300">
-          Manage your data storage and migrate to Supabase for cloud sync
+          Hybrid caching system: localStorage for speed + Supabase for cloud sync
         </p>
       </div>
+
+      {/* Sync Status */}
+      <SyncStatus userId={userId} />
 
       {/* Current Status */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
