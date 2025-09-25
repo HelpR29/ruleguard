@@ -15,6 +15,8 @@ interface UserProgress {
   streak: number;
   // Accumulated positive trade % toward the next completion (0..growthPerCompletion)
   nextProgressPct: number;
+  // ISO date string YYYY-MM-DD of last time streak was incremented
+  lastStreakDate?: string | null;
 }
 
 interface UserContextType {
@@ -57,7 +59,8 @@ const defaultProgress: UserProgress = {
   currentBalance: 100, // Will be calculated from startingPortfolio
   disciplineScore: 0,
   streak: 0,
-  nextProgressPct: 0
+  nextProgressPct: 0,
+  lastStreakDate: null
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -126,13 +129,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     // New totals (cap at targetCompletions)
     const target = settings.targetCompletions;
-    const rawCompletions = progress.completions + inc;
+    const prevCompletions = progress.completions || 0;
+    const rawCompletions = prevCompletions + inc;
     const newCompletions = Math.min(rawCompletions, target);
 
     // Compound balance proportionally by (1+rate)^inc
     const newBalance = progress.currentBalance * Math.pow(1 + rate, inc);
-    const newDiscipline = Math.min(100, progress.disciplineScore + inc);
-    const newStreak = progress.streak + 1; // simple daily increment
+    // Discipline increases only on whole-completion thresholds
+    const wholeAdds = Math.max(0, Math.floor(newCompletions) - Math.floor(prevCompletions));
+    const newDiscipline = Math.min(100, (progress.disciplineScore || 0) + wholeAdds);
+    // Streak increments at most once per calendar day
+    const today = new Date().toISOString().slice(0,10);
+    const shouldIncrementStreak = (progress.lastStreakDate || null) !== today;
+    const newStreak = shouldIncrementStreak ? (progress.streak + 1) : progress.streak;
 
     // Persist fractional completions into daily_stats and activity_log
     try {
@@ -149,9 +158,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     updateProgress({
       completions: newCompletions,
-      currentBalance: Number(newBalance.toFixed(2)),
-      disciplineScore: Number(newDiscipline.toFixed(2)),
+      currentBalance: newBalance, // store high precision; UI should format
+      disciplineScore: newDiscipline, // integer steps only
       streak: newStreak,
+      lastStreakDate: shouldIncrementStreak ? today : (progress.lastStreakDate || null),
       nextProgressPct: 0, // no longer used in fractional mode
     });
   };
