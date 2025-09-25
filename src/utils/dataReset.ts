@@ -133,3 +133,20 @@ export const validateDataConsistency = () => {
     return { valid: false, issues: ['Error reading data'] };
   }
 };
+
+// Quick console utility for immediate data clearing
+export const quickReset = () => {
+  console.log('🔄 Starting quick data reset...');
+  const success = resetUserData();
+  if (success) {
+    initializeFreshUser();
+    console.log('✅ Data reset complete! Refreshing page...');
+    setTimeout(() => window.location.reload(), 1000);
+  }
+  return success;
+};
+
+// Make it available globally for console access
+if (typeof window !== 'undefined') {
+  (window as any).quickReset = quickReset;
+}
