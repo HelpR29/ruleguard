@@ -6,6 +6,7 @@ interface LogoProps {
 
 // Uses branded asset from public/ with fallback text
 export default function Logo({ size = 40, showText = false, subtitle }: LogoProps) {
+  const isSmallTile = size <= 56;
   return (
     <div className="flex items-center gap-3 select-none" aria-label="LockIn logo">
       <div
@@ -26,22 +27,21 @@ export default function Logo({ size = 40, showText = false, subtitle }: LogoProp
         ) : (
           <>
             <img
-              src="/lockin-logo.png"
+              src={isSmallTile ? '/logo-trade-game.svg' : '/lockin-logo.png'}
               alt="LockIn logo"
               className="object-contain"
               style={{ maxWidth: '90%', maxHeight: '90%', width: '100%', height: '100%' }}
               onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                 const target = e.currentTarget as HTMLImageElement & { dataset: { fallbackStep?: string } };
                 const step = Number(target.dataset.fallbackStep || '0');
-                if (step === 0) {
-                  target.dataset.fallbackStep = '1';
-                  target.src = '/lockin-logo.jpg';
-                  return;
-                }
-                if (step === 1) {
-                  target.dataset.fallbackStep = '2';
-                  target.src = '/logo-trade-game.svg';
-                  return;
+                if (isSmallTile) {
+                  // svg -> png -> jpg
+                  if (step === 0) { target.dataset.fallbackStep = '1'; target.src = '/lockin-logo.png'; return; }
+                  if (step === 1) { target.dataset.fallbackStep = '2'; target.src = '/lockin-logo.jpg'; return; }
+                } else {
+                  // png -> jpg -> svg
+                  if (step === 0) { target.dataset.fallbackStep = '1'; target.src = '/lockin-logo.jpg'; return; }
+                  if (step === 1) { target.dataset.fallbackStep = '2'; target.src = '/logo-trade-game.svg'; return; }
                 }
                 // Final fallback: hide image; text portion below can still render if enabled
                 target.style.display = 'none';
