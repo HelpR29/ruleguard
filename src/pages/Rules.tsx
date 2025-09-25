@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { Plus, Edit, Trash2, Shield, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Shield, CheckCircle, XCircle, Brain, Target, TrendingUp, Activity, Users, DollarSign } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
+import { RULE_TEMPLATES, CATEGORY_COLORS } from '../utils/ruleTemplates';
 
 export default function Rules() {
   const { progress, rules, addRule, editRule, updateRuleMeta, deleteRule, toggleRuleActive, recordViolation, markCompliance } = useUser();
