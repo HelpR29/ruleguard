@@ -311,3 +311,21 @@ label {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Force better text visibility - override light gray text */
+.text-gray-500 {
+  color: #6b7280 !important; /* Darker gray-600 instead of gray-500 */
+}
+
+.dark .text-gray-500 {
+  color: #d1d5db !important; /* Lighter in dark mode */
+}
+
+/* Ensure subtitle text is always visible */
+p[aria-label*="tagline"] {
+  color: #374151 !important; /* Force darker gray for taglines */
+}
+
+.dark p[aria-label*="tagline"] {
+  color: #d1d5db !important;
+}
