@@ -1,4 +1,3 @@
-import React from 'react';
 import { X, Image as ImageIcon } from 'lucide-react';
 
 interface TradeImagesProps {
