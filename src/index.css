@@ -8,7 +8,29 @@
   --card-bg: #ffffff;
   --card-border: 1px solid #e5e7eb;
   --card-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --border-color: #e5e7eb;
   --pad-scale: 1; /* density multiplier */
+}
+
+/* Dark mode variables */
+.dark {
+  --accent: #3b82f6; /* blue */
+  --card-bg: #1f2937;
+  --card-border: 1px solid #374151;
+  --card-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --bg-tertiary: #374151;
+  --border-color: #374151;
 }
 
 [data-accent="blue"] { --accent: #3b82f6; }
@@ -20,6 +42,10 @@
 [data-card="standard"] { --card-bg: #ffffff; --card-border: 1px solid #e5e7eb; --card-shadow: 0 1px 2px rgba(0,0,0,0.04); }
 [data-card="outlined"] { --card-bg: #ffffff; --card-border: 1px solid #e5e7eb; --card-shadow: none; }
 [data-card="filled"] { --card-bg: #f8fafc; --card-border: 1px solid #e5e7eb; --card-shadow: none; }
+
+[data-card="standard"].dark { --card-bg: #1f2937; --card-border: 1px solid #374151; --card-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+[data-card="outlined"].dark { --card-bg: #1f2937; --card-border: 1px solid #374151; --card-shadow: none; }
+[data-card="filled"].dark { --card-bg: #111827; --card-border: 1px solid #374151; --card-shadow: none; }
 
 [data-density="compact"] { --pad-scale: 0.92; }
 [data-density="comfortable"] { --pad-scale: 1; }
@@ -38,30 +64,205 @@
 .accent-outline {
   border: 1px solid var(--accent);
   color: var(--accent);
-  background: #fff;
+  background: var(--bg-primary);
   border-radius: 0.75rem;
   padding: calc(0.5rem * var(--pad-scale)) calc(1rem * var(--pad-scale));
   transition: background-color 150ms ease, color 150ms ease, opacity 150ms ease;
 }
-.accent-outline:hover { background: color-mix(in srgb, var(--accent) 8%, white); }
+.accent-outline:hover { background: color-mix(in srgb, var(--accent) 8%, var(--bg-primary)); }
 
-.chip { 
-  border: 1px solid #e5e7eb; 
-  background: #f3f4f6; 
-  color: #374151; 
+.chip {
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
-.chip:hover { background: #e5e7eb; }
+.chip:hover { background: var(--bg-secondary); }
 
 .accent-chip-selected {
-  border: 1px solid color-mix(in srgb, var(--accent) 55%, #e5e7eb);
-  background: color-mix(in srgb, var(--accent) 15%, white);
-  color: color-mix(in srgb, var(--accent) 85%, #111827);
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border-color));
+  background: color-mix(in srgb, var(--accent) 15%, var(--bg-primary));
+  color: color-mix(in srgb, var(--accent) 85%, var(--text-primary));
 }
 
 .card-surface {
   background: var(--card-bg);
   border: var(--card-border);
   box-shadow: var(--card-shadow);
+}
+
+/* Text visibility improvements */
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.bg-primary {
+  background-color: var(--bg-primary);
+}
+
+.bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.bg-tertiary {
+  background-color: var(--bg-tertiary);
+}
+
+/* Improved placeholder text visibility */
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+/* Better focus visibility */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Improved button contrast */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Better link visibility */
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Enhanced table visibility */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.75rem;
+  text-align: left;
+}
+
+th {
+  background-color: var(--bg-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+td {
+  color: var(--text-secondary);
+}
+
+/* Improved form element visibility */
+label {
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Better modal visibility */
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: var(--card-bg);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  border-radius: 0.75rem;
+  color: var(--text-primary);
+}
+
+/* Enhanced dropdown visibility */
+.dropdown {
+  background: var(--card-bg);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  border-radius: 0.5rem;
+}
+
+.dropdown-item {
+  color: var(--text-primary);
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dropdown-item:hover {
+  background: var(--bg-secondary);
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+/* Better badge/chip visibility */
+.badge {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-primary {
+  background: color-mix(in srgb, var(--accent) 15%, var(--bg-primary));
+  color: color-mix(in srgb, var(--accent) 85%, var(--text-primary));
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border-color));
+}
+
+.badge-success {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.badge-warning {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.badge-error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.dark .badge-success {
+  background: #064e3b;
+  color: #d1fae5;
+  border: 1px solid #065f46;
+}
+
+.dark .badge-warning {
+  background: #78350f;
+  color: #fed7aa;
+  border: 1px solid #92400e;
+}
+
+.dark .badge-error {
+  background: #7f1d1d;
+  color: #fecaca;
+  border: 1px solid #991b1b;
 }
 
 @keyframes shake {
