@@ -23,6 +23,9 @@ export const resetUserData = () => {
       'daily_stats',
       'activity_log',
       
+      // Notifications
+      'app_notifications',
+      
       // Leaderboard
       'leaderboard_last_reset',
       'leaderboard_history',
