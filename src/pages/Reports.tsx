@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { BarChart3, Download, TrendingUp, TrendingDown, Award, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useUser } from '../context/UserContext';
@@ -11,6 +11,22 @@ export default function Reports() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [shareUrl, setShareUrl] = useState<string>('');
   const { progress, rules, settings } = useUser() as any;
+
+  // Force re-compute on external data updates
+  const [version, setVersion] = useState(0);
+  useEffect(() => {
+    const onCustom = () => setVersion(v => v + 1);
+    const onStorage = (e: StorageEvent) => {
+      if (!e.key) return;
+      if (['journal_trades','daily_stats','activity_log','user_progress','user_settings'].includes(e.key)) onCustom();
+    };
+    window.addEventListener('rg:data-change', onCustom as EventListener);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('rg:data-change', onCustom as EventListener);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
 
   // Load trades from Journal for R:R and tag analytics
   const trades = useMemo(() => {
@@ -657,7 +673,7 @@ export default function Reports() {
                 <p className="text-gray-600 text-sm">Based on journal Target/Stop</p>
               </div>
 
-              {/* Profit Factor */}
+              {/* Profit Factor with local selector */}
               <div className="rounded-2xl p-6 card-surface">
                 <div className="flex items-center gap-3 mb-2">
                   <Info className="h-8 w-8 text-gray-500" />
@@ -670,11 +686,23 @@ export default function Reports() {
                       >i</span>
                     </p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {weeklyProfitFactor === null ? '—' : (weeklyProfitFactor === Infinity ? '∞' : weeklyProfitFactor.toFixed(2))}
+                      {profitFactor === null ? '—' : (profitFactor === Infinity ? '∞' : profitFactor.toFixed(2))}
                     </p>
                   </div>
+                  <div className="ml-auto">
+                    <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+                      <button
+                        onClick={() => setPfRange('7d')}
+                        className={`px-3 py-1 text-xs ${pfRange==='7d' ? 'bg-gray-200 font-medium' : 'bg-white'}`}
+                      >7d</button>
+                      <button
+                        onClick={() => setPfRange('30d')}
+                        className={`px-3 py-1 text-xs ${pfRange==='30d' ? 'bg-gray-200 font-medium' : 'bg-white'}`}
+                      >30d</button>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-gray-600 text-sm">Last 7 days</p>
+                <p className="text-gray-600 text-sm">Last {pfRange === '7d' ? '7' : '30'} days</p>
               </div>
             </div>
 
