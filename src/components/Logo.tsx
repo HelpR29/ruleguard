@@ -7,10 +7,11 @@ interface LogoProps {
 // Uses branded asset from public/ with fallback text
 export default function Logo({ size = 40, showText = false, subtitle }: LogoProps) {
   const isSmallTile = size <= 56;
+  const ver = 'v2';
   return (
     <div className="flex items-center gap-3 select-none" aria-label="LockIn logo">
       <div
-        className="rounded-xl shadow-lg border border-red-500/20 bg-white dark:bg-gray-900 flex items-center justify-center p-1"
+        className={`${isSmallTile ? 'p-0' : 'p-1'} rounded-xl shadow-lg border border-red-500/20 bg-white dark:bg-gray-900 flex items-center justify-center`}
         style={{ width: size, height: size }}
       >
         {/* For very small sizes, render a crisp inline SVG mark for clarity */}
@@ -27,21 +28,21 @@ export default function Logo({ size = 40, showText = false, subtitle }: LogoProp
         ) : (
           <>
             <img
-              src={isSmallTile ? '/logo-trade-game.svg' : '/lockin-logo.png'}
+              src={isSmallTile ? `/logo-mark.svg?${ver}` : `/lockin-logo.png?${ver}`}
               alt="LockIn logo"
-              className="object-contain"
-              style={{ maxWidth: '90%', maxHeight: '90%', width: '100%', height: '100%' }}
+              className={isSmallTile ? 'object-contain' : 'object-contain'}
+              style={{ maxWidth: isSmallTile ? '100%' : '90%', maxHeight: isSmallTile ? '100%' : '90%', width: '100%', height: '100%' }}
               onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                 const target = e.currentTarget as HTMLImageElement & { dataset: { fallbackStep?: string } };
                 const step = Number(target.dataset.fallbackStep || '0');
                 if (isSmallTile) {
-                  // svg -> png -> jpg
-                  if (step === 0) { target.dataset.fallbackStep = '1'; target.src = '/lockin-logo.png'; return; }
-                  if (step === 1) { target.dataset.fallbackStep = '2'; target.src = '/lockin-logo.jpg'; return; }
+                  // square mark svg -> png -> jpg
+                  if (step === 0) { target.dataset.fallbackStep = '1'; target.src = `/lockin-logo.png?${ver}`; return; }
+                  if (step === 1) { target.dataset.fallbackStep = '2'; target.src = `/lockin-logo.jpg?${ver}`; return; }
                 } else {
                   // png -> jpg -> svg
-                  if (step === 0) { target.dataset.fallbackStep = '1'; target.src = '/lockin-logo.jpg'; return; }
-                  if (step === 1) { target.dataset.fallbackStep = '2'; target.src = '/logo-trade-game.svg'; return; }
+                  if (step === 0) { target.dataset.fallbackStep = '1'; target.src = `/lockin-logo.jpg?${ver}`; return; }
+                  if (step === 1) { target.dataset.fallbackStep = '2'; target.src = `/logo-trade-game.svg?${ver}`; return; }
                 }
                 // Final fallback: hide image; text portion below can still render if enabled
                 target.style.display = 'none';
