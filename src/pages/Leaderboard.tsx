@@ -190,6 +190,28 @@ export default function Leaderboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progress.completions, progress.disciplineScore, progress.streak]);
 
+  // Rebuild in real-time when other parts of the app update localStorage
+  useEffect(() => {
+    const onCustom = () => {
+      try {
+        buildLeaderboard();
+      } catch {}
+    };
+    const onStorage = (e: StorageEvent) => {
+      if (!e.key) return;
+      if (['user_progress','user_settings','daily_stats','activity_log'].includes(e.key)) {
+        onCustom();
+      }
+    };
+    window.addEventListener('rg:data-change', onCustom as EventListener);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('rg:data-change', onCustom as EventListener);
+      window.removeEventListener('storage', onStorage);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="h-6 w-6 text-yellow-500" />;
     if (rank === 2) return <Medal className="h-6 w-6 text-gray-400" />;
