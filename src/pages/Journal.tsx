@@ -4,6 +4,10 @@ import { useToast } from '../context/ToastContext';
 import { useUser } from '../context/UserContext';
 import { saveAttachment, getAttachment, deleteAttachment } from '../utils/db';
 import StockChart from '../components/StockChart';
+import AIInsights from '../components/AIInsights';
+import AdvancedAnalytics from '../components/AdvancedAnalytics';
+import AnalyticsFilters from '../components/AnalyticsFilters';
+import SymbolAutocomplete from '../components/SymbolAutocomplete';
 import { Tooltip } from '../components/Tooltip';
 
 // Local interface for journal trades (matches the expected usage)
@@ -217,6 +221,21 @@ function Journal() {
     } catch {}
     return mockJournals;
   });
+
+  const [analyticsFilters, setAnalyticsFilters] = useState({
+    dateRange: '30d' as '7d' | '30d' | '90d' | '1y' | 'custom',
+    symbols: [] as string[],
+    tradeTypes: [] as string[],
+    emotions: [] as string[],
+    ruleCompliant: undefined as boolean | undefined,
+    tags: [] as string[]
+  });
+
+  const handleAnalyticsFiltersChange = (filters: any) => {
+    setAnalyticsFilters(filters);
+  };
+
+  const [showAnalyticsFilters, setShowAnalyticsFilters] = useState(false);
 
   // One-time migration: move legacy base64 images to IndexedDB and store IDs
   useEffect(() => {
@@ -682,11 +701,42 @@ function Journal() {
           {/* Analytics Tab */}
           {activeTab === 'analytics' && (
             <div className="space-y-6">
-              <div className="text-center py-12">
-                <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Analytics Coming Soon</h3>
-                <p className="text-gray-600">Advanced trading analytics will be available in a future update.</p>
-              </div>
+              <AnalyticsFilters
+                filters={analyticsFilters}
+                onFiltersChange={handleAnalyticsFiltersChange}
+                trades={trades as any}
+                isOpen={showAnalyticsFilters}
+                onToggle={() => setShowAnalyticsFilters(!showAnalyticsFilters)}
+              />
+              <AIInsights
+                trades={trades as any}
+                period="weekly"
+                isLoading={false}
+                onAnalysisComplete={(count) => {
+                  console.log('Analysis complete with', count, 'insights');
+                }}
+              />
+              <AdvancedAnalytics
+                trades={trades as any}
+                period="week"
+                onExport={(format) => {
+                  console.log('Exporting analytics as:', format);
+                  // Export functionality
+                  const dataStr = JSON.stringify(trades, null, 2);
+                  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                  const url = URL.createObjectURL(dataBlob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.download = `trading-journal-${new Date().toISOString().split('T')[0]}.${format}`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  URL.revokeObjectURL(url);
+                }}
+                onFilterChange={(filters: any) => {
+                  console.log('Analytics filters changed:', filters);
+                }}
+              />
             </div>
           )}
         </div>
@@ -707,7 +757,12 @@ function Journal() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Symbol</label>
-                <input value={form.symbol} onChange={(e)=>setForm({...form, symbol: e.target.value})} placeholder="AAPL" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800" />
+                <SymbolAutocomplete
+                  value={form.symbol}
+                  onChange={(value) => setForm({...form, symbol: value})}
+                  placeholder="AAPL, TSLA, BTC, ETH..."
+                  className="w-full"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Setup</label>
