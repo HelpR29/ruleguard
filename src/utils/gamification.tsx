@@ -1050,7 +1050,10 @@ export const XPNotification = ({
 /**
  * Gamification hook
  */
+import { useUser } from '../context/UserContext';
+
 export const useGamification = () => {
+  const { progress } = useUser();
   const [userLevel, setUserLevel] = useState<UserLevel>({
     currentLevel: 1,
     currentExperience: 0,
@@ -1081,28 +1084,28 @@ export const useGamification = () => {
   const engine = GamificationEngine.getInstance();
 
   const processTrade = useCallback(async (trade: Trade) => {
-    // This would integrate with actual user progress data
-    const mockProgress: UserProgress = {
-      userId: 'user1',
-      completions: 10,
-      streak: 5,
-      longestStreak: 12,
-      disciplineScore: 85,
-      totalProfitLoss: 1250,
-      winRate: 68,
-      averageRiskReward: 2.1,
-      currentBalance: 15000,
+    // Use real user progress data
+    const userProgress: UserProgress = {
+      userId: 'demo-user',
+      completions: progress.completions,
+      streak: progress.streak,
+      longestStreak: progress.streak, // Use current streak as fallback
+      disciplineScore: progress.disciplineScore,
+      totalProfitLoss: progress.currentBalance - 100, // Calculate from starting balance
+      winRate: 68, // TODO: Calculate from actual trades
+      averageRiskReward: 2.1, // TODO: Calculate from actual trades
+      currentBalance: progress.currentBalance,
       achievements: [],
       milestones: [],
       level: 1,
-      experience: 450,
-      nextLevelProgress: 45,
+      experience: progress.completions * 10, // Simple XP calculation
+      nextLevelProgress: 0,
       updatedAt: new Date()
     };
 
-    const result = await engine.processTrade(trade, mockProgress);
+    const result = await engine.processTrade(trade, userProgress);
 
-    setUserLevel(engine.getUserLevel(mockProgress.experience + result.experienceGained));
+    setUserLevel(engine.getUserLevel(userProgress.experience + result.experienceGained));
 
     if (result.experienceGained > 0) {
       setRecentXP({
