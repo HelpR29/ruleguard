@@ -28,6 +28,7 @@ import {
   FunnelChart,
   Funnel
 } from 'recharts';
+import type { PieLabelRenderProps } from 'recharts';
 import {
   Calendar,
   Download,
@@ -532,6 +533,12 @@ export default function AnalyticsDashboard({
             innerRadius={60}
             outerRadius={100}
             dataKey="value"
+            label={(props: PieLabelRenderProps) => {
+              const val = Number((props as any).value ?? 0);
+              const name = (props as any).name ?? '';
+              return `${name}: ${val.toFixed(1)}%`;
+            }}
+            labelLine={false}
           >
             {emotionData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
