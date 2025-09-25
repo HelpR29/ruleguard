@@ -112,6 +112,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setSettings(prev => {
       const merged = { ...prev, ...newSettings };
       try { localStorage.setItem('user_settings', JSON.stringify(merged)); } catch {}
+      try { window.dispatchEvent(new CustomEvent('rg:data-change', { detail: { keys: ['user_settings'] } })); } catch {}
       return merged;
     });
   };
@@ -154,6 +155,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const log = JSON.parse(localStorage.getItem('activity_log') || '[]');
       log.push({ ts: Date.now(), type: 'completion', amount: inc });
       localStorage.setItem('activity_log', JSON.stringify(log));
+      try { window.dispatchEvent(new CustomEvent('rg:data-change', { detail: { keys: ['daily_stats','activity_log'] } })); } catch {}
     } catch {}
 
     updateProgress({
@@ -170,9 +172,37 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setProgress(prev => {
       const merged = { ...prev, ...newProgress };
       try { localStorage.setItem('user_progress', JSON.stringify(merged)); } catch {}
+      try { window.dispatchEvent(new CustomEvent('rg:data-change', { detail: { keys: ['user_progress'] } })); } catch {}
       return merged;
     });
   };
+
+  // Keep settings/progress in sync if changed in other parts or tabs
+  React.useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (!e.key) return;
+      if (e.key === 'user_settings' && e.newValue) {
+        try { setSettings(JSON.parse(e.newValue)); } catch {}
+      }
+      if (e.key === 'user_progress' && e.newValue) {
+        try { setProgress(prev => ({ ...prev, ...JSON.parse(e.newValue as string) })); } catch {}
+      }
+    };
+    const onCustom = () => {
+      try {
+        const s = JSON.parse(localStorage.getItem('user_settings') || 'null');
+        if (s) setSettings((prev)=>({ ...prev, ...s }));
+        const p = JSON.parse(localStorage.getItem('user_progress') || 'null');
+        if (p) setProgress((prev)=>({ ...prev, ...p }));
+      } catch {}
+    };
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('rg:data-change', onCustom as EventListener);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('rg:data-change', onCustom as EventListener);
+    };
+  }, []);
 
   // Rules CRUD + persistence
   const persistRules = (next: UserRule[]) => {
