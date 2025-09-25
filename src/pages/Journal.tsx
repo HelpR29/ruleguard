@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown, BarChart3, Brain } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useUser } from '../context/UserContext';
 import { saveAttachment, getAttachment, deleteAttachment } from '../utils/db';
 import StockChart from '../components/StockChart';
 import AIInsights from '../components/AIInsights';
+import { Skeleton, ListSkeleton } from '../components/Skeleton';
 
 type Trade = {
   id: number;
@@ -289,7 +290,6 @@ export default function Journal() {
     ruleCompliant: true,
     imageIds: [] as number[],
     imagePreviews: [] as string[],
-  });
   const [showChart, setShowChart] = useState(false);
 
   const resetForm = () => {
@@ -312,8 +312,6 @@ export default function Journal() {
       imagePreviews: [],
     });
   };
-
-  // Attachments handlers
   const handleImageFiles = async (files: FileList | null) => {
     if (!files) return;
     const maxFiles = 4;
