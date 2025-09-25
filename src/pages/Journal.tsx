@@ -528,36 +528,34 @@ function Journal() {
                     }`}>
                       {trade.ruleCompliant ? 'Rule Compliant' : 'Rule Violation'}
                     </span>
-                    {(() => {
-                      const allowed = premiumStatus === 'premium' || achievements.includes('champion');
-                      if (allowed) {
-                        return (
-                          <button
-                            className="text-xs px-2 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50"
-                            onClick={async () => {
-                              if (!confirm('Delete this entry? This will remove its attachments.')) return;
-                              // cleanup attachments
-                              try {
-                                if (Array.isArray(trade.imageIds)) {
-                                  for (const id of trade.imageIds) {
-                                    await deleteAttachment(id);
-                                  }
-                                }
-                              } catch {}
-                              setTrades(prev => prev.filter(t => t.id !== trade.id));
-                              addToast('success', 'Entry deleted.');
-                            }}
-                          >
-                            Delete
-                          </button>
-                        );
-                      }
-                      return (
-                        <a href="/premium" className="text-[11px] px-2 py-0.5 rounded-full chip hover:no-underline" title="Delete is available with Premium or Champion badge">
-                          Premium to delete
-                        </a>
-                      );
-                    })()}
+                    {premiumStatus === 'premium' || achievements.includes('champion') ? (
+                      <button
+                        className="text-xs px-2 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50"
+                        onClick={async () => {
+                          if (!confirm('Delete this entry? This will remove its attachments.')) return;
+                          // cleanup attachments
+                          try {
+                            if (Array.isArray(trade.imageIds)) {
+                              for (const id of trade.imageIds) {
+                                await deleteAttachment(id);
+                              }
+                            }
+                          } catch {}
+                          setTrades(prev => prev.filter(t => t.id !== trade.id));
+                          addToast('success', 'Entry deleted.');
+                        }}
+                      >
+                        Delete
+                      </button>
+                    ) : (
+                      <a 
+                        href="/premium" 
+                        className="text-[11px] px-2 py-0.5 rounded-full chip hover:no-underline" 
+                        title="Delete is available with Premium or Champion badge"
+                      >
+                        Premium to delete
+                      </a>
+                    )}
                   </div>
                 </div>
               ))}
