@@ -155,11 +155,12 @@ export default function Reports() {
     return { weeklyCompletions: comps, weeklyViolations: vios, weeklyWinRate: wr };
   }, [weeklyData]);
 
-  // Weekly Profit Factor (last 7 days trades): total profits / |total losses|
-  const weeklyProfitFactor = useMemo(() => {
+  // Profit Factor with local selector (7d/30d): total profits / |total losses|
+  const [pfRange, setPfRange] = useState<'7d' | '30d'>('7d');
+  const profitFactor = useMemo(() => {
     const today = new Date();
     const start = new Date(today);
-    start.setDate(today.getDate() - 6);
+    start.setDate(today.getDate() - (pfRange === '7d' ? 6 : 29));
     let totalProfits = 0;
     let totalLosses = 0; // negative numbers
     try {
@@ -172,7 +173,7 @@ export default function Reports() {
         const sNum = Number(start.toISOString().slice(0,10).replace(/-/g, ''));
         const eNum = Number(today.toISOString().slice(0,10).replace(/-/g, ''));
         if (dsNum >= sNum && dsNum <= eNum) {
-          const pnl = Number(t.pnl);
+          const pnl = Number(t.pnl ?? t.profitLoss);
           if (!Number.isNaN(pnl)) {
             if (pnl > 0) totalProfits += pnl;
             else if (pnl < 0) totalLosses += pnl; // negative accumulation
@@ -184,7 +185,7 @@ export default function Reports() {
     if (totalLosses === 0 && totalProfits > 0) return Infinity; // never lost -> infinite PF
     const denom = Math.abs(totalLosses);
     return denom > 0 ? (totalProfits / denom) : null;
-  }, [weeklyData]);
+  }, [pfRange, version]);
 
   const totalPnl = useMemo(() => weeklyData.reduce((s, d) => s + d.pnl, 0), [weeklyData]);
   const avatar = useMemo(() => {
