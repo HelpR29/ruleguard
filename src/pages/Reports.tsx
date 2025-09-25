@@ -34,6 +34,52 @@ export default function Reports() {
     return count ? sum / count : 0;
   }, [trades]);
 
+  
+
+  // Monthly aggregation (last 30 days)
+  const monthlyData = useMemo(() => {
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const today = new Date();
+    let stats: Record<string, { completions: number; violations: number }>; 
+    try { stats = JSON.parse(localStorage.getItem('daily_stats') || '{}'); } catch { stats = {}; }
+    let tradesArr: Array<{ date: string; pnl: number }>; 
+    try {
+      const raw = localStorage.getItem('journal_trades');
+      const arr = raw ? JSON.parse(raw) : [];
+      tradesArr = Array.isArray(arr) ? arr.map((t:any)=>({ date: (t.date||'').slice(0,10), pnl: Number(t.pnl)||0 })) : [];
+    } catch { tradesArr = []; }
+    const pnlByDate = tradesArr.reduce((m: Record<string, number>, t) => { if (t.date) m[t.date] = (m[t.date]||0) + t.pnl; return m; }, {} as Record<string, number>);
+
+    const data = [] as Array<{ date: string; day: string; completions: number; violations: number; pnl: number }>;
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = d.toISOString().slice(0,10);
+      const entry = stats[key] || { completions: 0, violations: 0 };
+      const hasTrades = Object.prototype.hasOwnProperty.call(pnlByDate, key);
+      const fallbackPnl = Math.round((entry.completions - entry.violations) * 160);
+      const pnl = hasTrades ? Math.round(pnlByDate[key]) : fallbackPnl;
+      data.push({ date: key, day: dayNames[d.getDay()], completions: entry.completions, violations: entry.violations, pnl });
+    }
+    return data;
+  }, []);
+
+  // Completion report data (last 30 days completions only)
+  const completionData = useMemo(() => {
+    const today = new Date();
+    let stats: Record<string, { completions: number; violations: number }>; 
+    try { stats = JSON.parse(localStorage.getItem('daily_stats') || '{}'); } catch { stats = {}; }
+    const data = [] as Array<{ date: string; completions: number; violations: number }>;
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = d.toISOString().slice(0,10);
+      const entry = stats[key] || { completions: 0, violations: 0 };
+      data.push({ date: key, completions: entry.completions, violations: entry.violations });
+    }
+    return data;
+  }, []);
+
   const weeklyData = useMemo(() => {
     // Build last 7 days; PnL from journal_trades if present for the day, else proxy fallback from daily_stats
     const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -61,6 +107,37 @@ export default function Reports() {
     }
     return data;
   }, []);
+
+  // Weekly metrics (real values) - must come after weeklyData
+  const { weeklyCompletions, weeklyViolations, weeklyWinRate } = useMemo(() => {
+    const comps = weeklyData.reduce((s, d) => s + (d.completions || 0), 0);
+    const vios = weeklyData.reduce((s, d) => s + (d.violations || 0), 0);
+    let wins = 0, total = 0;
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(today.getDate() - 6);
+    // Count trade wins/losses for last 7 days
+    try {
+      const raw = localStorage.getItem('journal_trades');
+      const arr = raw ? JSON.parse(raw) : [];
+      for (const t of Array.isArray(arr) ? arr : []) {
+        const ds = (t.date || '').slice(0, 10);
+        if (!ds) continue;
+        // Normalize by comparing date-only strings to avoid time zone pitfalls
+        const dsNum = Number(ds.replace(/-/g, ''));
+        const sNum = Number(start.toISOString().slice(0,10).replace(/-/g, ''));
+        const eNum = Number(today.toISOString().slice(0,10).replace(/-/g, ''));
+        if (dsNum >= sNum && dsNum <= eNum) {
+          if (typeof t.pnl === 'number') {
+            total++;
+            if (t.pnl > 0) wins++;
+          }
+        }
+      }
+    } catch {}
+    const wr = total ? Math.round((wins / total) * 100) : 0;
+    return { weeklyCompletions: comps, weeklyViolations: vios, weeklyWinRate: wr };
+  }, [weeklyData]);
 
   const totalPnl = useMemo(() => weeklyData.reduce((s, d) => s + d.pnl, 0), [weeklyData]);
   const avatar = useMemo(() => {
@@ -369,6 +446,47 @@ export default function Reports() {
     } catch {}
   };
 
+  // Export helpers
+  const toCSV = (rows: Array<Record<string, any>>) => {
+    if (!rows.length) return '';
+    const headers = Array.from(new Set(rows.flatMap(r => Object.keys(r))));
+    const esc = (v: any) => {
+      const s = String(v ?? '');
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    };
+    const lines = [headers.join(',')].concat(
+      rows.map(r => headers.map(h => esc(r[h])).join(','))
+    );
+    return lines.join('\n');
+  };
+
+  const downloadFile = (content: BlobPart, mime: string, filename: string) => {
+    try {
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 500);
+    } catch {}
+  };
+
+  const exportCSV = (type: 'weekly' | 'monthly' | 'completion') => {
+    let rows: Array<Record<string, any>> = [];
+    if (type === 'weekly') rows = weeklyData.map(d => ({ day: d.day, completions: d.completions, violations: d.violations, pnl: d.pnl }));
+    if (type === 'monthly') rows = monthlyData.map(d => ({ date: d.date, day: d.day, completions: d.completions, violations: d.violations, pnl: d.pnl }));
+    if (type === 'completion') rows = completionData.map(d => ({ date: d.date, completions: d.completions, violations: d.violations }));
+    downloadFile(toCSV(rows), 'text/csv;charset=utf-8', `lockin-${type}-report.csv`);
+  };
+
+  const exportJSON = (type: 'weekly' | 'monthly' | 'completion') => {
+    let data: any;
+    if (type === 'weekly') data = { summary: { weeklyCompletions, weeklyViolations, totalPnl }, rows: weeklyData };
+    if (type === 'monthly') data = { rows: monthlyData };
+    if (type === 'completion') data = { target: settings?.targetCompletions, rows: completionData };
+    downloadFile(JSON.stringify(data, null, 2), 'application/json', `lockin-${type}-report.json`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
@@ -392,6 +510,14 @@ export default function Reports() {
               <button onClick={() => buildShareCard(true)} className="flex items-center gap-2 accent-outline">
                 <Download className="h-4 w-4" />
                 Export PDF
+              </button>
+              <button onClick={() => exportCSV(activeReport as any)} className="flex items-center gap-2 accent-outline">
+                <Download className="h-4 w-4" />
+                Export CSV
+              </button>
+              <button onClick={() => exportJSON(activeReport as any)} className="flex items-center gap-2 accent-outline">
+                <Download className="h-4 w-4" />
+                Export JSON
               </button>
             </div>
           </div>
@@ -444,10 +570,10 @@ export default function Reports() {
                   <Award className="h-8 w-8 text-green-500" />
                   <div>
                     <p className="text-gray-600 text-sm">Completions</p>
-                    <p className="text-2xl font-bold text-gray-900">8</p>
+                    <p className="text-2xl font-bold text-gray-900">{weeklyCompletions}</p>
                   </div>
                 </div>
-                <p className="text-green-600 text-sm">↑ 2 from last week</p>
+                <p className="text-green-600 text-sm">Weekly total</p>
               </div>
 
               <div className="rounded-2xl p-6 card-surface">
@@ -455,10 +581,10 @@ export default function Reports() {
                   <TrendingUp className="h-8 w-8 text-blue-500" />
                   <div>
                     <p className="text-gray-600 text-sm">Win Rate</p>
-                    <p className="text-2xl font-bold text-gray-900">72%</p>
+                    <p className="text-2xl font-bold text-gray-900">{weeklyWinRate}%</p>
                   </div>
                 </div>
-                <p className="text-blue-600 text-sm">↑ 5% from last week</p>
+                <p className="text-blue-600 text-sm">Based on journal trades</p>
               </div>
 
               <div className="rounded-2xl p-6 card-surface">
@@ -466,10 +592,10 @@ export default function Reports() {
                   <TrendingDown className="h-8 w-8 text-red-500" />
                   <div>
                     <p className="text-gray-600 text-sm">Violations</p>
-                    <p className="text-2xl font-bold text-gray-900">3</p>
+                    <p className="text-2xl font-bold text-gray-900">{weeklyViolations}</p>
                   </div>
                 </div>
-                <p className="text-red-600 text-sm">↓ 1 from last week</p>
+                <p className="text-red-600 text-sm">Weekly total</p>
               </div>
 
               <div className="col-span-1">
@@ -717,10 +843,17 @@ export default function Reports() {
                       className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
                       onClick={async () => {
                         try {
-                          const res = await fetch(shareUrl);
-                          const blob = await res.blob();
-                          // @ts-ignore
-                          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                          if ((navigator as any).clipboard && 'write' in (navigator as any).clipboard && (window as any).ClipboardItem) {
+                            const res = await fetch(shareUrl);
+                            const blob = await res.blob();
+                            // @ts-ignore
+                            await (navigator as any).clipboard.write([new (window as any).ClipboardItem({ 'image/png': blob })]);
+                          } else {
+                            // Fallback: copy URL or open image in a new tab
+                            await (navigator as any).clipboard?.writeText?.(shareUrl);
+                            const w = window.open(shareUrl, '_blank');
+                            w?.focus();
+                          }
                         } catch {}
                       }}
                     >
@@ -772,25 +905,77 @@ export default function Reports() {
           </div>
         )}
 
-        {/* Monthly Report Placeholder */}
+        {/* Monthly Report */}
         {activeReport === 'monthly' && (
-          <div className="bg-white rounded-2xl p-12 shadow-sm text-center">
-            <BarChart3 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Monthly Report Coming Soon</h3>
-            <p className="text-gray-600">
-              Comprehensive monthly analytics with portfolio growth tracking and discipline trends.
-            </p>
+          <div className="rounded-2xl p-6 card-surface space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="rounded-2xl p-6 card-surface">
+                <p className="text-gray-600 text-sm mb-1">Total Completions (30d)</p>
+                <p className="text-2xl font-bold text-gray-900">{monthlyData.reduce((s,d)=>s+d.completions,0)}</p>
+              </div>
+              <div className="rounded-2xl p-6 card-surface">
+                <p className="text-gray-600 text-sm mb-1">Total Violations (30d)</p>
+                <p className="text-2xl font-bold text-gray-900">{monthlyData.reduce((s,d)=>s+d.violations,0)}</p>
+              </div>
+              <div className="rounded-2xl p-6 card-surface">
+                <p className="text-gray-600 text-sm mb-1">Total PnL (30d)</p>
+                <p className="text-2xl font-bold text-gray-900">${monthlyData.reduce((s,d)=>s+d.pnl,0)}</p>
+              </div>
+              <div className="rounded-2xl p-6 card-surface">
+                <p className="text-gray-600 text-sm mb-1">Avg Daily Completions</p>
+                <p className="text-2xl font-bold text-gray-900">{(monthlyData.reduce((s,d)=>s+d.completions,0)/30).toFixed(1)}</p>
+              </div>
+            </div>
+            <div className="rounded-2xl p-6 card-surface">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Last 30 Days</h3>
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={monthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="date" stroke="#666" fontSize={10} interval={4} />
+                    <YAxis stroke="#666" />
+                    <Tooltip />
+                    <Bar dataKey="completions" fill="#10b981" name="Completions" />
+                    <Bar dataKey="violations" fill="#ef4444" name="Violations" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Completion Report Placeholder */}
+        {/* Completion Report */}
         {activeReport === 'completion' && (
-          <div className="bg-white rounded-2xl p-12 shadow-sm text-center">
-            <Award className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Completion Report</h3>
-            <p className="text-gray-600">
-              Detailed analysis of your 50-bottle challenge progress with exportable achievements.
-            </p>
+          <div className="rounded-2xl p-6 card-surface space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="rounded-2xl p-6 card-surface">
+                <p className="text-gray-600 text-sm mb-1">Completions (30d)</p>
+                <p className="text-2xl font-bold text-gray-900">{completionData.reduce((s,d)=>s+d.completions,0)}</p>
+              </div>
+              <div className="rounded-2xl p-6 card-surface">
+                <p className="text-gray-600 text-sm mb-1">Target Completions</p>
+                <p className="text-2xl font-bold text-gray-900">{settings?.targetCompletions ?? 0}</p>
+              </div>
+              <div className="rounded-2xl p-6 card-surface">
+                <p className="text-gray-600 text-sm mb-1">Discipline Score</p>
+                <p className="text-2xl font-bold text-gray-900">{progress.disciplineScore}%</p>
+              </div>
+            </div>
+            <div className="rounded-2xl p-6 card-surface">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Completions Trend (30d)</h3>
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={completionData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="date" stroke="#666" fontSize={10} interval={4} />
+                    <YAxis stroke="#666" />
+                    <Tooltip />
+                    <Bar dataKey="completions" fill="#10b981" name="Completions" />
+                    <Bar dataKey="violations" fill="#ef4444" name="Violations" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </div>
         )}
       </div>
