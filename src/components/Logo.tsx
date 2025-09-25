@@ -19,9 +19,15 @@ export default function Logo({ size = 40, showText = false, subtitle }: LogoProp
           className="object-contain"
           style={{ width: Math.floor(size * 0.9), height: Math.floor(size * 0.9) }}
           onError={(e) => {
-            const target = e.currentTarget as HTMLImageElement & { dataset: { fallbackTried?: string } };
-            if (target.dataset.fallbackTried !== 'true') {
-              target.dataset.fallbackTried = 'true';
+            const target = e.currentTarget as HTMLImageElement & { dataset: { fallbackStep?: string } };
+            const step = Number(target.dataset.fallbackStep || '0');
+            if (step === 0) {
+              target.dataset.fallbackStep = '1';
+              target.src = '/lockin-logo.jpg';
+              return;
+            }
+            if (step === 1) {
+              target.dataset.fallbackStep = '2';
               target.src = '/logo-trade-game.svg';
               return;
             }
