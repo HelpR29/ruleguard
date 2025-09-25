@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { Bell, Settings, User, Crown, Moon, Sun } from 'lucide-react';
 import { useUser } from '../context/UserContext';
@@ -18,6 +18,16 @@ const pageNames: Record<string, string> = {
   '/profile': 'Profile'
 };
 
+/**
+ * Header component with comprehensive accessibility features
+ *
+ * Features:
+ * - Keyboard navigation support
+ * - Screen reader compatibility
+ * - Focus management
+ * - ARIA labels and roles
+ * - Skip links for navigation
+ */
 export default function Header() {
   const location = useLocation();
   const { progress } = useUser();
@@ -34,6 +44,11 @@ export default function Header() {
   const [achievements, setAchievements] = useState<string[]>([]);
   const pageName = pageNames[location.pathname] || 'LockIn';
 
+  // Refs for keyboard navigation
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const notificationButtonRef = useRef<HTMLButtonElement>(null);
+  const themeButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     try {
       const locked = localStorage.getItem('profile_locked');
@@ -48,6 +63,16 @@ export default function Header() {
       if (savedAvatar) setUserAvatar(savedAvatar);
     } catch {}
   }, []);
+
+  // Keyboard navigation handler
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      setShowProfileMenu(false);
+      setShowNotifications(false);
+      setShowAvatarModal(false);
+      setShowUpgradeModal(false);
+    }
+  };
 
   const mappedPremiumStatus: 'none' | 'discount_25' | 'discount_50' | 'free_monthly' =
     premiumStatus === 'premium' ? 'free_monthly' : premiumStatus;
@@ -68,25 +93,102 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
+    <header
+      className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30"
+      role="banner"
+      aria-label="Main navigation header"
+      onKeyDown={handleKeyDown}
+    >
+      {/* Skip link for screen readers */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-blue-600 text-white px-4 py-2 rounded z-50"
+      >
+        Skip to main content
+      </a>
+
       <div className="flex items-center justify-between px-4 py-3 lg:px-6">
         {/* Left Section */}
         <div className="flex items-center gap-4">
-          <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity" aria-label="Go to Dashboard">
+          <Link
+            to="/"
+            className="flex items-center gap-3 hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg"
+            aria-label="Go to Dashboard"
+          >
             <Logo showText subtitle={pageName} frame="card" />
           </Link>
           <div className="sm:hidden">
             <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{pageName}</h1>
           </div>
           {/* Desktop Top Nav */}
-          <nav className="hidden lg:flex items-center gap-4 text-sm ml-2">
-            <Link to="/" className={`px-3 py-1 rounded-lg ${location.pathname==='/'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Home</Link>
-            <Link to="/rules" className={`px-3 py-1 rounded-lg ${location.pathname==='/rules'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Rules</Link>
-            <Link to="/journal" className={`px-3 py-1 rounded-lg ${location.pathname==='/journal'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Journal</Link>
-            <Link to="/reports" className={`px-3 py-1 rounded-lg ${location.pathname==='/reports'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Reports</Link>
-            <Link to="/friends" className={`px-3 py-1 rounded-lg ${location.pathname==='/friends'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Friends</Link>
-            <Link to="/leaderboard" className={`px-3 py-1 rounded-lg ${location.pathname==='/leaderboard'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Leaderboard</Link>
-            <Link to="/settings" className={`px-3 py-1 rounded-lg ${location.pathname==='/settings'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'}`}>Settings</Link>
+          <nav
+            className="hidden lg:flex items-center gap-4 text-sm ml-2"
+            role="navigation"
+            aria-label="Main navigation"
+          >
+            <Link
+              to="/"
+              className={`px-3 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                location.pathname==='/'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'
+              }`}
+              aria-current={location.pathname==='/' ? 'page' : undefined}
+            >
+              Home
+            </Link>
+            <Link
+              to="/rules"
+              className={`px-3 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                location.pathname==='/rules'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'
+              }`}
+              aria-current={location.pathname==='/rules' ? 'page' : undefined}
+            >
+              Rules
+            </Link>
+            <Link
+              to="/journal"
+              className={`px-3 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                location.pathname==='/journal'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'
+              }`}
+              aria-current={location.pathname==='/journal' ? 'page' : undefined}
+            >
+              Journal
+            </Link>
+            <Link
+              to="/reports"
+              className={`px-3 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                location.pathname==='/reports'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'
+              }`}
+              aria-current={location.pathname==='/reports' ? 'page' : undefined}
+            >
+              Reports
+            </Link>
+            <Link
+              to="/friends"
+              className={`px-3 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                location.pathname==='/friends'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'
+              }`}
+              aria-current={location.pathname==='/friends' ? 'page' : undefined}
+            >
+              Friends
+            </Link>
+            <Link
+              to="/leaderboard"
+              className={`px-3 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                location.pathname==='/leaderboard'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'
+              }`}
+              aria-current={location.pathname==='/leaderboard' ? 'page' : undefined}
+            >
+              Leaderboard
+            </Link>
+            <Link
+              to="/settings"
+              className={`px-3 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                location.pathname==='/settings'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'
+              }`}
+              aria-current={location.pathname==='/settings' ? 'page' : undefined}
+            >
+              Settings
+            </Link>
           </nav>
         </div>
 
@@ -95,8 +197,12 @@ export default function Header() {
           {/* Discipline Score */}
           <div className="hidden sm:flex items-center gap-2">
             <div className="text-right">
-              <p className="text-xs text-gray-500 dark:text-gray-300">Discipline Score</p>
-              <p className="text-sm font-bold text-green-600">{progress.disciplineScore}%</p>
+              <p className="text-xs text-gray-500 dark:text-gray-300" aria-label="Current discipline score percentage">
+                Discipline Score
+              </p>
+              <p className="text-sm font-bold text-green-600" aria-label={`${progress.disciplineScore} percent discipline score`}>
+                {progress.disciplineScore}%
+              </p>
             </div>
             <div className="w-12 h-12 relative">
               <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
