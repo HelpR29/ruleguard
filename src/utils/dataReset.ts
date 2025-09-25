@@ -166,8 +166,50 @@ export const nuclearReset = () => {
   }
 };
 
-// Make it available globally for console access
+// Complete system reset - clears everything and shows what was cleared
+export const completeReset = () => {
+  console.log('🔄 COMPLETE SYSTEM RESET - Clearing all data...');
+  
+  try {
+    // Log what we're about to clear
+    const allKeys = Object.keys(localStorage);
+    console.log('📋 Current localStorage keys:', allKeys);
+    
+    // Clear everything
+    const keyCount = localStorage.length;
+    localStorage.clear();
+    console.log(`✅ Cleared ${keyCount} localStorage keys`);
+    
+    // Initialize fresh user
+    initializeFreshUser();
+    console.log('✅ Fresh user initialized');
+    
+    // Show what should now be reset
+    console.log('🎯 After reset, you should see:');
+    console.log('   • Journal: 0 trades, 0% win rate, $0 avg P&L, 0% compliance');
+    console.log('   • Notifications: 0 unread');
+    console.log('   • Progress: 0/50 completions');
+    console.log('   • Leaderboard: Only your user (Trading Pro)');
+    
+    console.log('🔄 Refreshing page in 2 seconds...');
+    setTimeout(() => window.location.reload(), 2000);
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Complete reset failed:', error);
+    return false;
+  }
+};
+
+// Make all reset functions available globally for console access
 if (typeof window !== 'undefined') {
   (window as any).quickReset = quickReset;
   (window as any).nuclearReset = nuclearReset;
+  (window as any).completeReset = completeReset;
+  
+  // Show available functions
+  console.log('🛠️ Reset functions available:');
+  console.log('   • quickReset() - Clears specific app data');
+  console.log('   • nuclearReset() - Clears all localStorage');
+  console.log('   • completeReset() - Complete system reset with logging');
 }
