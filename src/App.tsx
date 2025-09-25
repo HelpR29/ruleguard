@@ -2,6 +2,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import MobileNav from './components/MobileNav';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { UserProvider } from './context/UserContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
@@ -41,51 +42,55 @@ function App() {
 
   if (!isOnboarded) {
     return (
-      <ThemeProvider>
-        <ToastProvider>
-          <Suspense fallback={<PageLoader />}>
-            <Onboarding onComplete={() => setIsOnboarded(true)} />
-          </Suspense>
-          <Toasts />
-        </ToastProvider>
-      </ThemeProvider>
+      <ErrorBoundary>
+        <ThemeProvider>
+          <ToastProvider>
+            <Suspense fallback={<PageLoader />}>
+              <Onboarding onComplete={() => setIsOnboarded(true)} />
+            </Suspense>
+            <Toasts />
+          </ToastProvider>
+        </ThemeProvider>
+      </ErrorBoundary>
     );
   }
 
   return (
-    <ThemeProvider>
-      <ToastProvider>
-        <UserProvider>
-          <Router>
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-              <Header />
+    <ErrorBoundary>
+      <ThemeProvider>
+        <ToastProvider>
+          <UserProvider>
+            <Router>
+              <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                <Header />
 
-              <main className="pb-20 lg:pb-6">
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/rules" element={<Rules />} />
-                    <Route path="/journal" element={<Journal />} />
-                    <Route path="/reports" element={<Reports />} />
-                    <Route path="/invite/:code" element={<InviteAccept />} />
-                    <Route path="/leaderboard" element={<Leaderboard />} />
-                    <Route path="/friends" element={<Friends />} />
-                    <Route path="/premium" element={<Premium />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/achievements" element={<Achievements />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Routes>
-                </Suspense>
-              </main>
+                <main className="pb-20 lg:pb-6">
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/rules" element={<Rules />} />
+                      <Route path="/journal" element={<Journal />} />
+                      <Route path="/reports" element={<Reports />} />
+                      <Route path="/invite/:code" element={<InviteAccept />} />
+                      <Route path="/leaderboard" element={<Leaderboard />} />
+                      <Route path="/friends" element={<Friends />} />
+                      <Route path="/premium" element={<Premium />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/achievements" element={<Achievements />} />
+                      <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                  </Suspense>
+                </main>
 
-              <MobileNav />
-              <Toasts />
-            </div>
-          </Router>
-        </UserProvider>
-      </ToastProvider>
-    </ThemeProvider>
+                <MobileNav />
+                <Toasts />
+              </div>
+            </Router>
+          </UserProvider>
+        </ToastProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 
