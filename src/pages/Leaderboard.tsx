@@ -124,28 +124,41 @@ export default function Leaderboard() {
     }
   };
 
-  // Check if leaderboard should reset (30 days)
+  // Helpers for calendar month-end logic
+  const getFirstDayOfNextMonth = (fromDateISO?: string) => {
+    const d = fromDateISO ? new Date(fromDateISO) : new Date();
+    const year = d.getFullYear();
+    const month = d.getMonth(); // 0-based
+    // first day of next month
+    const next = new Date(year, month + 1, 1, 0, 0, 0, 0);
+    return next;
+  };
+
+  // Check if leaderboard should reset at month end
   const checkLeaderboardReset = () => {
     const now = new Date();
-    const lastResetDate = new Date(lastReset);
-    const daysSinceReset = Math.floor((now.getTime() - lastResetDate.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (daysSinceReset >= 30) {
+    const nextReset = getFirstDayOfNextMonth(lastReset);
+    if (now >= nextReset) {
       // Award badges to top 3 before reset
       awardLeaderboardBadges();
       
-      // Reset leaderboard
+      // Reset leaderboard and persist
       try {
-        localStorage.setItem('leaderboard_last_reset', now.toISOString());
-        // Save month history snapshot
+        // month label corresponds to the month just finished
+        const finishedMonth = new Date(nextReset.getFullYear(), nextReset.getMonth() - 1, 1);
         const snapshot = users.slice(0, 3).map(u => ({ id: u.id, name: u.name, rank: u.rank }));
         const history = JSON.parse(localStorage.getItem('leaderboard_history') || '[]');
-        const monthLabel = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+        const monthLabel = `${finishedMonth.getFullYear()}-${String(finishedMonth.getMonth()+1).padStart(2,'0')}`;
         history.push({ month: monthLabel, top3: snapshot, yourRank: Number(localStorage.getItem('current_user_rank')||'0') });
         localStorage.setItem('leaderboard_history', JSON.stringify(history));
 
+        // Persist new last reset as the start of the new month
+        const newLastResetISO = nextReset.toISOString();
+        localStorage.setItem('leaderboard_last_reset', newLastResetISO);
+        setLastReset(newLastResetISO);
+
+        // Clear monthly snapshot cache
         localStorage.removeItem('monthly_leaderboard_data');
-        setLastReset(now.toISOString());
       } catch {}
     }
   };
@@ -207,9 +220,10 @@ export default function Leaderboard() {
 
   const getDaysUntilReset = () => {
     const now = new Date(nowTick);
-    const lastResetDate = new Date(lastReset);
-    const daysSinceReset = Math.floor((now.getTime() - lastResetDate.getTime()) / (1000 * 60 * 60 * 24));
-    return Math.max(0, 30 - daysSinceReset);
+    const nextReset = getFirstDayOfNextMonth(lastReset);
+    const ms = nextReset.getTime() - now.getTime();
+    const days = Math.ceil(ms / (1000 * 60 * 60 * 24));
+    return Math.max(0, days);
   };
 
   return (
