@@ -132,6 +132,20 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const newBalance = progress.currentBalance * Math.pow(1 + rate, addCount);
       const newDiscipline = Math.min(100, progress.disciplineScore + addCount);
       const newStreak = progress.streak + 1; // per trading day; keep simple increment here
+      // Reflect completions in daily_stats and activity_log for Reports/Insights
+      try {
+        const key = new Date().toISOString().slice(0,10);
+        const stats = JSON.parse(localStorage.getItem('daily_stats') || '{}');
+        const today = stats[key] || { completions: 0, violations: 0 };
+        today.completions += addCount;
+        stats[key] = today;
+        localStorage.setItem('daily_stats', JSON.stringify(stats));
+        const log = JSON.parse(localStorage.getItem('activity_log') || '[]');
+        for (let i = 0; i < addCount; i++) {
+          log.push({ ts: Date.now(), type: 'completion' });
+        }
+        localStorage.setItem('activity_log', JSON.stringify(log));
+      } catch {}
       updateProgress({
         completions: newCompletions,
         currentBalance: Number(newBalance.toFixed(2)),
