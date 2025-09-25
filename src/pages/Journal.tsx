@@ -129,6 +129,27 @@ function Journal() {
 
   const [showAnalyticsFilters, setShowAnalyticsFilters] = useState(false);
 
+  // Error Boundary for Analytics pane to avoid app-wide crash
+  class AnalyticsErrorBoundary extends (window as any).React?.Component<any, any> || (class extends (Object as any) {}) {
+    constructor(props: any) { super(props); this.state = { hasError: false, error: null }; }
+    static getDerivedStateFromError(error: any) { return { hasError: true, error }; }
+    componentDidCatch(error: any, info: any) { try { console.error('Analytics crashed:', error, info); } catch {} }
+    render() {
+      // @ts-ignore
+      if ((this as any).state?.hasError) {
+        return (
+          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+            <p className="font-semibold text-red-700 mb-2">Analytics failed to load</p>
+            <p className="text-sm text-red-600 mb-3">Please try again or adjust filters.</p>
+            <button onClick={() => this.setState({ hasError: false, error: null })} className="px-3 py-1 text-sm rounded bg-blue-600 text-white">Retry</button>
+          </div>
+        );
+      }
+      // @ts-ignore
+      return (this as any).props.children;
+    }
+  }
+
   // One-time migration: move legacy base64 images to IndexedDB and store IDs
   useEffect(() => {
     (async () => {
@@ -618,44 +639,46 @@ function Journal() {
 
           {/* Analytics Tab */}
           {activeTab === 'analytics' && (
-            <div className="space-y-6">
-              <AnalyticsFilters
-                filters={analyticsFilters}
-                onFiltersChange={handleAnalyticsFiltersChange}
-                trades={trades as any}
-                isOpen={showAnalyticsFilters}
-                onToggle={() => setShowAnalyticsFilters(!showAnalyticsFilters)}
-              />
-              <AIInsights
-                trades={trades as any}
-                period="weekly"
-                isLoading={false}
-                onAnalysisComplete={(count) => {
-                  console.log('Analysis complete with', count, 'insights');
-                }}
-              />
-              <AdvancedAnalytics
-                trades={trades as any}
-                period="week"
-                onExport={(format) => {
-                  console.log('Exporting analytics as:', format);
-                  // Export functionality
-                  const dataStr = JSON.stringify(trades, null, 2);
-                  const dataBlob = new Blob([dataStr], { type: 'application/json' });
-                  const url = URL.createObjectURL(dataBlob);
-                  const link = document.createElement('a');
-                  link.href = url;
-                  link.download = `trading-journal-${new Date().toISOString().split('T')[0]}.${format}`;
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                  URL.revokeObjectURL(url);
-                }}
-                onFilterChange={(filters: any) => {
-                  console.log('Analytics filters changed:', filters);
-                }}
-              />
-            </div>
+            <AnalyticsErrorBoundary>
+              <div className="space-y-6">
+                <AnalyticsFilters
+                  filters={analyticsFilters}
+                  onFiltersChange={handleAnalyticsFiltersChange}
+                  trades={trades as any}
+                  isOpen={showAnalyticsFilters}
+                  onToggle={() => setShowAnalyticsFilters(!showAnalyticsFilters)}
+                />
+                <AIInsights
+                  trades={trades as any}
+                  period="weekly"
+                  isLoading={false}
+                  onAnalysisComplete={(count) => {
+                    console.log('Analysis complete with', count, 'insights');
+                  }}
+                />
+                <AdvancedAnalytics
+                  trades={trades as any}
+                  period="week"
+                  onExport={(format) => {
+                    console.log('Exporting analytics as:', format);
+                    // Export functionality
+                    const dataStr = JSON.stringify(trades, null, 2);
+                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(dataBlob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `trading-journal-${new Date().toISOString().split('T')[0]}.${format}`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                  }}
+                  onFilterChange={(filters: any) => {
+                    console.log('Analytics filters changed:', filters);
+                  }}
+                />
+              </div>
+            </AnalyticsErrorBoundary>
           )}
         </div>
       </div>

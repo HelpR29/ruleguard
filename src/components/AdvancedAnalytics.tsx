@@ -478,7 +478,7 @@ export default function AnalyticsDashboard({
     };
     let child: React.ReactElement | null = null;
     const primary = config[0].type;
-
+    try {
     if (primary === 'bar') {
       child = (
         <BarChart {...chartProps}>
@@ -581,6 +581,18 @@ export default function AnalyticsDashboard({
           </Pie>
           <Tooltip formatter={(value: number) => emotionMode === 'percent' ? `${value}%` : `${value}`} />
         </PieChart>
+      );
+    }
+    } catch (err) {
+      console.error('Chart render failed:', err);
+      return (
+        <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+          <div className="text-center">
+            <AlertTriangle className="h-10 w-10 mx-auto mb-3 text-red-500" />
+            <p className="mb-2">Chart failed to render.</p>
+            <button onClick={handleRefresh} className="px-3 py-1 text-sm rounded bg-blue-600 text-white">Retry</button>
+          </div>
+        </div>
       );
     }
 
