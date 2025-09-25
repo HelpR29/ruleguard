@@ -273,9 +273,9 @@ export default function Journal() {
 
   // New Entry form state
   const [form, setForm] = useState({
-    setup: '',
     date: new Date().toISOString().slice(0,10),
     symbol: '',
+    setup: '',
     type: 'Long',
     entry: '',
     exit: '',
