@@ -7,25 +7,53 @@ export const resetUserData = () => {
   try {
     // Clear all user-related localStorage data
     const keysToRemove = [
+      // User data
       'user_progress',
       'user_settings', 
       'user_rules',
       'display_name',
       'premium_status',
       'user_achievements',
+      
+      // Journal and trades
       'journal_trades',
       'journal_notes',
+      'journal_migrated_images_v1',
+      'journal_cleanup_images_v1',
+      'daily_stats',
+      'activity_log',
+      
+      // Leaderboard
       'leaderboard_last_reset',
       'leaderboard_history',
       'current_user_rank',
-      'monthly_leaderboard_data'
+      'monthly_leaderboard_data',
+      
+      // Any trades with user prefixes
+      'trades_demo-user',
+      'trades_user1'
     ];
 
+    // Also clear any keys that match patterns
+    const allKeys = Object.keys(localStorage);
+    const patternKeys = allKeys.filter(key => 
+      key.startsWith('trades_') || 
+      key.startsWith('journal_') ||
+      key.startsWith('user_') ||
+      key.includes('leaderboard')
+    );
+
+    // Remove explicit keys
     keysToRemove.forEach(key => {
       localStorage.removeItem(key);
     });
 
-    console.log('✅ User data reset completed');
+    // Remove pattern-matched keys
+    patternKeys.forEach(key => {
+      localStorage.removeItem(key);
+    });
+
+    console.log(`✅ User data reset completed - removed ${keysToRemove.length + patternKeys.length} keys`);
     return true;
   } catch (error) {
     console.error('❌ Error resetting user data:', error);
