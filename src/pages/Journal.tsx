@@ -37,7 +37,7 @@ function Journal() {
   const [activeTab, setActiveTab] = useState('trades');
   const [showNewEntry, setShowNewEntry] = useState(false);
   const { addToast } = useToast();
-  const { recordTradeProgress } = useUser();
+  const { recordTradeProgress, settings } = useUser();
   const [premiumStatus] = useState<string>(() => {
     try { return localStorage.getItem('premium_status') || 'none'; } catch { return 'none'; }
   });
@@ -286,9 +286,8 @@ function Journal() {
       addToast('info', 'Note: Exit equals Target — treating Exit as the actual filled price and Target as your planned TP.');
     }
     const pnl = Number(((exitNum - entryNum) * sizeNum).toFixed(2));
-    // Compute percent gain for contribution toward next completion
-    const rawPct = ((exitNum - entryNum) / entryNum) * 100;
-    const gainPct = form.type === 'Long' ? rawPct : ((entryNum - exitNum) / entryNum) * 100;
+    // Compute percent based on PnL relative to starting portfolio (item = % of portfolio)
+    const gainPct = (pnl / (settings.startingPortfolio || 1)) * 100;
     const newTrade = {
       setup: form.setup,
       id: Date.now(),
@@ -325,9 +324,9 @@ function Journal() {
         localStorage.setItem('activity_log', JSON.stringify(log));
       } catch {}
     }
-    if (form.ruleCompliant) {
-      // Contribute positive percent toward automated progress
-      if (gainPct > 0) recordTradeProgress(Number(gainPct.toFixed(2)), true);
+    if (form.ruleCompliant && pnl > 0) {
+      // Contribute PnL-based percent toward automated progress
+      if (gainPct > 0) recordTradeProgress(Number(gainPct.toFixed(4)), true);
     }
     addToast('success', 'Journal entry added.');
     setShowNewEntry(false);
