@@ -195,7 +195,7 @@ export default function AvatarSelector({
           </>
         ) : (
           <div className="bg-gray-50 rounded-xl p-4 text-center">
-            <Lock className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+            <Lock className="h-8 w-8 text-gray-500 dark:text-gray-300 mx-auto mb-2" />
             <p className="text-sm text-gray-600">
               Maintain a 7-day discipline streak to unlock these avatars
             </p>
@@ -237,7 +237,7 @@ export default function AvatarSelector({
               {hasStreakAchievement ? (
                 <Award className="h-4 w-4 text-green-500" />
               ) : (
-                <Lock className="h-4 w-4 text-gray-400" />
+                <Lock className="h-4 w-4 text-gray-500 dark:text-gray-300" />
               )}
               7-Day Streak Avatars
             </span>
@@ -251,7 +251,7 @@ export default function AvatarSelector({
               {hasGrowthMaster ? (
                 <TrendingUp className="h-4 w-4 text-green-500" />
               ) : (
-                <Lock className="h-4 w-4 text-gray-400" />
+                <Lock className="h-4 w-4 text-gray-500 dark:text-gray-300" />
               )}
               Growth Master Badge + 25% Discount
             </span>
@@ -265,7 +265,7 @@ export default function AvatarSelector({
               {hasDisciplineKing ? (
                 <Crown className="h-4 w-4 text-purple-500" />
               ) : (
-                <Lock className="h-4 w-4 text-gray-400" />
+                <Lock className="h-4 w-4 text-gray-500 dark:text-gray-300" />
               )}
               Discipline King Badge + 50% Discount
             </span>
@@ -279,7 +279,7 @@ export default function AvatarSelector({
               {hasChampion ? (
                 <Medal className="h-4 w-4 text-yellow-500" />
               ) : (
-                <Lock className="h-4 w-4 text-gray-400" />
+                <Lock className="h-4 w-4 text-gray-500 dark:text-gray-300" />
               )}
               Champion Badge + Free Monthly Access
             </span>

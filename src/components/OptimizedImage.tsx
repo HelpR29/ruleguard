@@ -94,7 +94,7 @@ export const ResponsiveImage = React.memo(({
         className={`bg-gray-200 dark:bg-gray-700 flex items-center justify-center ${className}`}
         style={{ width, height }}
       >
-        <div className="text-gray-500 dark:text-gray-400 text-sm">
+        <div className="text-gray-500 dark:text-gray-300 text-sm">
           Failed to load image
         </div>
       </div>
