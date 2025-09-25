@@ -14,8 +14,9 @@ export default function Reports() {
 
   // Force re-compute on external data updates
   const [version, setVersion] = useState(0);
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   useEffect(() => {
-    const onCustom = () => setVersion(v => v + 1);
+    const onCustom = () => { setVersion(v => v + 1); setLastSyncedAt(new Date()); };
     const onStorage = (e: StorageEvent) => {
       if (!e.key) return;
       if (['journal_trades','daily_stats','activity_log','user_progress','user_settings'].includes(e.key)) onCustom();
@@ -27,6 +28,20 @@ export default function Reports() {
       window.removeEventListener('storage', onStorage);
     };
   }, []);
+
+  // Humanized synced text
+  const [syncedNowTicker, setSyncedNowTicker] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setSyncedNowTicker(t => t + 1), 30000); // update every 30s
+    return () => clearInterval(id);
+  }, []);
+  const syncedText = useMemo(() => {
+    if (!lastSyncedAt) return '';
+    const diffSec = Math.max(0, Math.floor((Date.now() - lastSyncedAt.getTime()) / 1000));
+    if (diffSec < 60) return 'Synced just now';
+    const mins = Math.floor(diffSec / 60);
+    return `Synced ${mins}m ago`;
+  }, [lastSyncedAt, syncedNowTicker]);
 
   // Load trades from Journal for R:R and tag analytics
   const trades = useMemo(() => {
@@ -558,6 +573,9 @@ export default function Reports() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {syncedText && (
+                <span className="text-xs text-gray-500 mr-2">{syncedText}</span>
+              )}
               <button onClick={() => buildShareCard()} className="flex items-center gap-2 accent-btn">
                 <Download className="h-4 w-4" />
                 Share
@@ -690,20 +708,24 @@ export default function Reports() {
                       {profitFactor === null ? '—' : (profitFactor === Infinity ? '∞' : profitFactor.toFixed(2))}
                     </p>
                   </div>
-                  <div className="ml-auto">
-                    <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
-                      <button
-                        onClick={() => setPfRange('7d')}
-                        className={`px-3 py-1 text-xs ${pfRange==='7d' ? 'bg-gray-200 font-medium' : 'bg-white'}`}
-                      >7d</button>
-                      <button
-                        onClick={() => setPfRange('30d')}
-                        className={`px-3 py-1 text-xs ${pfRange==='30d' ? 'bg-gray-200 font-medium' : 'bg-white'}`}
-                      >30d</button>
-                    </div>
-                  </div>
                 </div>
                 <p className="text-gray-600 text-sm">Last {pfRange === '7d' ? '7' : '30'} days</p>
+                <div className="mt-3 flex justify-center">
+                  <div className="relative inline-flex items-center bg-gray-100 rounded-full p-1 shadow-inner" role="group" aria-label="Profit factor range">
+                    <button
+                      type="button"
+                      onClick={() => setPfRange('7d')}
+                      aria-pressed={pfRange==='7d'}
+                      className={`px-3 py-1 text-xs rounded-full transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-400 ${pfRange==='7d' ? 'bg-white shadow font-semibold text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
+                    >7d</button>
+                    <button
+                      type="button"
+                      onClick={() => setPfRange('30d')}
+                      aria-pressed={pfRange==='30d'}
+                      className={`px-3 py-1 text-xs rounded-full transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-400 ${pfRange==='30d' ? 'bg-white shadow font-semibold text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
+                    >30d</button>
+                  </div>
+                </div>
               </div>
             </div>
 
