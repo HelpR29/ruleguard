@@ -46,7 +46,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           </div>
           <div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Welcome to LockIn</h2>
-            <p className="text-gray-600 text-lg max-w-md mx-auto">
+            <p className="text-gray-700 text-lg max-w-md mx-auto">
               Build unbreakable trading discipline with AI-powered rule tracking, gamified progress, 
               and compounding growth visualization.
             </p>
@@ -141,7 +141,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         <div className="max-w-lg mx-auto space-y-6">
           <div className="text-center">
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">What keeps you motivated?</h3>
-            <p className="text-gray-600">
+            <p className="text-gray-700">
               Choose an object that represents your progress. Each successful rule completion removes one from your wall!
             </p>
           </div>
@@ -184,7 +184,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         <div className="max-w-md mx-auto space-y-6">
           <div className="text-center">
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Your Trading Rules</h3>
-            <p className="text-gray-600">
+            <p className="text-gray-700">
               Set the rules that will keep you disciplined. Our AI will check every trade against these.
             </p>
           </div>
@@ -272,7 +272,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           
           <div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">You're Ready to Start!</h2>
-            <p className="text-gray-600 text-lg max-w-md mx-auto">
+            <p className="text-gray-700 text-lg max-w-md mx-auto">
               Your LockIn is configured and ready to help you build unbreakable trading discipline.
             </p>
           </div>
