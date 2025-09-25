@@ -39,6 +39,23 @@ export default function Leaderboard() {
       return new Date().toISOString();
     }
   });
+  // Ticking clock to keep countdown up-to-date without reload
+  const [nowTick, setNowTick] = useState<number>(Date.now());
+
+  // Persist initial last_reset if it wasn't present, and start a 60s ticker
+  useEffect(() => {
+    try {
+      const existing = localStorage.getItem('leaderboard_last_reset');
+      if (!existing) {
+        const ts = new Date().toISOString();
+        localStorage.setItem('leaderboard_last_reset', ts);
+        setLastReset(ts);
+      }
+    } catch {}
+
+    const id = setInterval(() => setNowTick(Date.now()), 60 * 1000); // update every minute
+    return () => clearInterval(id);
+  }, []);
 
   // Derived: current user's computed growth
   const currentBalance = useMemo(() => {
@@ -189,7 +206,7 @@ export default function Leaderboard() {
   };
 
   const getDaysUntilReset = () => {
-    const now = new Date();
+    const now = new Date(nowTick);
     const lastResetDate = new Date(lastReset);
     const daysSinceReset = Math.floor((now.getTime() - lastResetDate.getTime()) / (1000 * 60 * 60 * 24));
     return Math.max(0, 30 - daysSinceReset);
@@ -284,43 +301,49 @@ export default function Leaderboard() {
         {/* Top 3 Podium */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <h3 className="text-lg font-bold text-gray-900 mb-6">Top Performers</h3>
-          <div className="flex justify-center items-end gap-4 mb-8">
-            {/* 2nd Place */}
-            <div className="text-center">
-              <div className="w-16 h-20 bg-gradient-to-t from-gray-300 to-gray-400 rounded-t-lg flex items-end justify-center pb-2 mb-2">
-                <span className="text-white font-bold">2</span>
-              </div>
-              <div className="text-4xl mb-2">{mockLeaderboardData[1].avatar}</div>
-              <p className="font-semibold text-sm">{mockLeaderboardData[1].name}</p>
-              <p className="text-xs text-gray-600">{mockLeaderboardData[1].completions} completions</p>
+          {users.length < 3 ? (
+            <div className="text-center text-gray-600 py-8">
+              Not enough data yet. Make some progress to populate the leaderboard.
             </div>
-
-            {/* 1st Place */}
-            <div className="text-center">
-              <div className="w-16 h-24 bg-gradient-to-t from-yellow-400 to-yellow-500 rounded-t-lg flex items-end justify-center pb-2 mb-2">
-                <Crown className="h-6 w-6 text-white" />
-              </div>
-              <div className="text-5xl mb-2">{mockLeaderboardData[0].avatar}</div>
-              <p className="font-bold">{mockLeaderboardData[0].name}</p>
-              <p className="text-sm text-gray-600">{mockLeaderboardData[0].completions} completions</p>
-              {mockLeaderboardData[0].isPremium && (
-                <div className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs mt-1">
-                  <Star className="h-3 w-3" />
-                  Premium
+          ) : (
+            <div className="flex justify-center items-end gap-4 mb-8">
+              {/* 2nd Place */}
+              <div className="text-center">
+                <div className="w-16 h-20 bg-gradient-to-t from-gray-300 to-gray-400 rounded-t-lg flex items-end justify-center pb-2 mb-2">
+                  <span className="text-white font-bold">2</span>
                 </div>
-              )}
-            </div>
-
-            {/* 3rd Place */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-t from-amber-500 to-amber-600 rounded-t-lg flex items-end justify-center pb-2 mb-2">
-                <span className="text-white font-bold">3</span>
+                <div className="text-4xl mb-2">{users[1]?.avatar ?? '👤'}</div>
+                <p className="font-semibold text-sm">{users[1]?.name ?? '—'}</p>
+                <p className="text-xs text-gray-600">{users[1]?.completions ?? 0} completions</p>
               </div>
-              <div className="text-4xl mb-2">{mockLeaderboardData[2].avatar}</div>
-              <p className="font-semibold text-sm">{mockLeaderboardData[2].name}</p>
-              <p className="text-xs text-gray-600">{mockLeaderboardData[2].completions} completions</p>
+
+              {/* 1st Place */}
+              <div className="text-center">
+                <div className="w-16 h-24 bg-gradient-to-t from-yellow-400 to-yellow-500 rounded-t-lg flex items-end justify-center pb-2 mb-2">
+                  <Crown className="h-6 w-6 text-white" />
+                </div>
+                <div className="text-5xl mb-2">{users[0]?.avatar ?? '👤'}</div>
+                <p className="font-bold">{users[0]?.name ?? '—'}</p>
+                <p className="text-sm text-gray-600">{users[0]?.completions ?? 0} completions</p>
+                {users[0]?.isPremium && (
+                  <div className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs mt-1">
+                    <Star className="h-3 w-3" />
+                    Premium
+                  </div>
+                )}
+              </div>
+
+              {/* 3rd Place */}
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-t from-amber-500 to-amber-600 rounded-t-lg flex items-end justify-center pb-2 mb-2">
+                  <span className="text-white font-bold">3</span>
+                </div>
+                <div className="text-4xl mb-2">{users[2]?.avatar ?? '👤'}</div>
+                <p className="font-semibold text-sm">{users[2]?.name ?? '—'}</p>
+                <p className="text-xs text-gray-600">{users[2]?.completions ?? 0} completions</p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Full Leaderboard */}
