@@ -751,35 +751,50 @@ export default function Reports() {
                   ))}
                 </div>
               )}
-              <div className="bg-blue-50 rounded-xl p-4">
-                <h4 className="font-medium text-blue-800 mb-2">Weekly Summary</h4>
-                <p className="text-blue-700 text-sm mb-3">
-                  Strong performance this week with 8 successful rule completions. Your discipline score improved by 12% 
-                  compared to last week. However, you experienced FOMO-driven trades on Tuesday and Thursday.
-                </p>
-                {/* Weaknesses */}
-                <div className="mt-4">
-                  <h5 className="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-amber-600" /> Weaknesses Detected
-                  </h5>
-                  <ul className="list-disc pl-6 space-y-1 text-sm text-blue-900">
-                    {weaknesses.map((w, i) => (
-                      <li key={i}>{w}</li>
-                    ))}
-                  </ul>
-                </div>
-                {/* Action Plan */}
-                <div className="mt-4">
-                  <h5 className="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-600" /> Action Plan (Next 5 Sessions)
-                  </h5>
-                  <ol className="list-decimal pl-6 space-y-1 text-sm text-blue-900">
-                    {recommendations.map((rec, i) => (
-                      <li key={i}>{rec}</li>
-                    ))}
-                  </ol>
-                </div>
-              </div>
+
+              {(() => {
+                const anyWeekly = weeklyData.some(d => (d.completions || d.violations || d.pnl));
+                const anyTrades = Array.isArray(trades) && trades.length > 0;
+                if (!anyWeekly && !anyTrades) {
+                  return (
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h4 className="font-medium text-gray-800 mb-2">No Data Yet</h4>
+                      <p className="text-gray-700 text-sm mb-1">Add completions or journal trades to generate AI insights.</p>
+                      <p className="text-gray-600 text-xs">Insights will appear as soon as there is activity in the last 7 days.</p>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="bg-blue-50 rounded-xl p-4">
+                    <h4 className="font-medium text-blue-800 mb-2">Weekly Summary</h4>
+                    <p className="text-blue-700 text-sm mb-3">
+                      {`This week: ${weeklyCompletions} completions, ${weeklyViolations} violations, win rate ${weeklyWinRate}%`}
+                    </p>
+                    {/* Weaknesses */}
+                    <div className="mt-4">
+                      <h5 className="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-amber-600" /> Weaknesses Detected
+                      </h5>
+                      <ul className="list-disc pl-6 space-y-1 text-sm text-blue-900">
+                        {weaknesses.map((w, i) => (
+                          <li key={i}>{w}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    {/* Action Plan */}
+                    <div className="mt-4">
+                      <h5 className="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-600" /> Action Plan (Next 5 Sessions)
+                      </h5>
+                      <ol className="list-decimal pl-6 space-y-1 text-sm text-blue-900">
+                        {recommendations.map((rec, i) => (
+                          <li key={i}>{rec}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Per-Rule Violations */}

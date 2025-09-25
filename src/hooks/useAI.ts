@@ -248,8 +248,14 @@ export function useAIInsights(): UseAIInsightsReturn {
       }
 
       // Performance Analysis
-      const totalPnL = trades.reduce((sum, trade) => sum + (trade.profitLoss || 0), 0);
-      const winningTrades = trades.filter(trade => (trade.profitLoss || 0) > 0);
+      const totalPnL = trades.reduce((sum, trade: any) => {
+        const pnl = Number((trade.profitLoss ?? trade.pnl) || 0);
+        return sum + (Number.isFinite(pnl) ? pnl : 0);
+      }, 0);
+      const winningTrades = trades.filter((trade: any) => {
+        const pnl = Number((trade.profitLoss ?? trade.pnl) || 0);
+        return Number.isFinite(pnl) && pnl > 0;
+      });
       const winRate = (winningTrades.length / trades.length) * 100;
 
       // Win Rate Analysis
@@ -307,7 +313,7 @@ export function useAIInsights(): UseAIInsightsReturn {
       // This section would require extending the Trade interface to include target and stop prices
 
       // Rule Compliance Analysis
-      const compliantTrades = trades.filter(trade => trade.ruleCompliant);
+      const compliantTrades = trades.filter((trade: any) => !!trade.ruleCompliant);
       const complianceRate = (compliantTrades.length / trades.length) * 100;
 
       if (complianceRate >= 90) {
@@ -340,10 +346,12 @@ export function useAIInsights(): UseAIInsightsReturn {
       }
 
       // Emotional Analysis
-      const emotions = trades.reduce((acc, trade) => {
+      const emotions = trades.reduce((acc, trade: any) => {
         // Ensure emotions is an array, fallback to empty array if undefined
-        const tradeEmotions = Array.isArray(trade.emotions) ? trade.emotions : [];
-        tradeEmotions.forEach(emotion => {
+        const tradeEmotions = Array.isArray(trade.emotions)
+          ? trade.emotions
+          : (trade.emotion ? [String(trade.emotion)] : []);
+        tradeEmotions.forEach((emotion: string) => {
           acc[emotion] = (acc[emotion] || 0) + 1;
         });
         return acc;
