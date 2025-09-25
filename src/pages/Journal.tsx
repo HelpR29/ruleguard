@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown, BarChart3, Activity } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useUser } from '../context/UserContext';
+import { useTradesStorage } from '../hooks/useStorage';
 import { saveAttachment, deleteAttachment } from '../utils/db';
 import StockChart from '../components/StockChart';
 import AIInsights from '../components/AIInsights';
