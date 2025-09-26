@@ -331,7 +331,9 @@ function Journal() {
     if (targetNum !== undefined && targetNum === exitNum) {
       addToast('info', 'Note: Exit equals Target — treating Exit as the actual filled price and Target as your planned TP.');
     }
-    const pnl = Number(((exitNum - entryNum) * sizeNum).toFixed(2));
+    // PnL: Long => (exit - entry) * size; Short => (entry - exit) * size
+    const delta = form.type === 'Long' ? (exitNum - entryNum) : (entryNum - exitNum);
+    const pnl = Number((delta * sizeNum).toFixed(2));
     // Compute percent based on PnL relative to starting portfolio (item = % of portfolio)
     const gainPct = (pnl / (settings.startingPortfolio || 1)) * 100;
     const newTrade = {
@@ -353,9 +355,9 @@ function Journal() {
       imageIds: form.imageIds,
     };
     setTrades(prev => [newTrade, ...prev]);
-    if (form.notes.trim()) {
-      setJournals(prev => [{ id: Date.now(), date: form.date, entry: form.notes.trim(), mood: form.emotion, disciplineScore: form.ruleCompliant ? 90 : 60 }, ...prev]);
-    }
+    // Ensure Daily Journal has an entry even without manual notes
+    const noteText = form.notes.trim() || `${newTrade.symbol} ${newTrade.type} trade ${pnl >= 0 ? 'profit' : 'loss'}: $${pnl} (${form.ruleCompliant ? 'rule compliant' : 'rule violation'})`;
+    setJournals(prev => [{ id: Date.now(), date: form.date, entry: noteText, mood: form.emotion, disciplineScore: form.ruleCompliant ? 90 : 60 }, ...prev]);
     // Record non-compliance in daily_stats and activity_log for reporting
     if (!form.ruleCompliant) {
       try {
