@@ -624,6 +624,11 @@ function Journal() {
                   </div>
 
                   <p className="text-gray-700 bg-gray-50 rounded-lg p-3 text-sm">{trade.notes}</p>
+                  {Array.isArray((trade as any).rules) && ((trade as any).rulesFollowed?.length || (trade as any).rulesViolated?.length) ? (
+                    <p className="mt-1 text-xs text-gray-500">
+                      {`${(trade as any).rulesFollowed?.length || 0} Followed • ${(trade as any).rulesViolated?.length || 0} Broken`}
+                    </p>
+                  ) : null}
                   {Array.isArray((trade as any).rules) && (trade as any).rules.length > 0 && (
                     <div className="mt-2 flex items-center gap-2 flex-wrap">
                       {(trade as any).rules.map((r: string, idx: number) => {
