@@ -5,6 +5,7 @@ import MobileNav from './components/MobileNav';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import PWAInstall from './components/PWAInstall';
 import { UserProvider } from './context/UserContext';
+import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import { PWAProvider } from './context/PWAContext';
@@ -22,6 +23,8 @@ const Premium = React.lazy(() => import('./pages/Premium'));
 const Achievements = React.lazy(() => import('./pages/Achievements'));
 const Onboarding = React.lazy(() => import('./pages/Onboarding'));
 const Friends = React.lazy(() => import('./pages/Friends'));
+const SignIn = React.lazy(() => import('./pages/SignIn'));
+const SignUp = React.lazy(() => import('./pages/SignUp'));
 
 // Loading component for Suspense fallback
 const PageLoader = () => (
@@ -47,10 +50,18 @@ function App() {
       <ErrorBoundary>
         <ThemeProvider>
           <ToastProvider>
-            <Suspense fallback={<PageLoader />}>
-              <Onboarding onComplete={() => setIsOnboarded(true)} />
-            </Suspense>
-            <Toasts />
+            <AuthProvider>
+              <Router>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/login" element={<SignIn />} />
+                    <Route path="/signup" element={<SignUp />} />
+                    <Route path="*" element={<Onboarding onComplete={() => setIsOnboarded(true)} />} />
+                  </Routes>
+                </Suspense>
+                <Toasts />
+              </Router>
+            </AuthProvider>
           </ToastProvider>
         </ThemeProvider>
       </ErrorBoundary>
@@ -62,6 +73,7 @@ function App() {
       <PWAProvider>
         <ThemeProvider>
           <ToastProvider>
+            <AuthProvider>
             <UserProvider>
               <Router>
                 <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -71,6 +83,8 @@ function App() {
                     <Suspense fallback={<PageLoader />}>
                       <Routes>
                         <Route path="/" element={<Dashboard />} />
+                        <Route path="/login" element={<SignIn />} />
+                        <Route path="/signup" element={<SignUp />} />
                         <Route path="/rules" element={<Rules />} />
                         <Route path="/journal" element={<Journal />} />
                         <Route path="/reports" element={<Reports />} />
@@ -96,6 +110,7 @@ function App() {
                 </div>
               </Router>
             </UserProvider>
+            </AuthProvider>
           </ToastProvider>
         </ThemeProvider>
       </PWAProvider>

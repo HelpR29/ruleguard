@@ -6,6 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import NotificationPanel from './NotificationPanel';
 import AvatarSelector from './AvatarSelector';
 import Logo from './Logo';
+import { useAuth } from '../context/AuthContext';
 
 const pageNames: Record<string, string> = {
   '/': 'Dashboard',
@@ -32,6 +33,7 @@ export default function Header() {
   const location = useLocation();
   const { progress } = useUser();
   const { theme, toggleTheme } = useTheme();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -127,7 +129,7 @@ export default function Header() {
   const mappedPremiumStatus: 'none' | 'discount_25' | 'discount_50' | 'free_monthly' =
     premiumStatus === 'premium' ? 'free_monthly' : premiumStatus;
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
       const keys = [
         'user_settings','user_progress','user_rules','daily_stats','activity_log',
@@ -136,6 +138,7 @@ export default function Header() {
       ];
       keys.forEach(k => localStorage.removeItem(k));
     } catch {}
+    try { await signOut(); } catch {}
     setShowProfileMenu(false);
     navigate('/');
     // force a refresh so App re-checks onboarding
@@ -244,6 +247,13 @@ export default function Header() {
 
         {/* Right Section */}
         <div className="flex items-center gap-3">
+          {/* Auth buttons when logged out */}
+          {!user && (
+            <div className="hidden sm:flex items-center gap-2 mr-2">
+              <Link to="/login" className="px-3 py-1 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50">Log in</Link>
+              <Link to="/signup" className="px-3 py-1 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Sign up</Link>
+            </div>
+          )}
           {/* Trial Countdown Chip */}
           {premiumExpiresAt && trialDaysLeft > 0 && (
             <div
