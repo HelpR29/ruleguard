@@ -45,7 +45,14 @@ export default function DisplayNamePrompt() {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative">
+        <button
+          onClick={() => setIsSkipped(true)}
+          className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-full"
+          title="Skip for now"
+        >
+          <X className="h-5 w-5 text-gray-500" />
+        </button>
         <h2 className="text-xl font-bold mb-4">Welcome to LockIn!</h2>
         <p className="text-gray-600 mb-4">
           Please choose a display name to get started.
