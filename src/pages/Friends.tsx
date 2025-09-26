@@ -25,6 +25,7 @@ export default function Friends() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [myCode, setMyCode] = useState('');
   const [addCode, setAddCode] = useState('');
+  const [adding, setAdding] = useState(false);
   const [selected, setSelected] = useState<Friend | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<any | null>(null);
@@ -52,11 +53,12 @@ export default function Friends() {
 
   const addFriend = async () => {
     const code = addCode.trim().toUpperCase();
-    if (!/^RG-[A-Z0-9]{8}$/.test(code)) { addToast('warning', 'Invalid code format'); return; }
+    if (!/^RG-[A-Z0-9]{6,8}$/.test(code)) { addToast('warning', 'Invalid code format (use RG-XXXXXX or RG-XXXXXXXX)'); return; }
     if (friends.some(f => f.code === code)) { addToast('info', 'Already following this code.'); return; }
 
     // Attempt referral redemption via Supabase Edge Function (optional)
     try {
+      setAdding(true);
       if (isSupabaseConfigured()) {
         const { data, error } = await supabase.functions.invoke('redeemReferral', {
           body: { code }
@@ -95,6 +97,7 @@ export default function Friends() {
     setFriends(next);
     try { localStorage.setItem('friends', JSON.stringify(next)); } catch {}
     setAddCode('');
+    setAdding(false);
   };
 
   const removeFriend = (id: string) => {
@@ -180,9 +183,27 @@ export default function Friends() {
             <div className="p-4 rounded-xl border border-gray-200">
               <label className="block text-sm font-medium text-gray-700 mb-2">Add Friend by Code</label>
               <div className="flex gap-2">
-                <input value={addCode} onChange={e=>setAddCode(e.target.value)} placeholder="RG-ABC12345" className="flex-1 px-3 py-2 border border-gray-300 rounded-lg" />
-                <button onClick={addFriend} className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"><UserPlus className="h-4 w-4"/> Add</button>
+                <input
+                  value={addCode}
+                  onChange={e=>setAddCode(e.target.value)}
+                  onKeyDown={(e)=>{ if (e.key==='Enter') { e.preventDefault(); addFriend(); } }}
+                  placeholder="RG-ABC12345"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                />
+                <button
+                  type="button"
+                  onClick={addFriend}
+                  disabled={adding}
+                  className={`px-3 py-2 rounded-lg flex items-center gap-2 ${adding? 'bg-blue-300 cursor-not-allowed':'bg-blue-600 hover:bg-blue-700 text-white'}`}
+                >
+                  <UserPlus className="h-4 w-4"/> {adding? 'Adding...':'Add'}
+                </button>
               </div>
+              {!isSupabaseConfigured() && (
+                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded mt-2 px-2 py-1">
+                  Supabase not configured in this environment. Adding will only follow locally without trial extension.
+                </p>
+              )}
               <p className="text-xs text-gray-500 mt-2">Ask your friend to share their code. Your code is shown above.</p>
             </div>
 
