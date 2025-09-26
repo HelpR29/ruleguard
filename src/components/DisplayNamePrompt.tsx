@@ -10,8 +10,8 @@ export default function DisplayNamePrompt() {
   const [error, setError] = useState<string | null>(null);
   const [isSkipped, setIsSkipped] = useState(false);
 
-  // Only show if user exists but no display name
-  if (!user || profile?.display_name) {
+  // Only show if user exists but no display name and not skipped
+  if (!user || profile?.display_name || isSkipped) {
     return null;
   }
 
