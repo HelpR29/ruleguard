@@ -88,6 +88,47 @@ function Journal() {
   const [premiumStatus] = useState<string>(() => {
     try { return localStorage.getItem('premium_status') || 'none'; } catch { return 'none'; }
   });
+
+  // Generate lightweight AI-style insights for a given date using local data only
+  const generateDailyInsights = (dateISO: string, userNote?: string) => {
+    try {
+      const dayTrades = (trades as any[]).filter(t => t && String(t.date) === String(dateISO));
+      const out: string[] = [];
+      if (dayTrades.length === 0) {
+        if (userNote && userNote.trim()) out.push(`Note: ${userNote.trim()}`);
+        return out;
+      }
+      const wins = dayTrades.filter(t => (t.pnl || 0) > 0);
+      const losses = dayTrades.filter(t => (t.pnl || 0) <= 0);
+      const totalPnl = dayTrades.reduce((s, t) => s + (Number(t.pnl) || 0), 0);
+      const withRules = dayTrades.filter((t: any) => Array.isArray(t.rules) && t.rules.length > 0);
+      const compliant = withRules.filter((t: any) => !!t.ruleCompliant).length;
+      const compliance = withRules.length > 0 ? Math.round((compliant / withRules.length) * 100) : null;
+      const brokenList = Array.from(new Set(withRules.flatMap((t: any) => (t.rulesViolated || []) as string[]))).slice(0, 5);
+      const followedList = Array.from(new Set(withRules.flatMap((t: any) => (t.rulesFollowed || []) as string[]))).slice(0, 5);
+      const emotions = dayTrades.reduce((m: Record<string, number>, t: any) => { const e = (t.emotion || 'Neutral'); m[e] = (m[e]||0)+1; return m; }, {});
+      const topEmotion = Object.entries(emotions).sort((a,b)=>b[1]-a[1])[0]?.[0];
+      const best = dayTrades.slice().sort((a,b)=> (b.pnl||0)-(a.pnl||0))[0];
+      const worst = dayTrades.slice().sort((a,b)=> (a.pnl||0)-(b.pnl||0))[0];
+      const fmt = (n:number)=> (n>=0?'+':'') + n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:0});
+
+      out.push(`${dayTrades.length} trade${dayTrades.length>1?'s':''}: ${wins.length} win${wins.length!==1?'s':''}, ${losses.length} loss${losses.length!==1?'es':''}, total ${fmt(totalPnl)}.`);
+      if (compliance !== null) out.push(`Rule compliance: ${compliance}%.`);
+      if (brokenList.length > 0) out.push(`Broken rules: ${brokenList.join(', ')}.`);
+      if (followedList.length > 0) out.push(`Followed rules: ${followedList.join(', ')}.`);
+      if (topEmotion) out.push(`Dominant emotion: ${topEmotion}.`);
+      if (best) out.push(`Best trade: ${best.symbol} ${best.type} ${fmt(best.pnl)}.`);
+      if (worst && worst !== best) out.push(`Worst trade: ${worst.symbol} ${worst.type} ${fmt(worst.pnl)}.`);
+      // Simple suggestions
+      if (compliance !== null && compliance < 80) out.push('Focus: pre-trade checklist before entry to raise compliance.');
+      if (losses.length >= 2 && (totalPnl <= 0)) out.push('Consider a daily stop after 2 losses to protect capital.');
+      if (wins.length >= 2 && compliance && compliance >= 80) out.push('Keep doing what works: replicate setups from winning trades.');
+      if (userNote && userNote.trim()) out.push(`Note: ${userNote.trim()}`);
+      return out;
+    } catch {
+      return userNote?.trim() ? [userNote.trim()] : [];
+    }
+  };
   const [achievements] = useState<string[]>(() => {
     try { const a = JSON.parse(localStorage.getItem('user_achievements') || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
   });
@@ -862,6 +903,20 @@ function Journal() {
                   </div>
 
                   <p className="text-gray-700 leading-relaxed">{journal.entry}</p>
+                  {(() => {
+                    const insights = generateDailyInsights(journal.date, journal.entry);
+                    if (!insights || insights.length === 0) return null;
+                    return (
+                      <div className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <p className="text-sm font-medium text-gray-800 mb-2">AI Suggestions</p>
+                        <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
+                          {insights.map((s, i) => (
+                            <li key={i}>{s}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })()}
                 </div>
               ))}
             </div>
