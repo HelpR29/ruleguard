@@ -146,15 +146,14 @@ export default function Header() {
       const keys = [
         'user_settings','user_progress','user_rules','daily_stats','activity_log',
         'user_avatar','profile_locked','user_achievements','premium_status',
-        'journal_trades','journal_notes','onboarding_complete'
+        'journal_trades','journal_notes'
       ];
       keys.forEach(k => localStorage.removeItem(k));
     } catch {}
     try { await signOut(); } catch {}
     setShowProfileMenu(false);
-    navigate('/');
-    // force a refresh so App re-checks onboarding
-    setTimeout(() => window.location.reload(), 50);
+    // Send the user directly to login without forcing a full reload
+    navigate('/login', { replace: true });
   };
 
   return (
