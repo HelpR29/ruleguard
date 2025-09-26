@@ -18,6 +18,9 @@ export default function Rules() {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showAllTags, setShowAllTags] = useState<boolean>(false);
+  const [compactView, setCompactView] = useState<boolean>(() => {
+    try { return (rules?.length || 0) > 8; } catch { return true; }
+  });
   const [showTemplates, setShowTemplates] = useState(false);
   const [selectedTemplateCategory, setSelectedTemplateCategory] = useState<string>('');
   const { addToast } = useToast();
@@ -131,6 +134,13 @@ export default function Rules() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCompactView(v => !v)}
+                className="hidden md:flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+                title="Toggle compact grid view"
+              >
+                {compactView ? 'Expanded View' : 'Compact View'}
+              </button>
               <button
                 onClick={() => setShowTemplates(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
