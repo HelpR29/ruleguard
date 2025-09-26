@@ -513,7 +513,7 @@ export default function AnalyticsDashboard({
 
     const chartProps = {
       data: analyticsData,
-      margin: { top: chartId === 'performance-breakdown' ? 18 : 5, right: 30, left: 20, bottom: 5 }
+      margin: { top: chartId === 'performance-breakdown' ? 12 : 5, right: 30, left: 20, bottom: 5 }
     };
     let child: React.ReactElement | null = null;
     const primary = config[0].type;
@@ -548,12 +548,13 @@ export default function AnalyticsDashboard({
           <CartesianGrid strokeDasharray="4 6" stroke="#f3f4f6" />
           <XAxis dataKey="date" stroke="#666" fontSize={12} axisLine={false} tickLine={false} />
           <YAxis stroke="#666" fontSize={12} axisLine={false} tickLine={false}
-            domain={chartId === 'performance-breakdown' ? [0, 105] : undefined}
+            domain={chartId === 'performance-breakdown' ? [0, 100] : undefined}
+            padding={chartId === 'performance-breakdown' ? { top: 12, bottom: 0 } as any : undefined}
             tickFormatter={(v: number) => chartId === 'performance-breakdown' ? formatPercent(v) : String(v)}
           />
           <Tooltip formatter={(v: number, name: string) => chartId === 'performance-breakdown' ? [formatPercent(v), name] : [v, name]} />
           {config.map((chartConfig, index) => (
-            <Line key={index} type="monotone" dataKey={chartConfig.dataKey} stroke={chartConfig.color} strokeWidth={2} name={chartConfig.name} dot={{ r: 4 }} />
+            <Line key={index} type="monotone" dataKey={chartConfig.dataKey} stroke={chartConfig.color} strokeWidth={2} name={chartConfig.name} dot={{ r: 3 }} activeDot={{ r: 5 }} />
           ))}
           {chartId === 'performance-breakdown' && (
             <ReferenceLine y={50} stroke="#e5e7eb" strokeDasharray="3 3" />
@@ -835,26 +836,7 @@ export default function AnalyticsDashboard({
                     {c.name}
                   </span>
                 ))}
-                {/* For performance-breakdown, show last values as badges here to avoid chart overlap */}
-                {chartId === 'performance-breakdown' && analyticsData.length > 0 && (
-                  (() => {
-                    const last = analyticsData[analyticsData.length - 1] as any;
-                    return (
-                      <>
-                        <span className="w-full" />
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] border border-green-200 text-green-700 bg-green-50">
-                          <span className="w-2 h-2 rounded-full bg-[#10b981]" />
-                          Win Rate {Number(last.winRate || 0).toFixed(0)}%
-                        </span>
-                        <span className="text-gray-300">•</span>
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] border border-amber-200 text-amber-700 bg-amber-50">
-                          <span className="w-2 h-2 rounded-full bg-[#f59e0b]" />
-                          Compliance {Number(last.ruleCompliance || 0).toFixed(0)}%
-                        </span>
-                      </>
-                    );
-                  })()
-                )}
+                {/* Removed last-value badges to reduce redundancy */}
               </div>
             </div>
 
