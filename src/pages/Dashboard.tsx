@@ -9,22 +9,48 @@ import RecentActivity from '../components/RecentActivity';
 import AchievementsPanel from '../components/AchievementsPanel';
 
 export default function Dashboard() {
-  const { settings, progress, updateProgress, updateSettings } = useUser();
   const { addToast } = useToast();
   const [progressView, setProgressView] = useState<'icon'|'grid'>('icon');
   const [showCelebration, setShowCelebration] = useState(false);
   const [showNextGoal, setShowNextGoal] = useState(false);
   const [nextGoalType, setNextGoalType] = useState<'same' | 'increase' | 'custom'>('same');
   const [customTarget, setCustomTarget] = useState(settings.targetCompletions);
-  const [customGrowth, setCustomGrowth] = useState(settings.growthPerCompletion);
-
-  const targetBalance = settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, settings.targetCompletions);
-  const progressPercent = (progress.completions / settings.targetCompletions) * 100;
+  const currentBalance = useMemo(() => {
+    try {
+      const raw = localStorage.getItem('journal_trades');
+      let sum = 0;
+      if (raw) {
+        const trades = JSON.parse(raw);
+        if (Array.isArray(trades)) {
+          for (const t of trades) sum += Number(t?.pnl ?? t?.profitLoss ?? 0) || 0;
+        }
+      }
+      return Number((settings.startingPortfolio + sum).toFixed(2));
+    } catch {
+      return settings.startingPortfolio;
+    }
+  }, [settings.startingPortfolio, progress?.completions]);
+  const targetBalance = useMemo(() => {
+    try {
+      const raw = localStorage.getItem('journal_trades');
+      let sum = 0;
+      if (raw) {
+        const trades = JSON.parse(raw);
+        if (Array.isArray(trades)) {
+          for (const t of trades) sum += Number(t?.pnl ?? t?.profitLoss ?? 0) || 0;
+        }
+      }
+      return Number((settings.startingPortfolio + sum + (settings.growthPerCompletion / 100) * settings.targetCompletions).toFixed(2));
+    } catch {
+      return settings.startingPortfolio;
+    }
+  }, [settings.startingPortfolio, settings.growthPerCompletion, settings.targetCompletions, progress?.completions]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Welcome Section */}
+{{ ... }}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
           <div className="flex items-center justify-between mb-4">
             <div>
