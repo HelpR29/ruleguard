@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from '../components/Logo';
+import { supabase } from '../lib/supabase';
 
 export default function SignUp() {
   const { signUp } = useAuth();
@@ -22,7 +23,12 @@ export default function SignUp() {
       return;
     }
     // Depending on email confirmation settings, user may need to confirm email.
-    navigate('/');
+    const { data } = await supabase.auth.getSession();
+    if (data?.session) {
+      navigate('/profile');
+    } else {
+      navigate('/login', { state: { notice: 'Check your email to confirm, then log in.' } });
+    }
   };
 
   return (
