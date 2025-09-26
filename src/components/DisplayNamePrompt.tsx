@@ -9,8 +9,18 @@ export default function DisplayNamePrompt() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSkipped, setIsSkipped] = useState(false);
+  const [forcePrompt, setForcePrompt] = useState(false);
   const onboardingComplete = useMemo(() => {
     try { return !!localStorage.getItem('onboarding_complete'); } catch { return false; }
+  }, []);
+
+  // Listen for external requests to force showing the prompt (e.g., from Onboarding Back button)
+  useEffect(() => {
+    const handleForce = () => setForcePrompt(true);
+    window.addEventListener('rg:force-name-prompt', handleForce as any);
+    // Also respect a transient localStorage flag
+    try { if (localStorage.getItem('force_name_prompt') === '1') setForcePrompt(true); } catch {}
+    return () => window.removeEventListener('rg:force-name-prompt', handleForce as any);
   }, []);
 
   // Prefill with existing profile name or email prefix
@@ -34,11 +44,10 @@ export default function DisplayNamePrompt() {
   if (loading) return null;
 
   // Show when:
-  // - user is present
   // - not skipped
   // - onboarding not yet complete
-  // - no display_name exists yet in DB profile
-  if (!user || isSkipped || onboardingComplete || !!profile?.display_name) {
+  // - no display_name exists yet in DB profile, unless forced
+  if (!user || isSkipped || onboardingComplete || (!!profile?.display_name && !forcePrompt)) {
     return null;
   }
 
@@ -52,35 +61,38 @@ export default function DisplayNamePrompt() {
     setError(null);
 
     try {
-      // Try to save to database, but don't fail if it doesn't work
       try {
         const { error } = await supabase
           .from('profiles')
           .upsert({
-            id: user.id,
-            user_id: user.id,
-            display_name: displayName.trim()
+            user_id: (user as any).id,
+            display_name: displayName.trim(),
           });
-
-        if (!error) {
-          await refreshProfile();
+        if (error) {
+          // Non-fatal: continue with local fallback and UI update
+          console.warn('DB upsert failed, falling back to localStorage:', error.message);
+        } else {
+          try { await refreshProfile(); } catch {}
         }
-      } catch (dbError) {
-        console.log('Database save failed, using localStorage fallback:', dbError);
+      } catch (dbErr: any) {
+        console.warn('DB save exception, continuing:', dbErr?.message || dbErr);
       }
 
       // Always save to localStorage as fallback
       localStorage.setItem('display_name', displayName.trim());
       // Trigger a profile refresh so UI picks up the fallback immediately
       try { await refreshProfile(); } catch {}
-      
       // Close the modal regardless of database success
       setIsSkipped(true);
-      
+      setForcePrompt(false);
+      try { localStorage.removeItem('force_name_prompt'); } catch {}
+
     } catch (err) {
       // Even if everything fails, just close the modal
       console.error('Error saving display name:', err);
       setIsSkipped(true);
+      setForcePrompt(false);
+      try { localStorage.removeItem('force_name_prompt'); } catch {}
     } finally {
       setSaving(false);
     }
@@ -99,7 +111,7 @@ export default function DisplayNamePrompt() {
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          onClick={() => setIsSkipped(true)}
+          onClick={() => { setIsSkipped(true); setForcePrompt(false); try { localStorage.removeItem('force_name_prompt'); } catch {} }}
           className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-full"
           title="Skip for now"
         >
