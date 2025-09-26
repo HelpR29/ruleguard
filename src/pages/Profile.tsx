@@ -31,7 +31,19 @@ export default function Profile() {
 
   // Calculate achievements and stats
   const stats = useMemo(() => {
-    const currentBalance = settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, progress.completions);
+    // Actual portfolio = starting + sum(PnL) to match Dashboard
+    let currentBalance = settings.startingPortfolio;
+    try {
+      const raw = localStorage.getItem('journal_trades');
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) {
+          let sum = 0;
+          for (const t of arr) sum += Number(t?.pnl ?? t?.profitLoss ?? 0) || 0;
+          currentBalance = settings.startingPortfolio + sum;
+        }
+      }
+    } catch {}
     const targetBalance = settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, settings.targetCompletions);
     const totalGrowth = ((currentBalance - settings.startingPortfolio) / settings.startingPortfolio) * 100;
     const goalsCompleted = Math.floor(progress.completions / Math.max(1, settings.targetCompletions));
@@ -254,7 +266,7 @@ export default function Profile() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white/10 rounded-xl p-4">
               <p className="text-blue-100 text-sm">Portfolio</p>
-              <p className="text-2xl font-bold">${stats.currentBalance.toFixed(2)}</p>
+              <p className="text-2xl font-bold">${Math.round(stats.currentBalance)}</p>
             </div>
             <div className="bg-white/10 rounded-xl p-4">
               <p className="text-blue-100 text-sm">Growth</p>

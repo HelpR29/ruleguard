@@ -71,8 +71,8 @@ export default function Dashboard() {
             </div>
             <div className="bg-blue-500/30 rounded-xl p-4">
               <p className="text-blue-100 text-sm">Portfolio</p>
-              <p className="text-2xl font-bold">${actualBalance.toFixed(2)}</p>
-              <p className="text-xs text-blue-100 mt-1">Projected: ${projectedBalance.toFixed(2)}</p>
+              <p className="text-2xl font-bold">${Math.round(actualBalance)}</p>
+              <p className="text-xs text-blue-100 mt-1">Projected: ${Math.round(projectedBalance)}</p>
             </div>
             <div className="bg-blue-500/30 rounded-xl p-4">
               <p className="text-blue-100 text-sm">Discipline</p>
@@ -169,7 +169,7 @@ export default function Dashboard() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600 dark:text-gray-300">Target Balance</span>
-                  <span className="font-bold text-green-600">${targetBalance.toFixed(2)}</span>
+                  <span className="font-bold text-green-600">${Math.round(targetBalance)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600 dark:text-gray-300">Remaining</span>
@@ -250,7 +250,7 @@ export default function Dashboard() {
             <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 mb-6">
               <p className="text-sm text-green-600 dark:text-green-400 mb-1">Final Portfolio Value</p>
               <p className="text-3xl font-bold text-green-700 dark:text-green-300">
-                ${targetBalance.toFixed(2)}
+                ${Math.round(targetBalance)}
               </p>
               <p className="text-sm text-green-600 dark:text-green-400 mt-1">
                 Growth: {(((targetBalance - settings.startingPortfolio) / settings.startingPortfolio) * 100).toFixed(1)}%
