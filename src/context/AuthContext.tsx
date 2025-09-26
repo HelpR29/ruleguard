@@ -19,6 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [prevUserId, setPrevUserId] = useState<string | null>(null);
 
   const fetchProfile = async (user: any) => {
     if (!user) {
@@ -56,8 +57,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })();
     const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
       setSession(sess ?? null);
-      setUser(sess?.user ?? null);
-      fetchProfile(sess?.user);
+      const nextUser = sess?.user ?? null;
+      setUser(nextUser);
+      // If the authenticated user changed, clear onboarding flag so new accounts see onboarding
+      const nextId = nextUser?.id || null;
+      if (nextId && nextId !== prevUserId) {
+        try { localStorage.removeItem('onboarding_complete'); } catch {}
+        setPrevUserId(nextId);
+      }
+      fetchProfile(nextUser);
     });
     return () => { sub.subscription?.unsubscribe(); mounted = false; };
   }, []);

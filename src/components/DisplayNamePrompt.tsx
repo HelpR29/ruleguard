@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -9,12 +9,32 @@ export default function DisplayNamePrompt() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSkipped, setIsSkipped] = useState(false);
-  const localDisplayName = useMemo(() => {
-    try { return (localStorage.getItem('display_name') || '').trim(); } catch { return ''; }
+  const onboardingComplete = useMemo(() => {
+    try { return !!localStorage.getItem('onboarding_complete'); } catch { return false; }
   }, []);
 
-  // Only show if user exists but no display name, not skipped, and no local fallback
-  if (!user || profile?.display_name || isSkipped || localDisplayName) {
+  // Prefill with existing profile name or email prefix
+  useEffect(() => {
+    if (!displayName && user) {
+      const fromProfile = profile?.display_name?.trim();
+      if (fromProfile) {
+        setDisplayName(fromProfile);
+      } else {
+        const email = (user as any)?.email || '';
+        if (email && email.includes('@')) {
+          const prefix = email.split('@')[0];
+          const suggestion = prefix.charAt(0).toUpperCase() + prefix.slice(1).slice(0, 24);
+          setDisplayName(suggestion);
+        }
+      }
+    }
+  }, [user, profile, displayName]);
+
+  // Show when:
+  // - user is present
+  // - not skipped
+  // - onboarding not yet complete
+  if (!user || isSkipped || onboardingComplete) {
     return null;
   }
 
