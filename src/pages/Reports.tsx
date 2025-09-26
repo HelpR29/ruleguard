@@ -172,6 +172,7 @@ export default function Reports() {
 
   // Profit Factor with local selector (7d/30d): total profits / |total losses|
   const [pfRange, setPfRange] = useState<'7d' | '30d'>('7d');
+  const pfHelp = 'Profit Factor = total profits ÷ absolute losses. Values above 1.0 indicate a profitable system.';
   const profitFactor = useMemo(() => {
     const today = new Date();
     const start = new Date(today);
@@ -703,17 +704,29 @@ export default function Reports() {
                   <div>
                     <p className="text-gray-600 text-sm flex items-center gap-2">
                       Profit factor
-                      <span
-                        className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-gray-600 text-[11px]"
-                        title="Total profits divided by total losses. A profit factor above 1.0 indicates a profitable trading system."
-                      >i</span>
+                      <span className="relative inline-flex group" aria-describedby="pf-tooltip">
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-gray-600 text-[11px] focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          aria-label="What is Profit Factor?"
+                          tabIndex={0}
+                        >i</button>
+                        <span
+                          id="pf-tooltip"
+                          role="tooltip"
+                          className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-20 hidden group-hover:block group-focus-within:block max-w-[260px] bg-gray-900 text-white text-xs rounded-md px-3 py-2 shadow-lg text-left whitespace-normal"
+                        >
+                          {pfHelp}
+                          <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></span>
+                        </span>
+                      </span>
                     </p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-2xl font-bold text-gray-900" title={pfHelp}>
                       {profitFactor === null ? '—' : (profitFactor === Infinity ? '∞' : profitFactor.toFixed(2))}
                     </p>
                   </div>
                 </div>
-                <p className="text-gray-600 text-sm">Last {pfRange === '7d' ? '7' : '30'} days</p>
+                <p className="text-gray-600 text-sm" title={pfHelp}>Last {pfRange === '7d' ? '7' : '30'} days</p>
                 <div className="mt-3 flex justify-center">
                   <div className="relative inline-flex items-center bg-gray-100 rounded-full p-1 shadow-inner" role="group" aria-label="Profit factor range">
                     <button
