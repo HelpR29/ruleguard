@@ -44,6 +44,8 @@ export default function DisplayNamePrompt() {
 
       // Always save to localStorage as fallback
       localStorage.setItem('display_name', displayName.trim());
+      // Trigger a profile refresh so UI picks up the fallback immediately
+      try { await refreshProfile(); } catch {}
       
       // Close the modal regardless of database success
       setIsSkipped(true);
