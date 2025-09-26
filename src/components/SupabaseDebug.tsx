@@ -54,22 +54,29 @@ export default function SupabaseDebug() {
 
   const createTestUser = async () => {
     try {
-      const testEmail = 'test@lockin.app';
+      const testEmail = 'test@example.com';
       const testPassword = 'test123456';
       
       const { data, error } = await supabase.auth.signUp({
         email: testEmail,
-        password: testPassword
+        password: testPassword,
+        options: {
+          emailRedirectTo: window.location.origin + '/login'
+        }
       });
       
       if (error) {
         alert('Test user creation failed: ' + error.message);
       } else {
-        alert(`Test user created: ${testEmail} / ${testPassword}`);
+        alert(`✅ Test user created!\n\nEmail: ${testEmail}\nPassword: ${testPassword}\n\nYou can now log in with these credentials.`);
       }
     } catch (error) {
       alert('Error creating test user: ' + (error as Error).message);
     }
+  };
+
+  const disableEmailConfirmation = async () => {
+    alert('To disable email confirmation:\n\n1. Go to your Supabase dashboard\n2. Go to Authentication > Settings\n3. Turn OFF "Enable email confirmations"\n4. Save changes\n\nThen you can sign up without email confirmation!');
   };
 
   useEffect(() => {
@@ -149,6 +156,14 @@ export default function SupabaseDebug() {
               >
                 <Settings className="h-4 w-4" />
                 Create Test User
+              </button>
+              
+              <button
+                onClick={disableEmailConfirmation}
+                className="flex items-center gap-2 px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200"
+              >
+                <Settings className="h-4 w-4" />
+                Disable Email Confirmation
               </button>
               
               <button
