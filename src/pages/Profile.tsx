@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { User, Trophy, TrendingUp, Calendar, Target, Award, Star, Crown, Edit3, BarChart3, Brain } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useToast } from '../context/ToastContext';
@@ -307,6 +307,14 @@ export default function Profile() {
               <p className="text-blue-100 text-sm">Discipline</p>
               <p className="text-2xl font-bold">{progress.disciplineScore}%</p>
             </div>
+          </div>
+        </div>
+
+        {/* Following Count */}
+        <div className="mt-4 grid grid-cols-1">
+          <div className="bg-white/10 rounded-xl p-4">
+            <p className="text-blue-100 text-sm">Following</p>
+            <p className="text-2xl font-bold">{followingCount}</p>
           </div>
         </div>
 
