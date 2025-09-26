@@ -34,18 +34,63 @@ export default function Profile() {
     const currentBalance = settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, progress.completions);
     const targetBalance = settings.startingPortfolio * Math.pow(1 + settings.growthPerCompletion / 100, settings.targetCompletions);
     const totalGrowth = ((currentBalance - settings.startingPortfolio) / settings.startingPortfolio) * 100;
-    const goalsCompleted = Math.floor(progress.completions / settings.targetCompletions);
-    const daysActive = Math.max(1, progress.streak + Math.floor(Math.random() * 30)); // Simulated
-    
+    const goalsCompleted = Math.floor(progress.completions / Math.max(1, settings.targetCompletions));
+
+    // Derive Days Active and Best Streak from daily_stats
+    let daysActive = 0;
+    let bestStreak = 0;
+    try {
+      const raw = localStorage.getItem('daily_stats') || '{}';
+      const obj = JSON.parse(raw) as Record<string, { completions?: number; violations?: number }>;
+      const dates = Object.keys(obj).sort(); // YYYY-MM-DD strings sort lexicographically
+      // Days Active: any non-zero activity
+      daysActive = dates.filter(d => {
+        const v = obj[d] || { completions: 0, violations: 0 };
+        return (Number(v.completions || 0) > 0) || (Number(v.violations || 0) > 0);
+      }).length;
+
+      // Best Streak: longest consecutive run of days with completions > 0
+      let run = 0;
+      let prevDate: Date | null = null;
+      for (const d of dates) {
+        const v = obj[d] || { completions: 0 };
+        const hasCompletion = Number(v.completions || 0) > 0;
+        if (!prevDate) {
+          run = hasCompletion ? 1 : 0;
+          bestStreak = Math.max(bestStreak, run);
+          prevDate = new Date(d);
+          continue;
+        }
+        const curr = new Date(d);
+        const diffDays = Math.floor((curr.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+        if (diffDays === 1) {
+          // consecutive day
+          run = hasCompletion ? run + 1 : 0;
+        } else if (diffDays > 1) {
+          // gap -> reset
+          run = hasCompletion ? 1 : 0;
+        } else {
+          // same day entries should not happen; keep run
+          run = hasCompletion ? Math.max(run, 1) : run;
+        }
+        bestStreak = Math.max(bestStreak, run);
+        prevDate = curr;
+      }
+    } catch {}
+
+    // Fresh start defaults
+    if (!Number.isFinite(daysActive)) daysActive = 0;
+    if (!Number.isFinite(bestStreak)) bestStreak = progress.streak || 0;
+
     return {
       currentBalance,
       targetBalance,
       totalGrowth,
       goalsCompleted,
       daysActive,
-      completionRate: (progress.completions / settings.targetCompletions) * 100,
+      completionRate: (progress.completions / Math.max(1, settings.targetCompletions)) * 100,
       avgDiscipline: progress.disciplineScore,
-      bestStreak: Math.max(progress.streak, Math.floor(Math.random() * 50) + progress.streak), // Simulated best
+      bestStreak,
     };
   }, [settings, progress]);
 

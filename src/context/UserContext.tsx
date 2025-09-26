@@ -143,8 +143,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const goal = settings.growthPerCompletion; // e.g., 5% to earn 1 completion
     if (goal <= 0) return;
 
-    // Fractional completions earned this trade
-    const inc = gainPct / goal; // e.g., 2.5% / 5% = 0.5 completion
+    // Fractional completions earned this trade (cap at 1 per trade)
+    const inc = Math.min(1, gainPct / goal); // e.g., 2.5% / 5% = 0.5 completion, max 1
     const rate = settings.growthPerCompletion / 100;
 
     // New totals (cap at targetCompletions)
@@ -175,6 +175,26 @@ export function UserProvider({ children }: { children: ReactNode }) {
       log.push({ ts: Date.now(), type: 'completion', amount: inc });
       localStorage.setItem('activity_log', JSON.stringify(log));
       try { window.dispatchEvent(new CustomEvent('rg:data-change', { detail: { keys: ['daily_stats','activity_log'] } })); } catch {}
+    } catch {}
+
+    // Achievements: legendary-streak at >= 60-day streak
+    try {
+      const nextStreak = shouldIncrementStreak ? (progress.streak + 1) : progress.streak;
+      if (nextStreak >= 60) {
+        const raw = localStorage.getItem('user_achievements') || '[]';
+        let arr: any[]; try { arr = JSON.parse(raw); if (!Array.isArray(arr)) arr = []; } catch { arr = []; }
+        if (!arr.includes('legendary-streak')) {
+          arr.push('legendary-streak');
+          localStorage.setItem('user_achievements', JSON.stringify(arr));
+          // activity log
+          try {
+            const log = JSON.parse(localStorage.getItem('activity_log') || '[]');
+            log.push({ ts: Date.now(), type: 'achievement', title: 'legendary-streak' });
+            localStorage.setItem('activity_log', JSON.stringify(log));
+          } catch {}
+          try { window.dispatchEvent(new CustomEvent('rg:data-change', { detail: { keys: ['user_achievements','activity_log'] } })); } catch {}
+        }
+      }
     } catch {}
 
     updateProgress({
@@ -222,6 +242,43 @@ export function UserProvider({ children }: { children: ReactNode }) {
       window.removeEventListener('rg:data-change', onCustom as EventListener);
     };
   }, []);
+
+  // One-time migration: recompute completions/currentBalance from trades if inflated
+  React.useEffect(() => {
+    try {
+      if (localStorage.getItem('progress_migrate_v2') === 'true') return;
+      const rawTrades = localStorage.getItem('journal_trades');
+      if (!rawTrades) { localStorage.setItem('progress_migrate_v2','true'); return; }
+      const arr = JSON.parse(rawTrades);
+      if (!Array.isArray(arr)) { localStorage.setItem('progress_migrate_v2','true'); return; }
+      const goal = settings.growthPerCompletion; // % to earn 1 completion
+      if (goal <= 0) { localStorage.setItem('progress_migrate_v2','true'); return; }
+      let totalInc = 0;
+      for (const t of arr) {
+        try {
+          const pnl = Number((t?.pnl ?? t?.profitLoss) || 0);
+          const compliant = !!t?.ruleCompliant;
+          if (!compliant || pnl <= 0) continue;
+          const gainPct = (pnl / (settings.startingPortfolio || 1)) * 100;
+          const inc = Math.min(1, gainPct / goal);
+          totalInc += Math.max(0, inc);
+        } catch {}
+      }
+      const newCompletions = Math.min(totalInc, settings.targetCompletions);
+      const rate = settings.growthPerCompletion / 100;
+      const newBalance = settings.startingPortfolio * Math.pow(1 + rate, newCompletions);
+      // If stored progress is greater than recomputed total or suspiciously large, reset
+      const stored = progress.completions || 0;
+      if (stored > newCompletions + 0.0001 || stored > settings.targetCompletions) {
+        updateProgress({
+          completions: Number(newCompletions.toFixed(2)),
+          currentBalance: Number(newBalance.toFixed(2))
+        });
+      }
+      localStorage.setItem('progress_migrate_v2','true');
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.startingPortfolio, settings.growthPerCompletion, settings.targetCompletions]);
 
   // Rules CRUD + persistence
   const persistRules = (next: UserRule[]) => {

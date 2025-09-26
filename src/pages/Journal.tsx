@@ -507,6 +507,11 @@ function Journal() {
           unlocked.forEach(id => log.push({ ts: now, type: 'achievement', title: id }));
           localStorage.setItem('activity_log', JSON.stringify(log));
         } catch {}
+        // Toaster notifications per unlocked id
+        const label = (id: string) => id==='first-trade' ? 'First Trade' : id==='rule-master' ? 'Rule Master' : id==='legendary-trader' ? 'Legendary Trader' : id;
+        unlocked.forEach(id => {
+          addToast('success', `Unlocked: ${label(id)}`);
+        });
       }
     } catch {}
     addToast('success', 'Journal entry added.');
