@@ -83,7 +83,7 @@ function Journal() {
   const [activeTab, setActiveTab] = useState('trades');
   const [showNewEntry, setShowNewEntry] = useState(false);
   const { addToast } = useToast();
-  const { recordTradeProgress, settings } = useUser();
+  const { recordTradeProgress, settings, rules: userRules } = useUser() as any;
   const [premiumStatus] = useState<string>(() => {
     try { return localStorage.getItem('premium_status') || 'none'; } catch { return 'none'; }
   });
@@ -273,7 +273,10 @@ function Journal() {
     ruleCompliant: true,
     imageIds: [] as number[],
     imagePreviews: [] as string[],
+    appliedRules: [] as string[],
   });
+  const [showRulePicker, setShowRulePicker] = useState(false);
+  const [ruleQuery, setRuleQuery] = useState('');
 
   const [showChart, setShowChart] = useState(false);
 
@@ -360,6 +363,21 @@ function Journal() {
     const pnl = Number((delta * sizeNum).toFixed(2));
     // Compute percent based on PnL relative to starting portfolio (item = % of portfolio)
     const gainPct = (pnl / (settings.startingPortfolio || 1)) * 100;
+    // Merge tags from selected rules with manual tags
+    const selectedRules: string[] = Array.isArray(form.appliedRules) ? form.appliedRules : [];
+    const ruleTagIndex = (() => {
+      const idx = new Map<string, string[]>();
+      try {
+        for (const r of (userRules || [])) {
+          if (r && r.text) idx.set(r.text, Array.isArray(r.tags) ? r.tags : []);
+        }
+      } catch {}
+      return idx;
+    })();
+    const manualTags = form.tags.split(',').map(t=>t.trim()).filter(Boolean);
+    const autoTags = selectedRules.flatMap(t => ruleTagIndex.get(t) || []);
+    const mergedTags = Array.from(new Set([...manualTags, ...autoTags]));
+
     const newTrade = {
       setup: form.setup,
       id: Date.now(),
@@ -374,9 +392,10 @@ function Journal() {
       pnl,
       emotion: form.emotion,
       notes: form.notes,
-      tags: form.tags.split(',').map(t=>t.trim()).filter(Boolean),
+      tags: mergedTags,
       ruleCompliant: form.ruleCompliant,
       imageIds: form.imageIds,
+      rules: selectedRules,
     };
     setTrades(prev => [newTrade, ...prev]);
     // Ensure Daily Journal has an entry even without manual notes
