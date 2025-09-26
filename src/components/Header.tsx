@@ -49,9 +49,7 @@ export default function Header() {
   // Premium trial countdown
   const [premiumExpiresAt, setPremiumExpiresAt] = useState<Date | null>(null);
   const [trialDaysLeft, setTrialDaysLeft] = useState<number>(0);
-  // Post-login name modal (disabled - using DisplayNamePrompt component instead)
-  const [showNameModal, setShowNameModal] = useState(false);
-  const [nameInput, setNameInput] = useState('');
+  // Name modal removed (DisplayNamePrompt is the single source of truth)
 
 
   useEffect(() => {
@@ -99,20 +97,7 @@ export default function Header() {
     };
   }, []);
 
-  // When auth user changes, prompt for name if missing (DISABLED - using DisplayNamePrompt instead)
-  useEffect(() => {
-    if (user && !profile?.display_name) {
-      // Suggest from email prefix
-      const email = (user as any)?.email || '';
-      let suggestion = 'Trader';
-      if (email && email.includes('@')) {
-        const prefix = email.split('@')[0];
-        suggestion = prefix.charAt(0).toUpperCase() + prefix.slice(1).slice(0, 24);
-      }
-      setNameInput(suggestion);
-      // setShowNameModal(true); // DISABLED - using DisplayNamePrompt component instead
-    }
-  }, [user, profile]);
+  // Name modal effect removed
 
   // Recompute trial days left periodically (every hour) and on premiumExpiresAt change
   useEffect(() => {
@@ -428,54 +413,10 @@ export default function Header() {
         onClose={() => setShowNotifications(false)} 
       />
       
-      {/* Name Capture Modal */}
-      {showNameModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md border border-gray-200 dark:border-gray-700">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Choose your display name</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">This will appear on Leaderboard and Friends.</p>
-            <div className="mt-4">
-              <label className="block text-sm mb-1">Display Name</label>
-              <input
-                value={nameInput}
-                onChange={e=>setNameInput(e.target.value)}
-                placeholder="e.g. Trader Nate"
-                className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-2 rounded"
-              />
-              <p className="text-xs text-gray-500 mt-1">2–24 characters. Letters, numbers, spaces.</p>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={()=>setShowNameModal(false)} className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl">Skip</button>
-              <button
-                onClick={()=>{
-                  const trimmed = nameInput.trim();
-                  if (!/^[-A-Za-z0-9 ]{2,24}$/.test(trimmed)) { alert('Please enter 2–24 characters (letters, numbers, spaces).'); return; }
-                  if (isSupabaseConfigured() && user) {
-                    supabase.from('profiles').upsert({ user_id: (user as any).id, display_name: trimmed })
-                      .then(({ error }) => {
-                        if (error) {
-                          console.error('Error saving name', error);
-                        } else {
-                          refreshProfile();
-                        }
-                      });
-                  }
-                  setShowNameModal(false);
-                }}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Avatar Selection Modal */}
       {showAvatarModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">Profile Avatar</h3>
               <button
                 onClick={() => setShowAvatarModal(false)}
