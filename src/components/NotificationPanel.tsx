@@ -69,17 +69,25 @@ export default function NotificationPanel({ isOpen, onClose }: NotificationPanel
   });
 
   const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
+    setNotifications(prev => {
+      const next = prev.map(notif => notif.id === id ? { ...notif, read: true } : notif);
+      try {
+        localStorage.setItem('app_notifications', JSON.stringify(next));
+        window.dispatchEvent(new Event('rg:notifications-change'));
+      } catch {}
+      return next;
+    });
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notif => ({ ...notif, read: true }))
-    );
+    setNotifications(prev => {
+      const next = prev.map(notif => ({ ...notif, read: true }));
+      try {
+        localStorage.setItem('app_notifications', JSON.stringify(next));
+        window.dispatchEvent(new Event('rg:notifications-change'));
+      } catch {}
+      return next;
+    });
   };
 
   const getIcon = (type: string) => {
