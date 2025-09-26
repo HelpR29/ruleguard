@@ -71,24 +71,31 @@ export default function QuickActions() {
         ))}
       </div>
 
-      {/* Achievement Badges */}
-      <div className="mt-6 pt-6 border-t border-gray-200">
-        <h4 className="text-sm font-medium text-gray-700 mb-3">Recent Achievements</h4>
-        <div className="grid grid-cols-3 gap-3">
-          <button className="flex flex-col items-center p-3 bg-yellow-50 rounded-xl hover:bg-yellow-100 transition-colors">
-            <Award className="h-5 w-5 text-yellow-600" />
-            <span className="text-xs text-yellow-700 mt-1">First Week</span>
-          </button>
-          <button className="flex flex-col items-center p-3 bg-green-50 rounded-xl hover:bg-green-100 transition-colors">
-            <TrendingUp className="h-5 w-5 text-green-600" />
-            <span className="text-xs text-green-700 mt-1">Growth</span>
-          </button>
-          <button className="flex flex-col items-center p-3 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
-            <Target className="h-5 w-5 text-blue-600" />
-            <span className="text-xs text-blue-700 mt-1">Streak</span>
-          </button>
-        </div>
-      </div>
+      {/* Achievement Badges (dynamic) */}
+      {(() => {
+        try {
+          const raw = localStorage.getItem('user_achievements') || '[]';
+          const arr = JSON.parse(raw);
+          const recent = Array.isArray(arr) ? arr.slice(-3).reverse() : [];
+          if (recent.length === 0) return null;
+          const iconFor = (id: string) => id === 'rule-master' ? <Award className="h-5 w-5 text-yellow-600"/> : id === 'streak-warrior' ? <Target className="h-5 w-5 text-blue-600"/> : <TrendingUp className="h-5 w-5 text-green-600"/>;
+          const labelFor = (id: string) => id==='first-trade'? 'First Trade' : id==='rule-master'? 'Rule Master' : id==='streak-warrior'? 'Streak Warrior' : id;
+          const bgFor = (id: string) => id==='rule-master'? 'bg-yellow-50 hover:bg-yellow-100' : id==='streak-warrior'? 'bg-blue-50 hover:bg-blue-100' : 'bg-green-50 hover:bg-green-100';
+          return (
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <h4 className="text-sm font-medium text-gray-700 mb-3">Recent Achievements</h4>
+              <div className="grid grid-cols-3 gap-3">
+                {recent.map((id: string) => (
+                  <div key={id} className={`flex flex-col items-center p-3 rounded-xl transition-colors ${bgFor(id)}`}>
+                    {iconFor(id)}
+                    <span className="text-xs mt-1 text-gray-800">{labelFor(id)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        } catch { return null; }
+      })()}
     </div>
   );
 }
