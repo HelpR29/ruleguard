@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Plus, Edit, Trash2, Shield, CheckCircle, XCircle, Brain, Target, TrendingUp, Activity, Users, DollarSign, BookOpen } from 'lucide-react';
+import { Plus, Shield, CheckCircle, XCircle, BookOpen } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,7 @@ export default function Rules() {
   const [newTags, setNewTags] = useState('');
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [showAllTags, setShowAllTags] = useState<boolean>(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [selectedTemplateCategory, setSelectedTemplateCategory] = useState<string>('');
   const { addToast } = useToast();
@@ -58,6 +59,12 @@ export default function Rules() {
     });
 
     return stats;
+  }, [rules]);
+
+  // Sorted unique tags for filter bar
+  const allTagsSorted = useMemo(() => {
+    const tags = Array.from(new Set((rules || []).flatMap(r => (r.tags || []).map(t => String(t)))));
+    return tags.sort((a, b) => a.localeCompare(b));
   }, [rules]);
 
   const getCategoryIcon = (category: string) => {
@@ -198,22 +205,39 @@ export default function Rules() {
             })}
           </div>
 
-          {/* Tag Filters */}
-          {Array.from(new Set(rules.flatMap(r => r.tags || []))).length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm text-gray-700 font-medium mr-2">Filter by Tags:</span>
-              {Array.from(new Set(rules.flatMap(r => r.tags || []))).map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => setActiveFilters(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])}
-                  className={`px-2 py-1 rounded-full text-xs border ${activeFilters.includes(tag) ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'}`}
-                >
-                  {tag}
-                </button>
-              ))}
-              {activeFilters.length > 0 && (
-                <button className="ml-2 text-sm text-gray-600 hover:text-gray-900" onClick={() => setActiveFilters([])}>Clear</button>
-              )}
+          {/* Tag Filters (sorted + collapsible) */}
+          {allTagsSorted.length > 0 && (
+            <div className="flex items-start gap-2 flex-wrap">
+              <span className="text-sm text-gray-700 font-medium mr-2 mt-1">Filter by Tags:</span>
+              {(() => {
+                const limit = 12;
+                const tags = showAllTags ? allTagsSorted : allTagsSorted.slice(0, limit);
+                return (
+                  <>
+                    {tags.map((tag) => (
+                      <button
+                        key={tag}
+                        onClick={() => setActiveFilters(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])}
+                        className={`px-2 py-1 rounded-full text-xs border ${activeFilters.includes(tag) ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'}`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                    {allTagsSorted.length > limit && (
+                      <button
+                        type="button"
+                        className="text-xs text-blue-700 underline ml-1"
+                        onClick={() => setShowAllTags(v => !v)}
+                      >
+                        {showAllTags ? 'Show less' : `Show ${allTagsSorted.length - limit} more`}
+                      </button>
+                    )}
+                    {activeFilters.length > 0 && (
+                      <button className="text-xs text-gray-600 hover:text-gray-900 ml-2" onClick={() => setActiveFilters([])}>Clear</button>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
         </div>
@@ -303,37 +327,7 @@ export default function Rules() {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                      onClick={() => {
-                        if (!isPremiumOrChampion) {
-                          setShowRestrictionInfo(true);
-                          return;
-                        }
-                        setEditingId(rule.id);
-                        setEditingText(rule.text);
-                        setEditingTags((rule.tags || []).join(', '));
-                        setShowEditDrawer(true);
-                      }}
-                      title="Edit rule"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button
-                      className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                      onClick={() => {
-                        if (!isPremiumOrChampion) {
-                          addToast('warning', 'Deleting rules requires Premium or Champion.', 'Upgrade', () => navigate('/premium'));
-                          return;
-                        }
-                        if (confirm('Delete this rule?')) { deleteRule(rule.id); addToast('success', 'Rule deleted.'); }
-                      }}
-                      title="Delete rule"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
+                  {/* Removed edit/delete quick actions per request */}
                 </div>
 
                 {/* Violation History */}
