@@ -266,23 +266,50 @@ export default function Settings() {
                 </div>
 
                 <div className="bg-white rounded-2xl p-6 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Progress Object</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Progress Object</h3>
+                  <div className="mb-3 text-xs">
+                    {isPremiumOrChampion ? (
+                      canEditTradingNow ? (
+                        <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 border border-green-200">Editable now (Premium)</span>
+                      ) : (
+                        <span className="px-2 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-200">Locked until {nextEditDate?.toLocaleDateString?.() || ''}</span>
+                      )
+                    ) : (
+                      <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200">Premium required to edit</span>
+                    )}
+                  </div>
                   <div className="grid grid-cols-5 gap-3">
                     {progressObjects.map((obj) => (
                       <button
                         key={obj.value}
-                        onClick={() => updateSettings({ progressObject: obj.value as any })}
+                        onClick={() => {
+                          if (!isPremiumOrChampion) { addToast('warning', 'Editing progress object requires Premium.'); return; }
+                          if (!canEditTradingNow) { const when = nextEditDate ? nextEditDate.toISOString().slice(0,10) : ''; addToast('info', `Settings locked. Next edit: ${when}`); return; }
+                          updateSettings({ progressObject: obj.value as any });
+                          const now = new Date().toISOString();
+                          try { localStorage.setItem('trading_settings_last_edit', now); } catch {}
+                          setLastTradingEdit(now);
+                          const when = (() => { const d = new Date(now); d.setDate(d.getDate() + 30); return d.toISOString().slice(0,10); })();
+                          addToast('success', `Progress object updated. Next edit available on ${when}.`);
+                        }}
                         className={`p-4 rounded-xl border-2 transition-colors ${
                           settings.progressObject === obj.value
                             ? 'border-blue-500 bg-blue-50'
                             : 'border-gray-200 hover:border-gray-300'
-                        }`}
+                        } ${!canEditTradingNow ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        disabled={!canEditTradingNow}
+                        title={!canEditTradingNow ? 'Locked due to monthly edit limit' : obj.label}
                       >
                         <div className="text-3xl mb-2">{obj.emoji}</div>
                         <p className="text-xs font-medium text-gray-700">{obj.label}</p>
                       </button>
                     ))}
                   </div>
+                  {!isPremiumOrChampion && (
+                    <div className="mt-3 text-sm">
+                      <a href="/premium" className="text-blue-700 hover:underline">Upgrade to Premium</a> to edit the progress object.
+                    </div>
+                  )}
                 </div>
               </div>
             )}
