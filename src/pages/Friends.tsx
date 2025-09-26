@@ -62,6 +62,8 @@ export default function Friends() {
 
   const addFriend = async () => {
     const codeNorm = normalizeCode(addCode);
+    // Debug: verify click handler firing and normalization
+    try { console.log('[Friends] addFriend click', { raw:addCode, normalized:codeNorm, supabaseConfigured:isSupabaseConfigured() }); } catch {}
     if (!codeNorm) { addToast('warning', 'Invalid code format (use RG-XXXXXX or RG-XXXXXXXX)'); return; }
     const code = codeNorm;
     if (friends.some(f => f.code === code)) { addToast('info', 'Already following this code.'); return; }
@@ -73,6 +75,7 @@ export default function Friends() {
         const { data, error } = await supabase.functions.invoke('redeemReferral', {
           body: { code }
         });
+        try { console.log('[Friends] redeemReferral result', { data, error }); } catch {}
         if (!error && data) {
           const expires = data.premium_expires_at ? new Date(data.premium_expires_at) : null;
           if (expires) {
