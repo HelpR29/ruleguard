@@ -1,5 +1,51 @@
+// Layout component to conditionally show chrome (header/footer) based on route
+function AppLayout() {
+  const location = useLocation();
+  const path = location.pathname;
+  const isAuthRoute = path === '/login' || path === '/signup';
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {!isAuthRoute && <Header />}
+      {!isAuthRoute && <DisplayNamePrompt />}
+
+      <main className={!isAuthRoute ? 'pb-20 lg:pb-6' : ''} id="main-content">
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/login" element={<SignIn />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/rules" element={<Rules />} />
+            <Route path="/journal" element={<Journal />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/invite/:code" element={<InviteAccept />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+            <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </main>
+
+      {!isAuthRoute && (
+        <>
+          <MobileNav />
+          <Toasts />
+          <div className="fixed bottom-4 left-4 z-40">
+            <PWAInstall variant="banner" />
+          </div>
+        </>
+      )}
+      {isAuthRoute && <Toasts />}
+    </div>
+  );
+}
+
 import React, { Suspense, useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
@@ -54,10 +100,13 @@ function App() {
           <ToastProvider>
             <AuthProvider>
               <Router>
+                {/* Show display-name prompt even before onboarding, so the user sets a name first */}
+                <DisplayNamePrompt />
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     <Route path="/login" element={<SignIn />} />
                     <Route path="/signup" element={<SignUp />} />
+                    {/* Any other path (including "/") goes to onboarding until completed */}
                     <Route path="*" element={<Onboarding onComplete={() => setIsOnboarded(true)} />} />
                   </Routes>
                 </Suspense>
@@ -78,39 +127,7 @@ function App() {
             <AuthProvider>
             <UserProvider>
               <Router>
-                <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                  <Header />
-                  <DisplayNamePrompt />
-
-                  <main className="pb-20 lg:pb-6" id="main-content">
-                    <Suspense fallback={<PageLoader />}>
-                      <Routes>
-                        <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                        <Route path="/login" element={<SignIn />} />
-                        <Route path="/signup" element={<SignUp />} />
-                        <Route path="/rules" element={<Rules />} />
-                        <Route path="/journal" element={<Journal />} />
-                        <Route path="/reports" element={<Reports />} />
-                        <Route path="/invite/:code" element={<InviteAccept />} />
-                        <Route path="/leaderboard" element={<Leaderboard />} />
-                        <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
-                        <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
-                        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                        <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                      </Routes>
-                    </Suspense>
-                  </main>
-
-                  <MobileNav />
-                  <Toasts />
-
-                  {/* PWA Install Prompt */}
-                  <div className="fixed bottom-4 left-4 z-40">
-                    <PWAInstall variant="banner" />
-                  </div>
-                </div>
+                <AppLayout />
               </Router>
             </UserProvider>
             </AuthProvider>

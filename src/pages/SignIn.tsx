@@ -13,6 +13,7 @@ export default function SignIn() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
+  const [resendEmail, setResendEmail] = useState('');
   const navigate = useNavigate();
   const location = useLocation() as any;
   const redirectTo = location.state?.from || '/';
@@ -52,16 +53,17 @@ export default function SignIn() {
   };
 
   const resendConfirmation = async () => {
-    if (!email.trim()) {
+    const target = (resendEmail || email).trim();
+    if (!target) {
       setError('Please enter your email address first');
       return;
     }
-    
+
     setResendingEmail(true);
     try {
       const { error } = await supabase.auth.resend({
         type: 'signup',
-        email: email.trim()
+        email: target
       });
       
       if (error) {
@@ -106,13 +108,13 @@ export default function SignIn() {
                 <input
                   type="email"
                   placeholder="Enter your email to resend confirmation"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={resendEmail}
+                  onChange={(e) => setResendEmail(e.target.value)}
                   className="w-full px-3 py-2 border border-blue-300 rounded text-sm"
                 />
                 <button
                   onClick={resendConfirmation}
-                  disabled={resendingEmail}
+                  disabled={resendingEmail || !resendEmail.trim()}
                   className="w-full px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:bg-blue-300"
                 >
                   {resendingEmail ? 'Sending...' : '📧 Resend Confirmation Email'}
@@ -166,14 +168,14 @@ export default function SignIn() {
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={resendEmail}
+                  onChange={(e) => setResendEmail(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                 />
                 <button
                   type="button"
                   onClick={resendConfirmation}
-                  disabled={resendingEmail || !email.trim()}
+                  disabled={resendingEmail || !resendEmail.trim()}
                   className="w-full px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700 disabled:bg-gray-300"
                 >
                   {resendingEmail ? 'Sending...' : '📧 Resend Confirmation Email'}
