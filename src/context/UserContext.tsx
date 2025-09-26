@@ -192,6 +192,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
             log.push({ ts: Date.now(), type: 'achievement', title: 'legendary-streak' });
             localStorage.setItem('activity_log', JSON.stringify(log));
           } catch {}
+          // in-app notification (bell)
+          try {
+            const now = Date.now();
+            const raw = localStorage.getItem('app_notifications') || '[]';
+            const notes = JSON.parse(raw);
+            const arr2 = Array.isArray(notes) ? notes : [];
+            arr2.unshift({ id: `ach-legendary-streak-${now}`, ts: now, type: 'achievement', title: 'Unlocked: Legendary Streak', body: '60-day streak achieved. Incredible discipline!', read: false });
+            localStorage.setItem('app_notifications', JSON.stringify(arr2.slice(0, 100)));
+            try { window.dispatchEvent(new CustomEvent('rg:notifications-change')); } catch {}
+          } catch {}
           try { window.dispatchEvent(new CustomEvent('rg:data-change', { detail: { keys: ['user_achievements','activity_log'] } })); } catch {}
         }
       }
