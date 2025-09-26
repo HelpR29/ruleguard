@@ -49,7 +49,7 @@ export default function Header() {
   // Premium trial countdown
   const [premiumExpiresAt, setPremiumExpiresAt] = useState<Date | null>(null);
   const [trialDaysLeft, setTrialDaysLeft] = useState<number>(0);
-  // Post-login name modal
+  // Post-login name modal (disabled - using DisplayNamePrompt component instead)
   const [showNameModal, setShowNameModal] = useState(false);
   const [nameInput, setNameInput] = useState('');
 
@@ -99,7 +99,7 @@ export default function Header() {
     };
   }, []);
 
-  // When auth user changes, prompt for name if missing
+  // When auth user changes, prompt for name if missing (DISABLED - using DisplayNamePrompt instead)
   useEffect(() => {
     if (user && !profile?.display_name) {
       // Suggest from email prefix
@@ -110,7 +110,7 @@ export default function Header() {
         suggestion = prefix.charAt(0).toUpperCase() + prefix.slice(1).slice(0, 24);
       }
       setNameInput(suggestion);
-      setShowNameModal(true);
+      // setShowNameModal(true); // DISABLED - using DisplayNamePrompt component instead
     }
   }, [user, profile]);
 
