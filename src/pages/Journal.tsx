@@ -513,6 +513,23 @@ function Journal() {
           unlocked.forEach(id => log.push({ ts: now, type: 'achievement', title: id }));
           localStorage.setItem('activity_log', JSON.stringify(log));
         } catch {}
+        // In-app notifications for the bell
+        try {
+          const now = Date.now();
+          const arr = JSON.parse(localStorage.getItem('app_notifications') || '[]');
+          const label = (id: string) => id==='first-trade' ? 'First Trade' : id==='rule-master' ? 'Rule Master' : id==='legendary-trader' ? 'Legendary Trader' : id;
+          const notes = Array.isArray(arr) ? arr : [];
+          unlocked.forEach(id => notes.unshift({
+            id: `ach-${id}-${now}`,
+            ts: now,
+            type: 'achievement',
+            title: `Unlocked: ${label(id)}`,
+            body: 'Congrats! You unlocked a new achievement.',
+            read: false
+          }));
+          localStorage.setItem('app_notifications', JSON.stringify(notes.slice(0, 100)));
+          try { window.dispatchEvent(new CustomEvent('rg:notifications-change')); } catch {}
+        } catch {}
         // Toaster notifications per unlocked id
         const label = (id: string) => id==='first-trade' ? 'First Trade' : id==='rule-master' ? 'Rule Master' : id==='legendary-trader' ? 'Legendary Trader' : id;
         unlocked.forEach(id => {
