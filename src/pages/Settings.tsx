@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Settings as SettingsIcon, User, Bell, Shield, Palette, Download, Lock } from 'lucide-react';
+import { Settings as SettingsIcon, User, Bell, Shield, Palette, Download, Lock, Info } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
@@ -9,6 +9,8 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState('profile');
   const { theme, toggleTheme } = useTheme();
   const { addToast } = useToast();
+
+  const EDIT_COOLDOWN_DAYS = 30;
 
   // Profile name + lock
   const [displayName, setDisplayName] = useState<string>(() => {
@@ -69,7 +71,7 @@ export default function Settings() {
     if (!lastTradingEdit) return null;
     try {
       const d = new Date(lastTradingEdit);
-      d.setDate(d.getDate() + 30);
+      d.setDate(d.getDate() + EDIT_COOLDOWN_DAYS);
       return d;
     } catch { return null; }
   }, [lastTradingEdit]);
@@ -89,7 +91,7 @@ export default function Settings() {
     const now = new Date().toISOString();
     try { localStorage.setItem('trading_settings_last_edit', now); } catch {}
     setLastTradingEdit(now);
-    const when = (() => { const d = new Date(now); d.setDate(d.getDate() + 30); return d.toISOString().slice(0,10); })();
+    const when = (() => { const d = new Date(now); d.setDate(d.getDate() + EDIT_COOLDOWN_DAYS); return d.toISOString().slice(0,10); })();
     addToast('success', `Trading settings updated. Next edit available on ${when}.`);
   };
 
@@ -207,7 +209,13 @@ export default function Settings() {
             {activeTab === 'trading' && (
               <div className="space-y-6">
                 <div className="bg-white rounded-2xl p-6 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Portfolio Settings</h3>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-lg font-bold text-gray-900">Portfolio Settings</h3>
+                    <div className="flex items-center gap-2 text-xs text-gray-600" title={`Premium users can edit these settings once every ${EDIT_COOLDOWN_DAYS} days to encourage consistency.`}>
+                      <Info className="h-4 w-4" />
+                      <span>Edits allowed once every {EDIT_COOLDOWN_DAYS} days</span>
+                    </div>
+                  </div>
                   <div className="mb-3 text-xs">
                     {isPremiumOrChampion ? (
                       canEditTradingNow ? (
@@ -266,7 +274,13 @@ export default function Settings() {
                 </div>
 
                 <div className="bg-white rounded-2xl p-6 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Progress Object</h3>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-lg font-bold text-gray-900">Progress Object</h3>
+                    <div className="flex items-center gap-2 text-xs text-gray-600" title={`Premium users can change the progress object once every ${EDIT_COOLDOWN_DAYS} days.`}>
+                      <Info className="h-4 w-4" />
+                      <span>Edits allowed once every {EDIT_COOLDOWN_DAYS} days</span>
+                    </div>
+                  </div>
                   <div className="mb-3 text-xs">
                     {isPremiumOrChampion ? (
                       canEditTradingNow ? (
@@ -289,7 +303,7 @@ export default function Settings() {
                           const now = new Date().toISOString();
                           try { localStorage.setItem('trading_settings_last_edit', now); } catch {}
                           setLastTradingEdit(now);
-                          const when = (() => { const d = new Date(now); d.setDate(d.getDate() + 30); return d.toISOString().slice(0,10); })();
+                          const when = (() => { const d = new Date(now); d.setDate(d.getDate() + EDIT_COOLDOWN_DAYS); return d.toISOString().slice(0,10); })();
                           addToast('success', `Progress object updated. Next edit available on ${when}.`);
                         }}
                         className={`p-4 rounded-xl border-2 transition-colors ${
