@@ -65,6 +65,10 @@ export default function Friends() {
           const expires = data.premium_expires_at ? new Date(data.premium_expires_at) : null;
           if (expires) {
             addToast('success', `Trial extended by 7 days. Expires ${expires.toLocaleDateString()}.`);
+            try {
+              localStorage.setItem('premium_expires_at', expires.toISOString());
+              try { window.dispatchEvent(new CustomEvent('rg:premium-change')); } catch {}
+            } catch {}
           } else {
             addToast('success', 'Friend added.');
           }
