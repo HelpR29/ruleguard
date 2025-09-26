@@ -414,7 +414,7 @@ function Journal() {
       emotion: form.emotion,
       notes: form.notes,
       tags: mergedTags,
-      ruleCompliant: rulesViolated.length === 0 && (rulesFollowed.length > 0 || form.ruleCompliant),
+      ruleCompliant: rulesViolated.length === 0 && rulesFollowed.length > 0,
       imageIds: form.imageIds,
       rules: selectedRules,
       rulesFollowed,
@@ -481,7 +481,7 @@ function Journal() {
         }
       }
     } catch {}
-    if (form.ruleCompliant && pnl > 0) {
+    if (newTrade.ruleCompliant && pnl > 0) {
       // Contribute PnL-based percent toward automated progress
       if (gainPct > 0) recordTradeProgress(Number(gainPct.toFixed(4)), true);
     }
