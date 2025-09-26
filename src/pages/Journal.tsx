@@ -98,9 +98,14 @@ function Journal() {
         if (userNote && userNote.trim()) out.push(`Note: ${userNote.trim()}`);
         return out;
       }
+      // Helper for varied phrasing
+      const seed = Math.abs(Array.from(String(dateISO)).reduce((a,c)=>a + c.charCodeAt(0), 0));
+      const pick = (arr: string[], idx: number) => arr[idx % arr.length];
+
       const wins = dayTrades.filter(t => (t.pnl || 0) > 0);
       const losses = dayTrades.filter(t => (t.pnl || 0) <= 0);
       const totalPnl = dayTrades.reduce((s, t) => s + (Number(t.pnl) || 0), 0);
+      const avgPnl = totalPnl / dayTrades.length;
       const withRules = dayTrades.filter((t: any) => Array.isArray(t.rules) && t.rules.length > 0);
       const compliant = withRules.filter((t: any) => !!t.ruleCompliant).length;
       const compliance = withRules.length > 0 ? Math.round((compliant / withRules.length) * 100) : null;
@@ -110,19 +115,76 @@ function Journal() {
       const topEmotion = Object.entries(emotions).sort((a,b)=>b[1]-a[1])[0]?.[0];
       const best = dayTrades.slice().sort((a,b)=> (b.pnl||0)-(a.pnl||0))[0];
       const worst = dayTrades.slice().sort((a,b)=> (a.pnl||0)-(b.pnl||0))[0];
-      const fmt = (n:number)=> (n>=0?'+':'') + n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:0});
+      const fmtMoney = (n:number)=> (n>=0?'+':'') + n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:0});
 
-      out.push(`${dayTrades.length} trade${dayTrades.length>1?'s':''}: ${wins.length} win${wins.length!==1?'s':''}, ${losses.length} loss${losses.length!==1?'es':''}, total ${fmt(totalPnl)}.`);
-      if (compliance !== null) out.push(`Rule compliance: ${compliance}%.`);
+      // Symbols and setups/tags
+      const symbolCounts = dayTrades.reduce((m:Record<string,number>, t:any)=>{ const s=t.symbol||'—'; m[s]=(m[s]||0)+1; return m; },{});
+      const topSymbolEntry = Object.entries(symbolCounts).sort((a,b)=>b[1]-a[1])[0];
+      const uniqueSymbols = Object.keys(symbolCounts).length;
+      const tagCounts = dayTrades.reduce((m:Record<string,number>, t:any)=>{ (t.tags||[]).forEach((tag:string)=>{ m[tag]=(m[tag]||0)+1; }); return m; },{});
+      const topTagEntry = Object.entries(tagCounts).sort((a,b)=>b[1]-a[1])[0];
+      const setupCounts = dayTrades.reduce((m:Record<string,number>, t:any)=>{ const s=(t.setup||''); if(!s) return m; m[s]=(m[s]||0)+1; return m; },{});
+      const topSetupEntry = Object.entries(setupCounts).sort((a,b)=>b[1]-a[1])[0];
+
+      // Baseline comparison: last 7 days (excluding today)
+      const sevenAgo = new Date(dateISO); sevenAgo.setDate(sevenAgo.getDate()-7);
+      const baselineTrades = (trades as any[]).filter(t=> t && t.date < dateISO && t.date >= sevenAgo.toISOString().slice(0,10));
+      let baselineCompliance: number | null = null;
+      if (baselineTrades.length > 0) {
+        const bWith = baselineTrades.filter((t:any)=> Array.isArray(t.rules) && t.rules.length>0);
+        const bComp = bWith.filter((t:any)=> !!t.ruleCompliant).length;
+        baselineCompliance = bWith.length>0 ? Math.round((bComp / bWith.length)*100) : null;
+      }
+
+      // Overview line with varied phrasing
+      const overviews = [
+        `${dayTrades.length} trades: ${wins.length} wins, ${losses.length} losses, total ${fmtMoney(totalPnl)} (avg ${fmtMoney(avgPnl)}).`,
+        `Session summary — Trades: ${dayTrades.length}, W/L: ${wins.length}/${losses.length}, P&L: ${fmtMoney(totalPnl)}.`,
+        `You placed ${dayTrades.length} trades today (${wins.length} win · ${losses.length} loss). Net ${fmtMoney(totalPnl)}.`
+      ];
+      out.push(pick(overviews, seed));
+
+      if (compliance !== null) {
+        const compVariants = [
+          `Rule compliance: ${compliance}%${baselineCompliance!==null?` (7‑day avg ${baselineCompliance}%)`:''}.`,
+          `${compliance}% compliant${baselineCompliance!==null?` vs ${baselineCompliance}% 7‑day baseline`:''}.`,
+          `Discipline today: ${compliance}%${baselineCompliance!==null?` (baseline ${baselineCompliance}%)`:''}.`
+        ];
+        out.push(pick(compVariants, seed+1));
+      }
+
+      if (topSymbolEntry) {
+        const [sym, cnt] = topSymbolEntry;
+        if (uniqueSymbols > 1 && cnt/dayTrades.length >= 0.5) {
+          out.push(`Symbol concentration: ${sym} accounted for ${Math.round((cnt/dayTrades.length)*100)}% of trades.`);
+        } else if (uniqueSymbols >= 3) {
+          out.push(`Diverse session: ${uniqueSymbols} symbols traded; most: ${sym} (${cnt}).`);
+        }
+      }
+
+      if (topSetupEntry && topSetupEntry[0]) {
+        out.push(`Most used setup: ${topSetupEntry[0]} (${topSetupEntry[1]} time${topSetupEntry[1]>1?'s':''}).`);
+      } else if (topTagEntry) {
+        out.push(`Top context tag: ${topTagEntry[0]} (${topTagEntry[1]}).`);
+      }
+
       if (brokenList.length > 0) out.push(`Broken rules: ${brokenList.join(', ')}.`);
       if (followedList.length > 0) out.push(`Followed rules: ${followedList.join(', ')}.`);
       if (topEmotion) out.push(`Dominant emotion: ${topEmotion}.`);
-      if (best) out.push(`Best trade: ${best.symbol} ${best.type} ${fmt(best.pnl)}.`);
-      if (worst && worst !== best) out.push(`Worst trade: ${worst.symbol} ${worst.type} ${fmt(worst.pnl)}.`);
-      // Simple suggestions
-      if (compliance !== null && compliance < 80) out.push('Focus: pre-trade checklist before entry to raise compliance.');
-      if (losses.length >= 2 && (totalPnl <= 0)) out.push('Consider a daily stop after 2 losses to protect capital.');
-      if (wins.length >= 2 && compliance && compliance >= 80) out.push('Keep doing what works: replicate setups from winning trades.');
+      if (best) out.push(`Best trade: ${best.symbol} ${best.type} ${fmtMoney(best.pnl)}.`);
+      if (worst && worst !== best) out.push(`Worst trade: ${worst.symbol} ${worst.type} ${fmtMoney(worst.pnl)}.`);
+
+      // Actionable tips (conditional)
+      if (compliance !== null && compliance < 80) {
+        out.push('Focus: run a pre‑trade checklist and confirm 2–3 confluence factors before entry.');
+      } else if (compliance !== null && baselineCompliance !== null && compliance < baselineCompliance) {
+        out.push('Slight dip vs baseline — slow down and double‑check rule alignment.');
+      }
+      if (losses.length >= 2 && totalPnl <= 0) out.push('Risk control: consider a daily stop after two losses.');
+      if (wins.length >= 2 && avgPnl > 0 && (topSetupEntry?.[1] || 0) >= 2) out.push('Replicate: journal the playbook for today’s best setup and size it consistently.');
+      if (uniqueSymbols >= 4) out.push('Focus: reduce symbols to your top 1–2 until consistency improves.');
+
+      // Incorporate user's note at the end
       if (userNote && userNote.trim()) out.push(`Note: ${userNote.trim()}`);
       return out;
     } catch {
