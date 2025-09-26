@@ -4,10 +4,12 @@ import { supabase } from '../lib/supabase';
 export type AuthContextType = {
   session: any | null;
   user: any | null;
+  profile: { display_name?: string } | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: any }>
   signUp: (email: string, password: string) => Promise<{ error?: any }>
   signOut: () => Promise<{ error?: any }>
+  refreshProfile: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -15,7 +17,31 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<any | null>(null);
   const [user, setUser] = useState<any | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchProfile = async (user: any) => {
+    if (!user) {
+      setProfile(null);
+      return;
+    }
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (error) throw error;
+      setProfile(data);
+      // also sync to localstorage for components that use it
+      if (data?.display_name) {
+        try { localStorage.setItem('display_name', data.display_name); } catch {}
+      }
+    } catch (e) {
+      console.error('Error fetching profile', e);
+      setProfile(null);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -24,11 +50,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!mounted) return;
       setSession(data.session ?? null);
       setUser(data.session?.user ?? null);
+      await fetchProfile(data.session?.user);
       setLoading(false);
     })();
     const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
       setSession(sess ?? null);
       setUser(sess?.user ?? null);
+      fetchProfile(sess?.user);
     });
     return () => { sub.subscription?.unsubscribe(); mounted = false; };
   }, []);
@@ -36,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value: AuthContextType = useMemo(() => ({
     session,
     user,
+    profile,
     loading,
     async signIn(email, password) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -48,8 +77,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async signOut() {
       const { error } = await supabase.auth.signOut();
       return { error };
+    },
+    async refreshProfile() {
+      await fetchProfile(user);
     }
-  }), [session, user, loading]);
+  }), [session, user, profile, loading]);
 
   return (
     <AuthContext.Provider value={value}>

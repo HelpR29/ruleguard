@@ -10,6 +10,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import { PWAProvider } from './context/PWAContext';
 import Toasts from './components/Toasts';
+const ProtectedRoute = React.lazy(() => import('./components/ProtectedRoute'));
 
 // Lazy load all pages for code splitting
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
@@ -90,11 +91,11 @@ function App() {
                         <Route path="/reports" element={<Reports />} />
                         <Route path="/invite/:code" element={<InviteAccept />} />
                         <Route path="/leaderboard" element={<Leaderboard />} />
-                        <Route path="/friends" element={<Friends />} />
-                        <Route path="/premium" element={<Premium />} />
-                        <Route path="/settings" element={<Settings />} />
-                        <Route path="/profile" element={<Profile />} />
-                        <Route path="/achievements" element={<Achievements />} />
+                        <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+                        <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
+                        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                        <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                       </Routes>
                     </Suspense>

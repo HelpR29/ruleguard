@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { Bell, Settings, User, Crown, Moon, Sun } from 'lucide-react';
 import { useUser } from '../context/UserContext';
@@ -34,7 +34,7 @@ export default function Header() {
   const location = useLocation();
   const { progress } = useUser();
   const { theme, toggleTheme } = useTheme();
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -43,7 +43,6 @@ export default function Header() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [userAvatar, setUserAvatar] = useState('👤');
   const [isProfileLocked, setIsProfileLocked] = useState(false);
-  const [displayName, setDisplayName] = useState('Trading Pro');
   const [premiumStatus, setPremiumStatus] = useState<'none' | 'premium' | 'discount_25' | 'discount_50' | 'free_monthly'>('none');
   const [achievements, setAchievements] = useState<string[]>([]);
   const pageName = pageNames[location.pathname] || 'LockIn';
@@ -54,17 +53,11 @@ export default function Header() {
   const [showNameModal, setShowNameModal] = useState(false);
   const [nameInput, setNameInput] = useState('');
 
-  // Refs for keyboard navigation
-  const profileMenuRef = useRef<HTMLDivElement>(null);
-  const notificationButtonRef = useRef<HTMLButtonElement>(null);
-  const themeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     try {
       const locked = localStorage.getItem('profile_locked');
       setIsProfileLocked(locked === 'true');
-      const dn = localStorage.getItem('display_name');
-      if (dn) setDisplayName(dn);
       const ps = (localStorage.getItem('premium_status') as any) || 'none';
       setPremiumStatus(ps);
       const ach = JSON.parse(localStorage.getItem('user_achievements') || '[]');
@@ -108,22 +101,18 @@ export default function Header() {
 
   // When auth user changes, prompt for name if missing
   useEffect(() => {
-    if (!user) return;
-    try {
-      const dn = localStorage.getItem('display_name');
-      if (!dn) {
-        // Suggest from email prefix
-        const email = (user as any)?.email || '';
-        let suggestion = 'Trader';
-        if (email && email.includes('@')) {
-          const prefix = email.split('@')[0];
-          suggestion = prefix.charAt(0).toUpperCase() + prefix.slice(1).slice(0, 24);
-        }
-        setNameInput(suggestion);
-        setShowNameModal(true);
+    if (user && !profile?.display_name) {
+      // Suggest from email prefix
+      const email = (user as any)?.email || '';
+      let suggestion = 'Trader';
+      if (email && email.includes('@')) {
+        const prefix = email.split('@')[0];
+        suggestion = prefix.charAt(0).toUpperCase() + prefix.slice(1).slice(0, 24);
       }
-    } catch {}
-  }, [user]);
+      setNameInput(suggestion);
+      setShowNameModal(true);
+    }
+  }, [user, profile]);
 
   // Recompute trial days left periodically (every hour) and on premiumExpiresAt change
   useEffect(() => {
@@ -370,7 +359,7 @@ export default function Header() {
           </button>
           
           <div className="hidden md:flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 mr-1">
-            <span className="truncate max-w-[120px]" title={displayName}>{displayName}</span>
+            <span className="truncate max-w-[120px]" title={profile?.display_name || 'Trading Pro'}>{profile?.display_name || 'Trading Pro'}</span>
           </div>
           <button 
             className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
@@ -462,16 +451,16 @@ export default function Header() {
                 onClick={()=>{
                   const trimmed = nameInput.trim();
                   if (!/^[-A-Za-z0-9 ]{2,24}$/.test(trimmed)) { alert('Please enter 2–24 characters (letters, numbers, spaces).'); return; }
-                  try { localStorage.setItem('display_name', trimmed); setDisplayName(trimmed); } catch {}
-                  // attempt to persist server-side (optional)
-                  try {
-                    if (isSupabaseConfigured() && user) {
-                      // upsert into public.profiles if table exists
-                      // deno/postgres will error if table missing; ignore
-                      // @ts-ignore
-                      supabase.from('profiles').upsert({ user_id: (user as any).id, display_name: trimmed }).then(()=>{}).catch(()=>{});
-                    }
-                  } catch {}
+                  if (isSupabaseConfigured() && user) {
+                    supabase.from('profiles').upsert({ user_id: (user as any).id, display_name: trimmed })
+                      .then(({ error }) => {
+                        if (error) {
+                          console.error('Error saving name', error);
+                        } else {
+                          refreshProfile();
+                        }
+                      });
+                  }
                   setShowNameModal(false);
                 }}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"

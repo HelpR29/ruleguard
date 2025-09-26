@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { User, Trophy, TrendingUp, Calendar, Target, Award, Star, Crown, Edit3, BarChart3, Brain, Link as LinkIcon, UserPlus } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { User, Trophy, Target, Edit3, BarChart3, Brain, Link as LinkIcon, UserPlus } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
@@ -9,16 +9,14 @@ import { useNavigate } from 'react-router-dom';
 export default function Profile() {
   const { settings, progress } = useUser();
   const { addToast } = useToast();
-  const { user } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  const [displayName, setDisplayName] = useState(() => {
-    try { return localStorage.getItem('display_name') || 'Trading Pro'; } catch { return 'Trading Pro'; }
-  });
-  const [premiumStatus, setPremiumStatus] = useState(() => {
+  const [displayNameInput, setDisplayNameInput] = useState('');
+  const [premiumStatus] = useState(() => {
     try { return localStorage.getItem('premium_status') || 'none'; } catch { return 'none'; }
   });
-  const [achievements, setAchievements] = useState(() => {
+  const [achievements] = useState(() => {
     try { return JSON.parse(localStorage.getItem('user_achievements') || '[]'); } catch { return []; }
   });
 
@@ -81,15 +79,24 @@ export default function Profile() {
   }, []);
 
   const saveDisplayName = () => {
-    const canEdit = premiumStatus === 'premium' || achievements.includes('champion');
-    if (!canEdit) {
-      addToast('error', 'Premium required to edit profile name');
-      setIsEditing(false);
+    const trimmed = displayNameInput.trim();
+    if (!/^[-A-Za-z0-9 ]{2,24}$/.test(trimmed)) {
+      addToast('warning', 'Please enter 2–24 characters (letters, numbers, spaces).');
       return;
     }
-    try { localStorage.setItem('display_name', displayName); } catch {}
+    if (isSupabaseConfigured() && user) {
+      supabase.from('profiles').upsert({ user_id: user.id, display_name: trimmed })
+        .then(({ error }) => {
+          if (error) {
+            addToast('error', 'Could not save name.');
+            console.error('Error saving name', error);
+          } else {
+            addToast('success', 'Profile name updated!');
+            refreshProfile();
+          }
+        });
+    }
     setIsEditing(false);
-    addToast('success', 'Profile name updated!');
   };
 
   // Calculate achievements and stats
@@ -284,8 +291,8 @@ export default function Profile() {
                 {isEditing ? (
                   <div className="flex items-center gap-2">
                     <input
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
+                      value={displayNameInput}
+                      onChange={(e) => setDisplayNameInput(e.target.value)}
                       className="bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white placeholder-white/70"
                       placeholder="Enter your name"
                     />
@@ -295,11 +302,12 @@ export default function Profile() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <h1 className="text-3xl font-bold">{displayName}</h1>
+                    <h1 className="text-3xl font-bold">{profile?.display_name || 'Trading Pro'}</h1>
                     <button 
                       onClick={() => {
                         const canEdit = premiumStatus === 'premium' || achievements.includes('champion');
                         if (canEdit) {
+                          setDisplayNameInput(profile?.display_name || '');
                           setIsEditing(true);
                         } else {
                           addToast('error', 'Premium required to edit profile name');

@@ -1,16 +1,35 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import Logo from '../components/Logo';
 import { supabase } from '../lib/supabase';
 
 export default function SignUp() {
   const { signUp } = useAuth();
+  const { addToast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong' | null>(null);
   const navigate = useNavigate();
+
+  const checkPasswordStrength = (pwd: string) => {
+    if (pwd.length < 6) return 'weak';
+    if (pwd.length >= 8 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(pwd)) return 'strong';
+    return 'medium';
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    if (newPassword) {
+      setPasswordStrength(checkPasswordStrength(newPassword));
+    } else {
+      setPasswordStrength(null);
+    }
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,12 +41,14 @@ export default function SignUp() {
       setError(error.message || 'Unable to sign up');
       return;
     }
-    // Depending on email confirmation settings, user may need to confirm email.
+    // Check if user is immediately signed in or needs email confirmation
     const { data } = await supabase.auth.getSession();
     if (data?.session) {
+      addToast('success', 'Account created successfully! Welcome to LockIn.');
       navigate('/profile');
     } else {
-      navigate('/login', { state: { notice: 'Check your email to confirm, then log in.' } });
+      addToast('info', 'Account created! Please check your email to confirm your account.');
+      navigate('/login', { state: { notice: 'Check your email to confirm your account, then log in.' } });
     }
   };
 
@@ -50,7 +71,29 @@ export default function SignUp() {
             </div>
             <div>
               <label className="block text-sm mb-1">Password</label>
-              <input type="password" value={password} onChange={e=>setPassword(e.target.value)} required className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-2 rounded"/>
+              <input 
+                type="password" 
+                value={password} 
+                onChange={handlePasswordChange} 
+                required 
+                className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-2 rounded"
+                minLength={6}
+              />
+              {passwordStrength && (
+                <div className="mt-2">
+                  <div className="flex gap-1 mb-1">
+                    <div className={`h-1 flex-1 rounded ${passwordStrength === 'weak' ? 'bg-red-400' : passwordStrength === 'medium' ? 'bg-yellow-400' : 'bg-green-400'}`}></div>
+                    <div className={`h-1 flex-1 rounded ${passwordStrength === 'medium' || passwordStrength === 'strong' ? passwordStrength === 'medium' ? 'bg-yellow-400' : 'bg-green-400' : 'bg-gray-200'}`}></div>
+                    <div className={`h-1 flex-1 rounded ${passwordStrength === 'strong' ? 'bg-green-400' : 'bg-gray-200'}`}></div>
+                  </div>
+                  <p className={`text-xs ${passwordStrength === 'weak' ? 'text-red-600' : passwordStrength === 'medium' ? 'text-yellow-600' : 'text-green-600'}`}>
+                    Password strength: {passwordStrength}
+                    {passwordStrength === 'weak' && ' (min 6 characters)'}
+                    {passwordStrength === 'medium' && ' (add uppercase, lowercase & numbers for strong)'}
+                    {passwordStrength === 'strong' && ' ✓'}
+                  </p>
+                </div>
+              )}
             </div>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <button type="submit" disabled={loading} className={`w-full py-2 rounded text-white ${loading? 'bg-blue-300':'bg-blue-600 hover:bg-blue-700'}`}>

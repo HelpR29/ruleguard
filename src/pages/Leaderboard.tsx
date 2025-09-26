@@ -219,12 +219,6 @@ export default function Leaderboard() {
     return <span className="text-lg font-bold text-gray-600">#{rank}</span>;
   };
 
-  const getRankBadge = (rank: number) => {
-    if (rank === 1) return 'bg-gradient-to-r from-yellow-400 to-yellow-600';
-    if (rank === 2) return 'bg-gradient-to-r from-gray-300 to-gray-500';
-    if (rank === 3) return 'bg-gradient-to-r from-amber-400 to-amber-600';
-    return 'bg-gradient-to-r from-blue-500 to-blue-600';
-  };
 
   const getLeaderboardBadges = (user: LeaderboardUser) => {
     const badges = [];
@@ -388,7 +382,7 @@ export default function Leaderboard() {
             <h3 className="text-lg font-bold text-gray-900">Full Rankings</h3>
           </div>
           <div className="divide-y divide-gray-200">
-            {users.map((user, index) => (
+            {users.map((user) => (
               <div
                 key={user.id}
                 className={`p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors ${

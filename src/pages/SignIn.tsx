@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import Logo from '../components/Logo';
 
 export default function SignIn() {
   const { signIn } = useAuth();
+  const { addToast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -12,6 +14,7 @@ export default function SignIn() {
   const navigate = useNavigate();
   const location = useLocation() as any;
   const redirectTo = location.state?.from || '/';
+  const notice = location.state?.notice;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +26,14 @@ export default function SignIn() {
       setError(error.message || 'Unable to sign in');
       return;
     }
-    try { localStorage.setItem('onboarding_complete','1'); } catch {}
+    // Only skip onboarding if user has proper settings (indicating they completed it before)
+    try {
+      const existingSettings = localStorage.getItem('user_settings');
+      if (existingSettings) {
+        localStorage.setItem('onboarding_complete','1');
+      }
+    } catch {}
+    addToast('success', 'Welcome back! Successfully signed in.');
     navigate(redirectTo === '/' ? '/profile' : redirectTo, { replace: true });
   };
 
@@ -39,6 +49,11 @@ export default function SignIn() {
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          {notice && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">{notice}</p>
+            </div>
+          )}
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
               <label className="block text-sm mb-1">Email</label>

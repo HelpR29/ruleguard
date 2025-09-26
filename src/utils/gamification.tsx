@@ -1048,12 +1048,12 @@ export const XPNotification = ({
 // =============================================================================
 
 /**
- * Gamification hook
+ * useGamification Hook
+ * Provides access to the gamification engine and user's gamified data
  */
-import { useUser } from '../context/UserContext';
-
-export const useGamification = () => {
-  const { progress } = useUser();
+export const useGamification = (progress: UserProgress) => {
+  const [recentXP, setRecentXP] = useState<Array<{ amount: number; reason: string }>>([]);
+  const [unlockedAchievements, setUnlockedAchievements] = useState<Achievement[]>([]);
   const [userLevel, setUserLevel] = useState<UserLevel>({
     currentLevel: 1,
     currentExperience: 0,
@@ -1069,70 +1069,28 @@ export const useGamification = () => {
     }
   });
 
-  const [streakData, setStreakData] = useState<StreakData>({
-    current: 0,
-    longest: 0,
-    lastTradeDate: null,
-    streakHistory: [],
-    milestones: [7, 30, 100, 365],
-    rewards: []
-  });
-
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [recentXP, setRecentXP] = useState<{ amount: number; reason: string } | null>(null);
-
-  const engine = GamificationEngine.getInstance();
-
   const processTrade = useCallback(async (trade: Trade) => {
-    // Use real user progress data
-    const userProgress: UserProgress = {
-      userId: 'demo-user',
-      completions: progress.completions,
-      streak: progress.streak,
-      longestStreak: progress.streak, // Use current streak as fallback
-      disciplineScore: progress.disciplineScore,
-      totalProfitLoss: progress.currentBalance - 100, // Calculate from starting balance
-      winRate: 68, // TODO: Calculate from actual trades
-      averageRiskReward: 2.1, // TODO: Calculate from actual trades
-      currentBalance: progress.currentBalance,
-      achievements: [],
-      milestones: [],
-      level: 1,
-      experience: progress.completions * 10, // Simple XP calculation
-      nextLevelProgress: 0,
-      updatedAt: new Date()
-    };
-
-    const result = await engine.processTrade(trade, userProgress);
-
-    setUserLevel(engine.getUserLevel(userProgress.experience + result.experienceGained));
-
-    if (result.experienceGained > 0) {
-      setRecentXP({
-        amount: result.experienceGained,
-        reason: 'Trade completed'
-      });
-
-      setTimeout(() => setRecentXP(null), 3000);
-    }
-
-    return result;
-  }, [engine]);
+    console.log('Processing trade for gamification (placeholder):', trade, progress);
+    // This is a placeholder. A real implementation would call the engine.
+    return Promise.resolve();
+  }, [progress]);
 
   const getAchievements = useCallback(() => {
-    return Array.from(engine['achievements'].values());
-  }, [engine]);
+    // This is a placeholder. A real implementation would get achievements from the engine.
+    return [];
+  }, []);
 
   return {
+    processTrade,
+    getAchievements,
     userLevel,
-    streakData,
-    achievements: getAchievements(),
     recentXP,
-    processTrade
+    unlockedAchievements,
+    setUserLevel,
+    setRecentXP,
+    setUnlockedAchievements
   };
 };
-
-// =============================================================================
 // CONSTANTS
 // =============================================================================
 
