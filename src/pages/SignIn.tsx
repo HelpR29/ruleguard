@@ -23,7 +23,8 @@ export default function SignIn() {
       setError(error.message || 'Unable to sign in');
       return;
     }
-    navigate(redirectTo, { replace: true });
+    try { localStorage.setItem('onboarding_complete','1'); } catch {}
+    navigate(redirectTo === '/' ? '/profile' : redirectTo, { replace: true });
   };
 
   return (
