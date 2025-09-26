@@ -214,8 +214,11 @@ export default function Header() {
         {/* Right Section */}
         <div className="flex items-center gap-3">
           {/* Discipline Score */}
-          <div className="hidden sm:flex items-center gap-2">
-            <div className="text-right">
+          <div
+            className="hidden sm:flex items-center gap-2"
+            title="Discipline Score = % of trades logged as rule‑compliant. It rises when you follow selected rules, and decreases when you record violations."
+          >
+            <div className="text-right" title="Discipline Score explanation">
               <p className="text-xs text-gray-500 dark:text-gray-300" aria-label="Current discipline score percentage">
                 Discipline Score
               </p>
@@ -223,7 +226,10 @@ export default function Header() {
                 {progress.disciplineScore}%
               </p>
             </div>
-            <div className="w-12 h-12 relative">
+            <div
+              className="w-12 h-12 relative"
+              title="Higher arc = higher discipline. Based on compliant vs. violated rules across your trades."
+            >
               <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
                 <path
                   d="m18,2.0845 a 15.9155,15.9155 0 0,1 0,31.831 a 15.9155,15.9155 0 0,1 0,-31.831"
