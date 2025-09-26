@@ -1,11 +1,16 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { User, Trophy, TrendingUp, Calendar, Target, Award, Star, Crown, Edit3, BarChart3, Brain } from 'lucide-react';
+import { User, Trophy, TrendingUp, Calendar, Target, Award, Star, Crown, Edit3, BarChart3, Brain, Link as LinkIcon, UserPlus } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { useNavigate } from 'react-router-dom';
 
 export default function Profile() {
   const { settings, progress } = useUser();
   const { addToast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState(() => {
     try { return localStorage.getItem('display_name') || 'Trading Pro'; } catch { return 'Trading Pro'; }
@@ -16,6 +21,37 @@ export default function Profile() {
   const [achievements, setAchievements] = useState(() => {
     try { return JSON.parse(localStorage.getItem('user_achievements') || '[]'); } catch { return []; }
   });
+
+  // Invite code (server-backed)
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [inviteLoading, setInviteLoading] = useState<boolean>(false);
+  const [showFollowModal, setShowFollowModal] = useState(false);
+  const [followInput, setFollowInput] = useState('');
+  const normalizeCode = (raw: string): string | null => {
+    let s = (raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (s.startsWith('RG')) s = s.slice(2);
+    if (s.length === 6 || s.length === 8) return `RG-${s}`;
+    return null;
+  };
+
+  useEffect(() => {
+    const fetchInvite = async () => {
+      if (!isSupabaseConfigured() || !user) return;
+      try {
+        setInviteLoading(true);
+        const { data, error } = await supabase
+          .from('invite_codes')
+          .select('code')
+          .eq('owner_user_id', (user as any).id)
+          .maybeSingle();
+        if (!error && data) {
+          setInviteCode(data.code);
+        }
+      } catch {}
+      finally { setInviteLoading(false); }
+    };
+    fetchInvite();
+  }, [user]);
 
   // Following count sourced from local friends list (temporary until server follows)
   const [followingCount, setFollowingCount] = useState<number>(() => {
@@ -317,6 +353,79 @@ export default function Profile() {
             <p className="text-2xl font-bold">{followingCount}</p>
           </div>
         </div>
+
+        {/* Invite Friends */}
+        <div className="mt-4 grid grid-cols-1">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"><LinkIcon className="h-4 w-4"/> Invite Friends</h3>
+              {inviteCode && (
+                <span className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">Your code</span>
+              )}
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <input
+                readOnly
+                value={inviteCode || (inviteLoading ? 'Loading...' : (isSupabaseConfigured() ? 'No code yet' : 'Supabase not configured'))}
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-200"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (!inviteCode) { addToast('info', 'No invite code available.'); return; }
+                  const url = `${window.location.origin}/invite/${encodeURIComponent(inviteCode)}`;
+                  navigator.clipboard.writeText(url).then(() => addToast('success', 'Invite link copied!')).catch(()=>addToast('error','Copy failed'));
+                }}
+                className="px-3 py-2 rounded bg-gray-900 text-white hover:bg-black"
+              >
+                Copy Invite Link
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowFollowModal(true)}
+                className="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
+              >
+                <UserPlus className="h-4 w-4"/> Follow via Code
+              </button>
+            </div>
+            {!isSupabaseConfigured() && (
+              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded mt-2 px-2 py-1">Supabase not configured; showing local placeholder only.</p>
+            )}
+          </div>
+        </div>
+
+        {showFollowModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Follow via Code</h3>
+              <input
+                value={followInput}
+                onChange={e=>setFollowInput(e.target.value)}
+                placeholder="RG-ABC12345 or ABC12345"
+                className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-2 rounded"
+              />
+              {(() => {
+                const norm = normalizeCode(followInput);
+                if (!followInput) return null;
+                return <p className={`text-xs mt-2 ${norm? 'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-amber-700 bg-amber-50 border border-amber-200'} rounded px-2 py-1`}>{norm ? `Looks good: ${norm}` : 'Code must be RG-XXXXXX or RG-XXXXXXXX'}</p>;
+              })()}
+              <div className="flex gap-3 mt-4">
+                <button onClick={()=>setShowFollowModal(false)} className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl">Cancel</button>
+                <button
+                  onClick={() => {
+                    const norm = normalizeCode(followInput);
+                    if (!norm) { addToast('warning', 'Please enter a valid code'); return; }
+                    setShowFollowModal(false);
+                    navigate('/friends', { state: { addedCode: norm } });
+                  }}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
+                >
+                  Add Friend
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Main Content Grid */}
         <div className="grid lg:grid-cols-3 gap-6">
