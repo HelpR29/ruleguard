@@ -10,7 +10,6 @@ import Header from './components/Header';
 import Toasts from './components/Toasts';
 import ProtectedRoute from './components/ProtectedRoute';
 import DisplayNamePrompt from './components/DisplayNamePrompt';
-import AuthDebug from './components/AuthDebug';
 
 // Lazy load all pages for code splitting
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
@@ -80,7 +79,6 @@ function App() {
             <UserProvider>
               <Router>
                 <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                  <AuthDebug />
                   <Header />
                   <DisplayNamePrompt />
 
