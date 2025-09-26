@@ -278,6 +278,7 @@ function Journal() {
   });
   const [showRulePicker, setShowRulePicker] = useState(false);
   const [ruleQuery, setRuleQuery] = useState('');
+  const [customRuleText, setCustomRuleText] = useState('');
 
   const [showChart, setShowChart] = useState(false);
 
@@ -891,6 +892,28 @@ function Journal() {
                     ))}
                   </div>
                 )}
+                {/* Quick add custom rule */}
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    value={customRuleText}
+                    onChange={(e)=>setCustomRuleText(e.target.value)}
+                    placeholder="Add custom rule (this trade only)"
+                    className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                  />
+                  <button
+                    type="button"
+                    className="px-2 py-1 text-sm rounded border border-gray-300 hover:bg-white"
+                    onClick={()=>{
+                      const t = customRuleText.trim();
+                      if (!t) return;
+                      setForm(prev=>{
+                        if (prev.appliedRules.includes(t)) return prev;
+                        return { ...prev, appliedRules: [...prev.appliedRules, t], appliedRuleStatuses: { ...prev.appliedRuleStatuses, [t]: 'Followed' } };
+                      });
+                      setCustomRuleText('');
+                    }}
+                  >Add</button>
+                </div>
                 {showRulePicker && (
                   <div className="rounded-lg border border-gray-200 p-2 max-h-48 overflow-y-auto bg-gray-50">
                     <input
