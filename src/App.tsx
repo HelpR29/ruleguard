@@ -85,7 +85,7 @@ function App() {
                   <main className="pb-20 lg:pb-6" id="main-content">
                     <Suspense fallback={<PageLoader />}>
                       <Routes>
-                        <Route path="/" element={<Dashboard />} />
+                        <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                         <Route path="/login" element={<SignIn />} />
                         <Route path="/signup" element={<SignUp />} />
                         <Route path="/rules" element={<Rules />} />
