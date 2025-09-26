@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -9,9 +9,12 @@ export default function DisplayNamePrompt() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSkipped, setIsSkipped] = useState(false);
+  const localDisplayName = useMemo(() => {
+    try { return (localStorage.getItem('display_name') || '').trim(); } catch { return ''; }
+  }, []);
 
-  // Only show if user exists but no display name and not skipped
-  if (!user || profile?.display_name || isSkipped) {
+  // Only show if user exists but no display name, not skipped, and no local fallback
+  if (!user || profile?.display_name || isSkipped || localDisplayName) {
     return null;
   }
 

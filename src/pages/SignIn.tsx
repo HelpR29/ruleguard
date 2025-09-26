@@ -3,8 +3,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Logo from '../components/Logo';
-import SupabaseDebug from '../components/SupabaseDebug';
-import QuickAuthFix from '../components/QuickAuthFix';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
 export default function SignIn() {
@@ -186,11 +184,6 @@ export default function SignIn() {
         </div>
       </div>
       
-      {/* Debug component - remove in production */}
-      <SupabaseDebug />
-      
-      {/* Quick Auth Fix - remove in production */}
-      <QuickAuthFix />
     </div>
   );
 }
