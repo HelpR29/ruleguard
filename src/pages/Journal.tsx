@@ -274,6 +274,7 @@ function Journal() {
     imageIds: [] as number[],
     imagePreviews: [] as string[],
     appliedRules: [] as string[],
+    appliedRuleIds: [] as string[],
     appliedRuleStatuses: {} as Record<string, 'Followed' | 'Broken' | 'N/A'>,
   });
   const [showRulePicker, setShowRulePicker] = useState(false);
@@ -310,6 +311,7 @@ function Journal() {
       imageIds: [],
       imagePreviews: [],
       appliedRules: [],
+      appliedRuleIds: [],
       appliedRuleStatuses: {},
     });
   };
@@ -433,6 +435,39 @@ function Journal() {
         localStorage.setItem('activity_log', JSON.stringify(log));
       } catch {}
     }
+
+    // Sync per-rule outcomes into Rules store so Category Overview/Performance reflect results
+    try {
+      const raw = localStorage.getItem('user_rules');
+      if (raw) {
+        const rulesArr = JSON.parse(raw);
+        if (Array.isArray(rulesArr)) {
+          const byText = new Map<string, any>();
+          for (const r of rulesArr) {
+            if (r && typeof r.text === 'string') byText.set(r.text, r);
+          }
+          const todayStr = (form.date ? new Date(form.date) : new Date()).toISOString().slice(0,10);
+          for (const txt of rulesViolated) {
+            const r = byText.get(txt);
+            if (r) {
+              r.violations = Math.max(0, Number(r.violations || 0)) + 1;
+              r.lastViolation = todayStr;
+            }
+          }
+          for (const txt of rulesFollowed) {
+            const r = byText.get(txt);
+            if (r) {
+              r.violations = Math.max(0, Number(r.violations || 0) - 1);
+              if (r.violations === 0) r.lastViolation = null;
+            }
+          }
+          // Persist
+          const next = Array.from(byText.values());
+          localStorage.setItem('user_rules', JSON.stringify(next));
+          try { window.dispatchEvent(new CustomEvent('rg:data-change', { detail: { keys: ['user_rules'] } })); } catch {}
+        }
+      }
+    } catch {}
     if (form.ruleCompliant && pnl > 0) {
       // Contribute PnL-based percent toward automated progress
       if (gainPct > 0) recordTradeProgress(Number(gainPct.toFixed(4)), true);
@@ -918,7 +953,7 @@ function Journal() {
                       if (!t) return;
                       setForm(prev=>{
                         if (prev.appliedRules.includes(t)) return prev;
-                        return { ...prev, appliedRules: [...prev.appliedRules, t], appliedRuleStatuses: { ...prev.appliedRuleStatuses, [t]: 'Followed' } };
+                        return { ...prev, appliedRules: [...prev.appliedRules, t], appliedRuleIds: prev.appliedRuleIds, appliedRuleStatuses: { ...prev.appliedRuleStatuses, [t]: 'Followed' } };
                       });
                       setCustomRuleText('');
                     }}
@@ -947,10 +982,10 @@ function Journal() {
                                   setForm(prev=>{
                                     const on = e.target.checked;
                                     const exists = prev.appliedRules.includes(r.text);
-                                    if (on && !exists) return { ...prev, appliedRules: [...prev.appliedRules, r.text], appliedRuleStatuses: { ...prev.appliedRuleStatuses, [r.text]: 'Followed' } };
+                                    if (on && !exists) return { ...prev, appliedRules: [...prev.appliedRules, r.text], appliedRuleIds: [...prev.appliedRuleIds, String(r.id)], appliedRuleStatuses: { ...prev.appliedRuleStatuses, [r.text]: 'Followed' } };
                                     if (!on && exists) {
                                       const nextStatuses = { ...prev.appliedRuleStatuses }; delete nextStatuses[r.text];
-                                      return { ...prev, appliedRules: prev.appliedRules.filter(x=>x!==r.text), appliedRuleStatuses: nextStatuses };
+                                      return { ...prev, appliedRules: prev.appliedRules.filter(x=>x!==r.text), appliedRuleIds: prev.appliedRuleIds.filter(id=>id!==String(r.id)), appliedRuleStatuses: nextStatuses };
                                     }
                                     return prev;
                                   });
@@ -973,12 +1008,13 @@ function Journal() {
                     {Array.isArray(userRules) && userRules.length > 0 && (
                       <div className="mt-2 flex items-center gap-2">
                         <button type="button" className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-white" onClick={()=>setForm(prev=>{
-                          const all = Array.from(new Set([...(prev.appliedRules||[]), ...userRules.map((r:any)=>r.text)]));
+                          const allTexts = Array.from(new Set([...(prev.appliedRules||[]), ...userRules.map((r:any)=>r.text)]));
+                          const allIds = Array.from(new Set([...(prev.appliedRuleIds||[]), ...userRules.map((r:any)=>String(r.id))]));
                           const nextStatuses = { ...prev.appliedRuleStatuses } as Record<string,'Followed'|'Broken'|'N/A'>;
-                          all.forEach((t:string)=>{ if (!nextStatuses[t]) nextStatuses[t] = 'Followed'; });
-                          return { ...prev, appliedRules: all, appliedRuleStatuses: nextStatuses };
+                          allTexts.forEach((t:string)=>{ if (!nextStatuses[t]) nextStatuses[t] = 'Followed'; });
+                          return { ...prev, appliedRules: allTexts, appliedRuleIds: allIds, appliedRuleStatuses: nextStatuses };
                         })}>Select All</button>
-                        <button type="button" className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-white" onClick={()=>setForm(prev=>({...prev, appliedRules: []}))}>Clear</button>
+                        <button type="button" className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-white" onClick={()=>setForm(prev=>({...prev, appliedRules: [], appliedRuleIds: [], appliedRuleStatuses: {}}))}>Clear</button>
                         <button type="button" className="ml-auto text-xs text-blue-700 hover:underline" onClick={()=>{
                           const idx = new Map<string,string[]>();
                           try { (userRules||[]).forEach((r:any)=> idx.set(r.text, Array.isArray(r.tags)? r.tags: [])); } catch {}
