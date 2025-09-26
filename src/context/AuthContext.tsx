@@ -32,9 +32,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
-      setProfile(data);
-      // also sync to localstorage for components that use it
-      if (data?.display_name) {
+      // If there is no row in DB yet, fall back to localStorage so the UI can still show the name
+      if (!data || !data.display_name) {
+        try {
+          const localName = localStorage.getItem('display_name');
+          if (localName) {
+            setProfile({ display_name: localName });
+          } else {
+            setProfile(data);
+          }
+        } catch {
+          setProfile(data);
+        }
+      } else {
+        setProfile(data);
+        // also sync to localstorage for components that use it
         try { localStorage.setItem('display_name', data.display_name); } catch {}
       }
     } catch (e) {
