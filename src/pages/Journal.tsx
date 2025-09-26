@@ -280,6 +280,15 @@ function Journal() {
   const [ruleQuery, setRuleQuery] = useState('');
   const [customRuleText, setCustomRuleText] = useState('');
 
+  // Auto-open rule picker when opening modal if user has rules and none selected
+  useEffect(() => {
+    try {
+      if (showNewEntry && form.appliedRules.length === 0 && Array.isArray(userRules) && userRules.length > 0) {
+        setShowRulePicker(true);
+      }
+    } catch {}
+  }, [showNewEntry]);
+
   const [showChart, setShowChart] = useState(false);
 
   const resetForm = () => {
@@ -882,6 +891,7 @@ function Journal() {
                     {showRulePicker ? 'Hide' : 'Select'}
                   </button>
                 </div>
+                <p className="text-xs text-gray-500 mb-2">Pick rules you intended to follow. You can mark each as Followed or Broken below.</p>
                 {form.appliedRules.length > 0 && (
                   <div className="mb-2 flex gap-1 flex-wrap">
                     {form.appliedRules.map((r, i) => (
