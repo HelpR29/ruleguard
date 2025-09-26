@@ -942,8 +942,10 @@ export default function AnalyticsDashboard({
                 stop: t.stop ?? '',
                 compliant: t.ruleCompliant ? 'yes' : 'no',
                 rules: Array.isArray(t.rules) ? t.rules.join('|') : '',
+                rules_followed: Array.isArray(t.rulesFollowed) ? t.rulesFollowed.join('|') : '',
+                rules_broken: Array.isArray(t.rulesViolated) ? t.rulesViolated.join('|') : '',
               }));
-              const headers = Object.keys(rows[0] || { date:'', symbol:'', type:'', entry:'', exit:'', size:'', pnl:'', target:'', stop:'', compliant:'', rules:'' });
+              const headers = Object.keys(rows[0] || { date:'', symbol:'', type:'', entry:'', exit:'', size:'', pnl:'', target:'', stop:'', compliant:'', rules:'', rules_followed:'', rules_broken:'' });
               const esc = (v: any) => {
                 const s = String(v ?? '');
                 if (s.includes(',') || s.includes('"') || s.includes('\n')) return '"' + s.replace(/"/g, '""') + '"';
