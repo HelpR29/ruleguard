@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { UserPlus, Users, Crown, Shield, Trophy, AlertCircle, Link as LinkIcon } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
  type Friend = {
   id: string;
@@ -49,10 +50,35 @@ export default function Friends() {
     }
   }, []);
 
-  const addFriend = () => {
+  const addFriend = async () => {
     const code = addCode.trim().toUpperCase();
-    if (!/^RG-[A-Z0-9]{6}$/.test(code)) return;
-    if (friends.some(f => f.code === code)) return;
+    if (!/^RG-[A-Z0-9]{6,8}$/.test(code)) { addToast('warning', 'Invalid code format'); return; }
+    if (friends.some(f => f.code === code)) { addToast('info', 'Already following this code.'); return; }
+
+    // Attempt referral redemption via Supabase Edge Function (optional)
+    try {
+      if (isSupabaseConfigured()) {
+        const { data, error } = await supabase.functions.invoke('redeemReferral', {
+          body: { code }
+        });
+        if (!error && data) {
+          const expires = data.premium_expires_at ? new Date(data.premium_expires_at) : null;
+          if (expires) {
+            addToast('success', `Trial extended by 7 days. Expires ${expires.toLocaleDateString()}.`);
+          } else {
+            addToast('success', 'Friend added.');
+          }
+        } else if (error) {
+          // Show server message if provided
+          const msg = (error as any)?.message || 'Could not redeem code, added as friend only.';
+          addToast('warning', msg);
+        }
+      }
+    } catch (e: any) {
+      addToast('warning', 'Referral service unavailable. Added as friend only.');
+    }
+
+    // Always add friend locally so following works regardless of redemption
     const f: Friend = {
       id: `${Date.now()}`,
       code,
