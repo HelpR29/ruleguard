@@ -90,12 +90,13 @@ function Journal() {
   });
 
   // Generate lightweight AI-style insights for a given date using local data only
+  // Returns a structured template: { well, needs, pros, cons, suggestions }
   const generateDailyInsights = (dateISO: string, userNote?: string) => {
     try {
       const dayTrades = (trades as any[]).filter(t => t && String(t.date) === String(dateISO));
-      const out: string[] = [];
+      const out = { well: [] as string[], needs: [] as string[], pros: [] as string[], cons: [] as string[], suggestions: [] as string[] };
       if (dayTrades.length === 0) {
-        if (userNote && userNote.trim()) out.push(`Note: ${userNote.trim()}`);
+        if (userNote && userNote.trim()) out.suggestions.push(`Note: ${userNote.trim()}`);
         return out;
       }
       // Helper for varied phrasing
@@ -136,13 +137,13 @@ function Journal() {
         baselineCompliance = bWith.length>0 ? Math.round((bComp / bWith.length)*100) : null;
       }
 
-      // Overview line with varied phrasing
+      // Overview lines -> Pros/Cons so they slot into template
       const overviews = [
         `${dayTrades.length} trades: ${wins.length} wins, ${losses.length} losses, total ${fmtMoney(totalPnl)} (avg ${fmtMoney(avgPnl)}).`,
         `Session summary — Trades: ${dayTrades.length}, W/L: ${wins.length}/${losses.length}, P&L: ${fmtMoney(totalPnl)}.`,
         `You placed ${dayTrades.length} trades today (${wins.length} win · ${losses.length} loss). Net ${fmtMoney(totalPnl)}.`
       ];
-      out.push(pick(overviews, seed));
+      if (totalPnl >= 0) out.pros.push(pick(overviews, seed)); else out.cons.push(pick(overviews, seed));
 
       if (compliance !== null) {
         const compVariants = [
@@ -150,45 +151,48 @@ function Journal() {
           `${compliance}% compliant${baselineCompliance!==null?` vs ${baselineCompliance}% 7‑day baseline`:''}.`,
           `Discipline today: ${compliance}%${baselineCompliance!==null?` (baseline ${baselineCompliance}%)`:''}.`
         ];
-        out.push(pick(compVariants, seed+1));
+        const line = pick(compVariants, seed+1);
+        if (compliance >= 80) out.well.push(line); else out.needs.push(line);
       }
 
       if (topSymbolEntry) {
         const [sym, cnt] = topSymbolEntry;
         if (uniqueSymbols > 1 && cnt/dayTrades.length >= 0.5) {
-          out.push(`Symbol concentration: ${sym} accounted for ${Math.round((cnt/dayTrades.length)*100)}% of trades.`);
+          out.needs.push(`Symbol concentration: ${sym} accounted for ${Math.round((cnt/dayTrades.length)*100)}% of trades.`);
         } else if (uniqueSymbols >= 3) {
-          out.push(`Diverse session: ${uniqueSymbols} symbols traded; most: ${sym} (${cnt}).`);
+          out.well.push(`Diverse session: ${uniqueSymbols} symbols traded; most: ${sym} (${cnt}).`);
         }
       }
 
       if (topSetupEntry && topSetupEntry[0]) {
-        out.push(`Most used setup: ${topSetupEntry[0]} (${topSetupEntry[1]} time${topSetupEntry[1]>1?'s':''}).`);
+        out.well.push(`Most used setup: ${topSetupEntry[0]} (${topSetupEntry[1]} time${topSetupEntry[1]>1?'s':''}).`);
       } else if (topTagEntry) {
-        out.push(`Top context tag: ${topTagEntry[0]} (${topTagEntry[1]}).`);
+        out.pros.push(`Top context tag: ${topTagEntry[0]} (${topTagEntry[1]}).`);
       }
 
-      if (brokenList.length > 0) out.push(`Broken rules: ${brokenList.join(', ')}.`);
-      if (followedList.length > 0) out.push(`Followed rules: ${followedList.join(', ')}.`);
-      if (topEmotion) out.push(`Dominant emotion: ${topEmotion}.`);
-      if (best) out.push(`Best trade: ${best.symbol} ${best.type} ${fmtMoney(best.pnl)}.`);
-      if (worst && worst !== best) out.push(`Worst trade: ${worst.symbol} ${worst.type} ${fmtMoney(worst.pnl)}.`);
+      if (brokenList.length > 0) out.cons.push(`Broken rules: ${brokenList.join(', ')}.`);
+      if (followedList.length > 0) out.pros.push(`Followed rules: ${followedList.join(', ')}.`);
+      if (topEmotion) out.needs.push(`Dominant emotion: ${topEmotion}.`);
+      if (best) out.well.push(`Best trade: ${best.symbol} ${best.type} ${fmtMoney(best.pnl)}.`);
+      if (worst && worst !== best) out.needs.push(`Worst trade: ${worst.symbol} ${worst.type} ${fmtMoney(worst.pnl)}.`);
 
       // Actionable tips (conditional)
       if (compliance !== null && compliance < 80) {
-        out.push('Focus: run a pre‑trade checklist and confirm 2–3 confluence factors before entry.');
+        out.suggestions.push('Run a pre‑trade checklist and confirm 2–3 confluence factors before entry.');
       } else if (compliance !== null && baselineCompliance !== null && compliance < baselineCompliance) {
-        out.push('Slight dip vs baseline — slow down and double‑check rule alignment.');
+        out.suggestions.push('Slight dip vs baseline — slow down and double‑check rule alignment.');
       }
-      if (losses.length >= 2 && totalPnl <= 0) out.push('Risk control: consider a daily stop after two losses.');
-      if (wins.length >= 2 && avgPnl > 0 && (topSetupEntry?.[1] || 0) >= 2) out.push('Replicate: journal the playbook for today’s best setup and size it consistently.');
-      if (uniqueSymbols >= 4) out.push('Focus: reduce symbols to your top 1–2 until consistency improves.');
+      if (losses.length >= 2 && totalPnl <= 0) out.suggestions.push('Set a daily stop after two losses to protect capital.');
+      if (wins.length >= 2 && avgPnl > 0 && (topSetupEntry?.[1] || 0) >= 2) out.suggestions.push('Replicate today’s best setup and size it consistently.');
+      if (uniqueSymbols >= 4) out.suggestions.push('Reduce symbols to your top 1–2 until consistency improves.');
 
       // Incorporate user's note at the end
-      if (userNote && userNote.trim()) out.push(`Note: ${userNote.trim()}`);
+      if (userNote && userNote.trim()) out.suggestions.push(`Note: ${userNote.trim()}`);
       return out;
     } catch {
-      return userNote?.trim() ? [userNote.trim()] : [];
+      const empty = { well: [] as string[], needs: [] as string[], pros: [] as string[], cons: [] as string[], suggestions: [] as string[] };
+      if (userNote?.trim()) empty.suggestions.push(userNote.trim());
+      return empty;
     }
   };
   const [achievements] = useState<string[]>(() => {
@@ -966,16 +970,27 @@ function Journal() {
 
                   <p className="text-gray-700 leading-relaxed">{journal.entry}</p>
                   {(() => {
-                    const insights = generateDailyInsights(journal.date, journal.entry);
-                    if (!insights || insights.length === 0) return null;
+                    const i = generateDailyInsights(journal.date, journal.entry);
+                    const hasAny = [i.well, i.needs, i.pros, i.cons, i.suggestions].some(arr => (arr && arr.length));
+                    if (!hasAny) return null;
+                    const Section = ({title, items}:{title:string; items:string[]}) => (
+                      items && items.length ? (
+                        <div className="mt-2">
+                          <p className="text-sm font-medium text-gray-800">{title}</p>
+                          <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
+                            {items.map((s, idx)=>(<li key={idx}>{s}</li>))}
+                          </ul>
+                        </div>
+                      ) : null
+                    );
                     return (
                       <div className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
-                        <p className="text-sm font-medium text-gray-800 mb-2">AI Suggestions</p>
-                        <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
-                          {insights.map((s, i) => (
-                            <li key={i}>{s}</li>
-                          ))}
-                        </ul>
+                        <p className="text-sm font-semibold text-gray-900 mb-1">AI Summary</p>
+                        <Section title="What went well" items={i.well} />
+                        <Section title="What needs work" items={i.needs} />
+                        <Section title="Pros" items={i.pros} />
+                        <Section title="Cons" items={i.cons} />
+                        <Section title="Suggestions" items={i.suggestions} />
                       </div>
                     );
                   })()}
