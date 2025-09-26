@@ -7,6 +7,7 @@ import NotificationPanel from './NotificationPanel';
 import AvatarSelector from './AvatarSelector';
 import Logo from './Logo';
 import { useAuth } from '../context/AuthContext';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const pageNames: Record<string, string> = {
   '/': 'Dashboard',
@@ -462,6 +463,15 @@ export default function Header() {
                   const trimmed = nameInput.trim();
                   if (!/^[-A-Za-z0-9 ]{2,24}$/.test(trimmed)) { alert('Please enter 2–24 characters (letters, numbers, spaces).'); return; }
                   try { localStorage.setItem('display_name', trimmed); setDisplayName(trimmed); } catch {}
+                  // attempt to persist server-side (optional)
+                  try {
+                    if (isSupabaseConfigured() && user) {
+                      // upsert into public.profiles if table exists
+                      // deno/postgres will error if table missing; ignore
+                      // @ts-ignore
+                      supabase.from('profiles').upsert({ user_id: (user as any).id, display_name: trimmed }).then(()=>{}).catch(()=>{});
+                    }
+                  } catch {}
                   setShowNameModal(false);
                 }}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
