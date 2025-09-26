@@ -543,14 +543,16 @@ function Journal() {
                 </p>
               </div>
             </Tooltip>
-            <Tooltip content="Percentage of trades that followed your trading rules">
+            <Tooltip content="Percentage of trades with applied rules that were compliant">
               <div className="bg-amber-50 rounded-xl p-4">
                 <p className="text-amber-600 text-sm mb-1">Rule Compliance</p>
                 <p className="text-2xl font-bold text-amber-700">
-                  {trades.length > 0 
-                    ? Math.round((trades.filter(t => t.ruleCompliant).length / trades.length) * 100)
-                    : 0
-                  }%
+                  {(() => {
+                    const withRules = trades.filter((t: any) => Array.isArray(t.rules) && t.rules.length > 0);
+                    if (withRules.length === 0) return 0;
+                    const compliant = withRules.filter((t: any) => t.ruleCompliant).length;
+                    return Math.round((compliant / withRules.length) * 100);
+                  })()}%
                 </p>
               </div>
             </Tooltip>
