@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Logo from '../components/Logo';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import SupabaseDebug from '../components/SupabaseDebug';
 
 export default function SignUp() {
   const { signUp } = useAuth();
@@ -130,8 +129,6 @@ export default function SignUp() {
         </div>
       </div>
       
-      {/* Debug component - remove in production */}
-      <SupabaseDebug />
     </div>
   );
 }
