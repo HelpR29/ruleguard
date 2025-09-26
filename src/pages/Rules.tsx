@@ -21,6 +21,7 @@ export default function Rules() {
   const [compactView, setCompactView] = useState<boolean>(() => {
     try { return (rules?.length || 0) > 8; } catch { return true; }
   });
+  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
   const [showTemplates, setShowTemplates] = useState(false);
   const [selectedTemplateCategory, setSelectedTemplateCategory] = useState<string>('');
   const { addToast } = useToast();
