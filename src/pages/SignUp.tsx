@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Logo from '../components/Logo';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import SupabaseDebug from '../components/SupabaseDebug';
 
 export default function SignUp() {
   const { signUp } = useAuth();
@@ -64,18 +65,40 @@ export default function SignUp() {
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          {/* Supabase Configuration Status */}
+          {!isSupabaseConfigured() && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800 font-medium">⚠️ Supabase Not Configured</p>
+              <p className="text-xs text-yellow-700 mt-1">
+                Authentication is disabled. Create a .env file with VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+              </p>
+            </div>
+          )}
+          
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm mb-1">Email</label>
-              <input type="email" value={email} onChange={e=>setEmail(e.target.value)} required className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-2 rounded"/>
+              <label htmlFor="signup-email" className="block text-sm mb-1">Email</label>
+              <input 
+                id="signup-email"
+                type="email" 
+                value={email} 
+                onChange={e=>setEmail(e.target.value)} 
+                required 
+                autoComplete="email"
+                aria-describedby={error ? "signup-error" : undefined}
+                className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-2 rounded"
+              />
             </div>
             <div>
-              <label className="block text-sm mb-1">Password</label>
+              <label htmlFor="signup-password" className="block text-sm mb-1">Password</label>
               <input 
+                id="signup-password"
                 type="password" 
                 value={password} 
                 onChange={handlePasswordChange} 
                 required 
+                autoComplete="new-password"
+                aria-describedby={error ? "signup-error" : passwordStrength ? "password-strength" : undefined}
                 className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-2 rounded"
                 minLength={6}
               />
@@ -86,7 +109,7 @@ export default function SignUp() {
                     <div className={`h-1 flex-1 rounded ${passwordStrength === 'medium' || passwordStrength === 'strong' ? passwordStrength === 'medium' ? 'bg-yellow-400' : 'bg-green-400' : 'bg-gray-200'}`}></div>
                     <div className={`h-1 flex-1 rounded ${passwordStrength === 'strong' ? 'bg-green-400' : 'bg-gray-200'}`}></div>
                   </div>
-                  <p className={`text-xs ${passwordStrength === 'weak' ? 'text-red-600' : passwordStrength === 'medium' ? 'text-yellow-600' : 'text-green-600'}`}>
+                  <p id="password-strength" className={`text-xs ${passwordStrength === 'weak' ? 'text-red-600' : passwordStrength === 'medium' ? 'text-yellow-600' : 'text-green-600'}`} aria-live="polite">
                     Password strength: {passwordStrength}
                     {passwordStrength === 'weak' && ' (min 6 characters)'}
                     {passwordStrength === 'medium' && ' (add uppercase, lowercase & numbers for strong)'}
@@ -95,14 +118,20 @@ export default function SignUp() {
                 </div>
               )}
             </div>
-            {error && <p className="text-sm text-red-600">{error}</p>}
-            <button type="submit" disabled={loading} className={`w-full py-2 rounded text-white ${loading? 'bg-blue-300':'bg-blue-600 hover:bg-blue-700'}`}>
+            {error && <p id="signup-error" className="text-sm text-red-600" role="alert">{error}</p>}
+            <button type="submit" disabled={loading} className={`w-full py-2 rounded text-white flex items-center justify-center gap-2 ${loading? 'bg-blue-300 cursor-not-allowed':'bg-blue-600 hover:bg-blue-700'}`}>
+              {loading && (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              )}
               {loading? 'Creating account...':'Sign up'}
             </button>
           </form>
           <p className="text-sm text-gray-600 mt-3">Already have an account? <Link to="/login" className="text-blue-600">Log in</Link></p>
         </div>
       </div>
+      
+      {/* Debug component - remove in production */}
+      <SupabaseDebug />
     </div>
   );
 }

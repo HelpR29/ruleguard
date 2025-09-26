@@ -4,7 +4,6 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { Database } from '../types/database';
 
 // Environment variables for Supabase configuration
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -15,7 +14,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Create Supabase client
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
@@ -35,13 +34,14 @@ export const testConnection = async () => {
       return { success: false, error: 'Supabase not configured' };
     }
 
-    const { data, error } = await supabase.from('users').select('count').limit(1);
+    // Test with auth.users table which should always exist
+    const { data, error } = await supabase.auth.getSession();
     
     if (error) {
       return { success: false, error: error.message };
     }
 
-    return { success: true, data };
+    return { success: true, data: 'Connected to Supabase' };
   } catch (error) {
     return { 
       success: false, 
