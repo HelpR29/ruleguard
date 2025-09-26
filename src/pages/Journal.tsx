@@ -1281,10 +1281,7 @@ function Journal() {
                   );
                 })()}
               </div>
-              <div className="flex items-center gap-2 md:col-span-2">
-                <input id="rc" type="checkbox" checked={form.ruleCompliant} onChange={(e)=>setForm({...form, ruleCompliant: e.target.checked})} />
-                <label htmlFor="rc" className="text-sm text-gray-700 dark:text-gray-300">Rule Compliant</label>
-              </div>
+              {/* Rule compliance is now derived from per-rule outcomes (Followed/Broken). Checkbox removed intentionally. */}
               {/* R:R Preview */}
               <div className="md:col-span-2 text-sm text-gray-700 dark:text-gray-300">
                 {(() => {
