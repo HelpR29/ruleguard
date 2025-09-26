@@ -407,10 +407,10 @@ function Journal() {
     };
     setTrades(prev => [newTrade, ...prev]);
     // Ensure Daily Journal has an entry even without manual notes
-    const noteText = form.notes.trim() || `${newTrade.symbol} ${newTrade.type} trade ${pnl >= 0 ? 'profit' : 'loss'}: $${pnl} (${form.ruleCompliant ? 'rule compliant' : 'rule violation'})`;
-    setJournals(prev => [{ id: Date.now(), date: form.date, entry: noteText, mood: form.emotion, disciplineScore: form.ruleCompliant ? 90 : 60 }, ...prev]);
+    const noteText = form.notes.trim() || `${newTrade.symbol} ${newTrade.type} trade ${pnl >= 0 ? 'profit' : 'loss'}: $${pnl} (${newTrade.ruleCompliant ? 'rule compliant' : 'rule violation'})`;
+    setJournals(prev => [{ id: Date.now(), date: form.date, entry: noteText, mood: form.emotion, disciplineScore: newTrade.ruleCompliant ? 90 : 60 }, ...prev]);
     // Record non-compliance in daily_stats and activity_log for reporting
-    if (!form.ruleCompliant) {
+    if (!newTrade.ruleCompliant) {
       try {
         const key = (form.date ? new Date(form.date) : new Date()).toISOString().slice(0, 10);
         const stats = JSON.parse(localStorage.getItem('daily_stats') || '{}');
