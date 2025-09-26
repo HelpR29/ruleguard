@@ -274,6 +274,7 @@ function Journal() {
     imageIds: [] as number[],
     imagePreviews: [] as string[],
     appliedRules: [] as string[],
+    appliedRuleStatuses: {} as Record<string, 'Followed' | 'Broken' | 'N/A'>,
   });
   const [showRulePicker, setShowRulePicker] = useState(false);
   const [ruleQuery, setRuleQuery] = useState('');
@@ -299,6 +300,7 @@ function Journal() {
       imageIds: [],
       imagePreviews: [],
       appliedRules: [],
+      appliedRuleStatuses: {},
     });
   };
   const handleImageFiles = async (files: FileList | null) => {
@@ -366,6 +368,9 @@ function Journal() {
     const gainPct = (pnl / (settings.startingPortfolio || 1)) * 100;
     // Merge tags from selected rules with manual tags
     const selectedRules: string[] = Array.isArray(form.appliedRules) ? form.appliedRules : [];
+    const statuses = form.appliedRuleStatuses || {} as Record<string,'Followed'|'Broken'|'N/A'>;
+    const rulesFollowed = selectedRules.filter(r => statuses[r] === 'Followed');
+    const rulesViolated = selectedRules.filter(r => statuses[r] === 'Broken');
     const ruleTagIndex = (() => {
       const idx = new Map<string, string[]>();
       try {
@@ -394,9 +399,11 @@ function Journal() {
       emotion: form.emotion,
       notes: form.notes,
       tags: mergedTags,
-      ruleCompliant: form.ruleCompliant,
+      ruleCompliant: rulesViolated.length === 0 && (rulesFollowed.length > 0 || form.ruleCompliant),
       imageIds: form.imageIds,
       rules: selectedRules,
+      rulesFollowed,
+      rulesViolated,
     };
     setTrades(prev => [newTrade, ...prev]);
     // Ensure Daily Journal has an entry even without manual notes
@@ -619,9 +626,18 @@ function Journal() {
                   <p className="text-gray-700 bg-gray-50 rounded-lg p-3 text-sm">{trade.notes}</p>
                   {Array.isArray((trade as any).rules) && (trade as any).rules.length > 0 && (
                     <div className="mt-2 flex items-center gap-2 flex-wrap">
-                      {(trade as any).rules.map((r: string, idx: number) => (
-                        <span key={`${r}-${idx}`} className="px-2 py-0.5 rounded-full text-[11px] bg-white border border-gray-200 text-gray-700">{r}</span>
-                      ))}
+                      {(trade as any).rules.map((r: string, idx: number) => {
+                        const followed = Array.isArray((trade as any).rulesFollowed) && (trade as any).rulesFollowed.includes(r);
+                        const violated = Array.isArray((trade as any).rulesViolated) && (trade as any).rulesViolated.includes(r);
+                        const cls = followed
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                          : violated
+                            ? 'bg-red-100 text-red-800 border-red-200'
+                            : 'bg-gray-100 text-gray-700 border-gray-200';
+                        return (
+                          <span key={`${r}-${idx}`} className={`px-2 py-0.5 rounded-full text-[11px] border ${cls}`}>{r}</span>
+                        );
+                      })}
                     </div>
                   )}
 
@@ -893,8 +909,11 @@ function Journal() {
                                   setForm(prev=>{
                                     const on = e.target.checked;
                                     const exists = prev.appliedRules.includes(r.text);
-                                    if (on && !exists) return { ...prev, appliedRules: [...prev.appliedRules, r.text] };
-                                    if (!on && exists) return { ...prev, appliedRules: prev.appliedRules.filter(x=>x!==r.text) };
+                                    if (on && !exists) return { ...prev, appliedRules: [...prev.appliedRules, r.text], appliedRuleStatuses: { ...prev.appliedRuleStatuses, [r.text]: 'Followed' } };
+                                    if (!on && exists) {
+                                      const nextStatuses = { ...prev.appliedRuleStatuses }; delete nextStatuses[r.text];
+                                      return { ...prev, appliedRules: prev.appliedRules.filter(x=>x!==r.text), appliedRuleStatuses: nextStatuses };
+                                    }
                                     return prev;
                                   });
                                 }}
@@ -915,7 +934,12 @@ function Journal() {
                     </div>
                     {Array.isArray(userRules) && userRules.length > 0 && (
                       <div className="mt-2 flex items-center gap-2">
-                        <button type="button" className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-white" onClick={()=>setForm(prev=>({...prev, appliedRules: Array.from(new Set([...(prev.appliedRules||[]), ...userRules.map((r:any)=>r.text)]))}))}>Select All</button>
+                        <button type="button" className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-white" onClick={()=>setForm(prev=>{
+                          const all = Array.from(new Set([...(prev.appliedRules||[]), ...userRules.map((r:any)=>r.text)]));
+                          const nextStatuses = { ...prev.appliedRuleStatuses } as Record<string,'Followed'|'Broken'|'N/A'>;
+                          all.forEach((t:string)=>{ if (!nextStatuses[t]) nextStatuses[t] = 'Followed'; });
+                          return { ...prev, appliedRules: all, appliedRuleStatuses: nextStatuses };
+                        })}>Select All</button>
                         <button type="button" className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-white" onClick={()=>setForm(prev=>({...prev, appliedRules: []}))}>Clear</button>
                         <button type="button" className="ml-auto text-xs text-blue-700 hover:underline" onClick={()=>{
                           const idx = new Map<string,string[]>();
@@ -930,6 +954,35 @@ function Journal() {
                   </div>
                 )}
               </div>
+
+              {/* Rule Outcomes (per selected rule) */}
+              {form.appliedRules.length > 0 && (
+                <div className="md:col-span-2">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Rule Outcomes</p>
+                  <div className="flex flex-wrap gap-2">
+                    {form.appliedRules.map((r) => (
+                      <div key={r} className="flex items-center gap-1 text-xs border border-gray-200 rounded-full px-2 py-0.5 bg-white">
+                        <span className="font-medium text-gray-800 truncate max-w-[180px]">{r}</span>
+                        <div className="flex items-center gap-1 ml-1">
+                          {(['Followed','Broken','N/A'] as const).map(st => (
+                            <button
+                              key={st}
+                              type="button"
+                              onClick={()=> setForm(prev=> ({ ...prev, appliedRuleStatuses: { ...prev.appliedRuleStatuses, [r]: st } }))}
+                              className={`px-1.5 py-0.5 rounded-full border text-[10px] ${
+                                (form.appliedRuleStatuses?.[r]||'Followed')===st
+                                  ? (st==='Followed' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : st==='Broken' ? 'bg-red-100 text-red-800 border-red-200' : 'bg-gray-100 text-gray-700 border-gray-200')
+                                  : 'bg-white text-gray-600 border-gray-200'
+                              }`}
+                              title={`Mark ${r} as ${st}`}
+                            >{st}</button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {/* Images input and previews */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Images (up to 4)</label>
