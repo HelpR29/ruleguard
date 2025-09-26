@@ -513,7 +513,7 @@ export default function AnalyticsDashboard({
 
     const chartProps = {
       data: analyticsData,
-      margin: { top: 5, right: 30, left: 20, bottom: 5 }
+      margin: { top: chartId === 'performance-breakdown' ? 18 : 5, right: 30, left: 20, bottom: 5 }
     };
     let child: React.ReactElement | null = null;
     const primary = config[0].type;
@@ -548,7 +548,7 @@ export default function AnalyticsDashboard({
           <CartesianGrid strokeDasharray="4 6" stroke="#f3f4f6" />
           <XAxis dataKey="date" stroke="#666" fontSize={12} axisLine={false} tickLine={false} />
           <YAxis stroke="#666" fontSize={12} axisLine={false} tickLine={false}
-            domain={chartId === 'performance-breakdown' ? [0, 100] : undefined}
+            domain={chartId === 'performance-breakdown' ? [0, 105] : undefined}
             tickFormatter={(v: number) => chartId === 'performance-breakdown' ? formatPercent(v) : String(v)}
           />
           <Tooltip formatter={(v: number, name: string) => chartId === 'performance-breakdown' ? [formatPercent(v), name] : [v, name]} />
@@ -559,7 +559,7 @@ export default function AnalyticsDashboard({
             <ReferenceLine y={50} stroke="#e5e7eb" strokeDasharray="3 3" />
           )}
           {/* Last-point labels moved to header badges to avoid overlap */}
-          <Legend verticalAlign="top" height={24} />
+          {/* Legend removed (we render custom badges above the chart) */}
         </LineChart>
       );
     } else if (primary === 'area') {
@@ -828,9 +828,9 @@ export default function AnalyticsDashboard({
                 </button>
               </div>
               {/* Compact legend badges below title, wrap on small widths */}
-              <div className="mt-2 flex flex-wrap gap-2 items-center">
+              <div className="mt-2 mb-4 flex flex-wrap gap-3 items-center">
                 {chartConfigs[chartId]?.map((c, i) => (
-                  <span key={i} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] border border-gray-200 text-gray-700">
+                  <span key={i} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] border border-gray-200 text-gray-700">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
                     {c.name}
                   </span>
@@ -841,11 +841,13 @@ export default function AnalyticsDashboard({
                     const last = analyticsData[analyticsData.length - 1] as any;
                     return (
                       <>
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] border border-green-200 text-green-700 bg-green-50">
+                        <span className="w-full" />
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] border border-green-200 text-green-700 bg-green-50">
                           <span className="w-2 h-2 rounded-full bg-[#10b981]" />
                           Win Rate {Number(last.winRate || 0).toFixed(0)}%
                         </span>
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] border border-amber-200 text-amber-700 bg-amber-50">
+                        <span className="text-gray-300">•</span>
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] border border-amber-200 text-amber-700 bg-amber-50">
                           <span className="w-2 h-2 rounded-full bg-[#f59e0b]" />
                           Compliance {Number(last.ruleCompliance || 0).toFixed(0)}%
                         </span>
