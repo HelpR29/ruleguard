@@ -34,7 +34,8 @@ export default function DisplayNamePrompt() {
   // - user is present
   // - not skipped
   // - onboarding not yet complete
-  if (!user || isSkipped || onboardingComplete) {
+  // - no display_name exists yet in DB profile
+  if (!user || isSkipped || onboardingComplete || !!profile?.display_name) {
     return null;
   }
 
