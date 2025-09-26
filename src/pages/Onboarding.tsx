@@ -16,21 +16,21 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     progressObject: 'beer' as 'beer' | 'wine' | 'donut' | 'diamond' | 'trophy',
     rules: [] as string[]
   });
-  const [openPack, setOpenPack] = useState<string | null>(null);
+  const [openPacks, setOpenPacks] = useState<string[]>([]);
   const packsRef = useRef<HTMLDivElement | null>(null);
 
   // Close pack popover when clicking outside the packs container
   useEffect(() => {
-    if (!openPack) return;
+    if (!openPacks.length) return;
     const handler = (e: MouseEvent) => {
       const el = packsRef.current;
       if (el && !el.contains(e.target as Node)) {
-        setOpenPack(null);
+        setOpenPacks([]);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [openPack]);
+  }, [openPacks]);
 
   const progressObjects = [
     { value: 'beer', emoji: '🍺', label: 'Beer' },
@@ -270,19 +270,19 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                         <button
                           type="button"
                           className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 underline-offset-2 hover:underline"
-                          onClick={() => setOpenPack(prev => prev === p.name ? null : p.name)}
-                          aria-expanded={openPack === p.name}
+                          onClick={() => setOpenPacks(prev => prev.includes(p.name) ? prev.filter(n => n !== p.name) : [...prev, p.name])}
+                          aria-expanded={openPacks.includes(p.name)}
                           aria-controls={`pack-popover-${p.name}`}
                         >
                           View
                           <ChevronDown
-                            className={`h-3.5 w-3.5 transition-transform ${openPack === p.name ? 'rotate-180' : ''}`}
+                            className={`h-3.5 w-3.5 transition-transform ${openPacks.includes(p.name) ? 'rotate-180' : ''}`}
                           />
                         </button>
                       </div>
 
                       {/* Popover toggled by View button */}
-                      {openPack === p.name && (
+                      {openPacks.includes(p.name) && (
                         <div id={`pack-popover-${p.name}`} className="absolute left-0 right-0 top-full mt-2 z-50">
                           <div className="rounded-lg border border-gray-200 bg-white shadow-lg p-3">
                             <div className="flex items-center justify-between mb-1">
@@ -290,7 +290,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                               <button
                                 type="button"
                                 className="text-[11px] text-gray-500 hover:text-gray-800"
-                                onClick={() => setOpenPack(null)}
+                                onClick={() => setOpenPacks(prev => prev.filter(n => n !== p.name))}
                               >Close</button>
                             </div>
                             <ul className="space-y-1">
