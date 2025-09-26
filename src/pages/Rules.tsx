@@ -67,6 +67,37 @@ export default function Rules() {
     return tags.sort((a, b) => a.localeCompare(b));
   }, [rules]);
 
+  // Counters that respect the other filter (tags for categories; category for tags)
+  const categoryCountsWithTagFilter = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const t of RULE_TEMPLATES) map[t.category] = 0;
+    for (const r of rules) {
+      const tagMatch = activeFilters.length === 0 || (r.tags || []).some(t => activeFilters.includes(t));
+      if (tagMatch && r.category) map[r.category] = (map[r.category] || 0) + 1;
+    }
+    return map;
+  }, [rules, activeFilters]);
+
+  const tagCountsWithCategoryFilter = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const r of rules) {
+      const catMatch = selectedCategory === 'all' || r.category === selectedCategory;
+      if (!catMatch) continue;
+      for (const t of (r.tags || [])) map.set(t, (map.get(t) || 0) + 1);
+    }
+    return map;
+  }, [rules, selectedCategory]);
+
+  const daysSince = (iso: string) => {
+    try {
+      const d = new Date(iso);
+      const one = new Date(d.toISOString().slice(0,10));
+      const two = new Date(new Date().toISOString().slice(0,10));
+      const diff = Math.floor((two.getTime() - one.getTime()) / (1000*60*60*24));
+      return diff >= 0 ? diff : 0;
+    } catch { return null; }
+  };
+
   const getCategoryIcon = (category: string) => {
     const template = RULE_TEMPLATES.find(t => t.category === category);
     return template?.categoryIcon || '📋';
@@ -221,6 +252,9 @@ export default function Rules() {
                         className={`px-2 py-1 rounded-full text-xs border ${activeFilters.includes(tag) ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'}`}
                       >
                         {tag}
+                        <span className="ml-1 text-[10px] px-1 py-0.5 rounded-full bg-white/70 text-gray-700 border border-gray-200">
+                          {tagCountsWithCategoryFilter.get(tag) || 0}
+                        </span>
                       </button>
                     ))}
                     {allTagsSorted.length > limit && (
@@ -327,7 +361,14 @@ export default function Rules() {
                     )}
                   </div>
 
-                  {/* Removed edit/delete quick actions per request */}
+                  {/* Last violated badge */}
+                  {rule.lastViolation && (
+                    <div className="ml-4 mt-1 self-start">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] bg-red-50 text-red-700 border border-red-200">
+                        Last violated {daysSince(rule.lastViolation)}d ago
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Violation History */}
