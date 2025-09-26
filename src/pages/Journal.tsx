@@ -89,6 +89,55 @@ function Journal() {
     try { return localStorage.getItem('premium_status') || 'none'; } catch { return 'none'; }
   });
 
+  // AI-style review per trade (local heuristics)
+  const generateTradeInsights = (t: any) => {
+    try {
+      const pros: string[] = [];
+      const cons: string[] = [];
+      const suggestions: string[] = [];
+      const pnl = Number(t.pnl || 0);
+      const rr = (() => {
+        if (typeof t.target === 'number' && typeof t.stop === 'number') {
+          const risk = t.type === 'Long' ? (t.entry - t.stop) : (t.stop - t.entry);
+          const reward = t.type === 'Long' ? (t.target - t.entry) : (t.entry - t.target);
+          if (risk > 0 && reward > 0) return reward / risk;
+        }
+        return null;
+      })();
+      // Rules
+      const followed = Array.isArray(t.rulesFollowed) ? t.rulesFollowed.length : 0;
+      const broken = Array.isArray(t.rulesViolated) ? t.rulesViolated.length : 0;
+      if (t.ruleCompliant) pros.push('Followed planned rules for this setup.');
+      if (followed >= 2) pros.push(`Followed ${followed} rules.`);
+      if (broken > 0) { cons.push(`Broke ${broken} rule${broken>1?'s':''}.`); suggestions.push('Review the checklist and confirm each rule before entry.'); }
+      // PnL and R:R
+      if (pnl > 0) pros.push(`Positive P&L (${pnl >= 0 ? '+' : ''}$${Math.abs(pnl).toFixed(0)}).`);
+      if (pnl < 0) { cons.push(`Negative P&L ($${Math.abs(pnl).toFixed(0)}).`); suggestions.push('Limit drawdown: consider cutting earlier or using a tighter initial stop.'); }
+      if (rr !== null) {
+        if (rr >= 2) pros.push(`Solid R:R ≈ 1:${rr.toFixed(2)}.`);
+        else { cons.push(`Low R:R ≈ 1:${rr.toFixed(2)}.`); suggestions.push('Aim for setups with R:R ≥ 1:2 or improve target placement.'); }
+      } else {
+        suggestions.push('Add planned Target/Stop to quantify R:R and improve trade review.');
+      }
+      // Emotion
+      if (t.emotion && t.emotion !== 'Neutral') {
+        cons.push(`Emotion noted: ${t.emotion}.`);
+        suggestions.push('Pause 10–20 seconds before entry to re-check bias and risk.');
+      }
+      // Entry/Exit efficiency heuristic
+      const movePct = t.type==='Long' ? ((t.exit - t.entry) / (t.target ? Math.max(1, Math.abs(t.target - t.entry)) : Math.max(1, Math.abs(t.entry)))) : ((t.entry - t.exit) / (t.target ? Math.max(1, Math.abs(t.entry - t.target)) : Math.max(1, Math.abs(t.entry))));
+      if (!Number.isNaN(movePct)) {
+        if (pnl > 0 && movePct < 0.4) suggestions.push('Consider scaling out later or letting winners run to capture more of the move.');
+        if (pnl < 0 && movePct > 0.6) suggestions.push('Consider earlier invalidation to avoid giving back large portions of the move.');
+      }
+      // Size sanity
+      if (typeof t.size === 'number' && t.size > 0) {
+        if (pnl < 0 && t.size > 1000) suggestions.push('Size risk: reduce position size until rule compliance improves.');
+      }
+      return { pros, cons, suggestions };
+    } catch { return { pros: [], cons: [], suggestions: [] }; }
+  };
+
   // Generate lightweight AI-style insights for a given date using local data only
   // Returns a structured template: { well, needs, pros, cons, suggestions }
   const generateDailyInsights = (dateISO: string, userNote?: string) => {
