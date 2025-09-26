@@ -829,21 +829,23 @@ export default function AnalyticsDashboard({
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {selectedCharts.map((chartId) => (
           <div key={chartId} className="rounded-2xl p-6 card-surface">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white capitalize">
-                {chartId.replace('-', ' ')}
-              </h3>
-              <div className="flex items-center gap-2">
-                {/* Compact legend badges */}
+            <div className="mb-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white capitalize">
+                  {chartId.replace('-', ' ')}
+                </h3>
+                <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                  <Settings className="h-4 w-4" />
+                </button>
+              </div>
+              {/* Compact legend badges below title, wrap on small widths */}
+              <div className="mt-2 flex flex-wrap gap-2">
                 {chartConfigs[chartId]?.map((c, i) => (
-                  <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] border border-gray-200 text-gray-700">
+                  <span key={i} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] border border-gray-200 text-gray-700">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
                     {c.name}
                   </span>
                 ))}
-                <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                  <Settings className="h-4 w-4" />
-                </button>
               </div>
             </div>
 
