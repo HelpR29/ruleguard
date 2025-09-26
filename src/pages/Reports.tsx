@@ -53,6 +53,33 @@ export default function Reports() {
     }
   }, []);
 
+  // Emotional State Analysis data (percentages by emotion)
+  const emotionData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const t of Array.isArray(trades) ? trades : []) {
+      const emos = Array.isArray((t as any).emotions)
+        ? (t as any).emotions
+        : ((t as any).emotion ? [String((t as any).emotion)] : []);
+      for (const e of emos) counts[e] = (counts[e] || 0) + 1;
+    }
+    const total = Object.values(counts).reduce((s, v) => s + v, 0);
+    const palette: Record<string, string> = {
+      Confident: '#10b981',
+      FOMO: '#f59e0b',
+      Fear: '#ef4444',
+      Neutral: '#6b7280',
+    };
+    const ordered = ['Confident','FOMO','Fear','Neutral'];
+    if (total === 0) {
+      return ordered.map(name => ({ name, value: 0, color: palette[name] }));
+    }
+    return ordered.map(name => ({
+      name,
+      value: Number((((counts[name] || 0) / total) * 100).toFixed(1)),
+      color: palette[name]
+    }));
+  }, [trades, version]);
+
   const averageRR = useMemo(() => {
     const items = (trades || []).filter((t: any) => typeof t.entry === 'number' && typeof t.target === 'number' && typeof t.stop === 'number');
     if (!items.length) return 0;
@@ -216,27 +243,7 @@ export default function Reports() {
     }
   }, []);
 
-  // Emotion distribution (placeholder: use zeros when there's no activity)
-  const emotionData = useMemo(() => {
-    const anyWeekly = weeklyData.some(d => (d.completions || d.violations || d.pnl));
-    const anyTrades = Array.isArray(trades) && trades.length > 0;
-    if (!anyWeekly && !anyTrades) {
-      return [
-        { name: 'Confident', value: 0, color: '#10b981' },
-        { name: 'FOMO', value: 0, color: '#f59e0b' },
-        { name: 'Fear', value: 0, color: '#ef4444' },
-        { name: 'Neutral', value: 0, color: '#6b7280' },
-      ];
-    }
-    // If you later track emotions per trade, compute real values here.
-    // For now, keep neutral placeholders that don't sum to misleading numbers.
-    return [
-      { name: 'Confident', value: 0, color: '#10b981' },
-      { name: 'FOMO', value: 0, color: '#f59e0b' },
-      { name: 'Fear', value: 0, color: '#ef4444' },
-      { name: 'Neutral', value: 0, color: '#6b7280' },
-    ];
-  }, [weeklyData, trades]);
+  // emotionData is computed above from trades' emotions
 
   // Per-rule, time-of-day, and weekday-hour heatmap from activity_log
   const { perRuleData, hourlyData, heatmap, tagStats, maxHeat, topTags } = useMemo(() => {
