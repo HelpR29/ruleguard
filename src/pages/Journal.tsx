@@ -430,12 +430,25 @@ function Journal() {
         const key = (form.date ? new Date(form.date) : new Date()).toISOString().slice(0, 10);
         const stats = JSON.parse(localStorage.getItem('daily_stats') || '{}');
         const today = stats[key] || { completions: 0, violations: 0 };
-        today.violations += 1;
+        const brokenCount = (Array.isArray(rulesViolated) ? rulesViolated.length : 0) || 1;
+        today.violations = Number(today.violations || 0) + brokenCount;
         stats[key] = today;
         localStorage.setItem('daily_stats', JSON.stringify(stats));
+        // Log each violated rule with ruleId when available
         const log = JSON.parse(localStorage.getItem('activity_log') || '[]');
-        log.push({ ts: Date.now(), type: 'violation' });
+        const now = Date.now();
+        // Build text->id index from current selection if available
+        const selectedMap = new Map<string, string>();
+        (form.appliedRules || []).forEach((txt, idx) => {
+          const rid = String((form.appliedRuleIds || [])[idx] || '');
+          if (rid) selectedMap.set(txt, rid);
+        });
+        for (const txt of rulesViolated) {
+          const rid = selectedMap.get(txt);
+          log.push({ ts: now, type: 'violation', ruleId: rid });
+        }
         localStorage.setItem('activity_log', JSON.stringify(log));
+        try { window.dispatchEvent(new CustomEvent('rg:data-change', { detail: { keys: ['daily_stats','activity_log'] } })); } catch {}
       } catch {}
     }
 
@@ -466,14 +479,7 @@ function Journal() {
               r.lastViolation = todayStr;
             }
           }
-          for (const txt of rulesFollowed) {
-            const rid = selectedMap.get(txt);
-            const r = rid ? (byId.get(rid) || byText.get(txt)) : byText.get(txt);
-            if (r) {
-              r.violations = Math.max(0, Number(r.violations || 0) - 1);
-              if (r.violations === 0) r.lastViolation = null;
-            }
-          }
+          // Do not decrement violations for followed rules here; violations reflect broken instances only
           // Persist
           const next = Array.from(byText.values());
           localStorage.setItem('user_rules', JSON.stringify(next));

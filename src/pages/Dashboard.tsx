@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { TrendingUp, CheckCircle, Star, Share2 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useToast } from '../context/ToastContext';
@@ -9,13 +9,15 @@ import RecentActivity from '../components/RecentActivity';
 import AchievementsPanel from '../components/AchievementsPanel';
 
 export default function Dashboard() {
+  const { settings, progress, updateProgress, updateSettings } = useUser();
   const { addToast } = useToast();
   const [progressView, setProgressView] = useState<'icon'|'grid'>('icon');
   const [showCelebration, setShowCelebration] = useState(false);
   const [showNextGoal, setShowNextGoal] = useState(false);
   const [nextGoalType, setNextGoalType] = useState<'same' | 'increase' | 'custom'>('same');
   const [customTarget, setCustomTarget] = useState(settings.targetCompletions);
-  const currentBalance = useMemo(() => {
+  // Actual portfolio = starting + sum(PnL)
+  const actualBalance = useMemo(() => {
     try {
       const raw = localStorage.getItem('journal_trades');
       let sum = 0;
@@ -30,27 +32,23 @@ export default function Dashboard() {
       return settings.startingPortfolio;
     }
   }, [settings.startingPortfolio, progress?.completions]);
+  // Projected portfolio based on completions (compounding)
+  const projectedBalance = useMemo(() => {
+    const rate = settings.growthPerCompletion / 100;
+    return Number((settings.startingPortfolio * Math.pow(1 + rate, progress.completions)).toFixed(2));
+  }, [settings.startingPortfolio, settings.growthPerCompletion, progress.completions]);
   const targetBalance = useMemo(() => {
-    try {
-      const raw = localStorage.getItem('journal_trades');
-      let sum = 0;
-      if (raw) {
-        const trades = JSON.parse(raw);
-        if (Array.isArray(trades)) {
-          for (const t of trades) sum += Number(t?.pnl ?? t?.profitLoss ?? 0) || 0;
-        }
-      }
-      return Number((settings.startingPortfolio + sum + (settings.growthPerCompletion / 100) * settings.targetCompletions).toFixed(2));
-    } catch {
-      return settings.startingPortfolio;
-    }
-  }, [settings.startingPortfolio, settings.growthPerCompletion, settings.targetCompletions, progress?.completions]);
+    const rate = settings.growthPerCompletion / 100;
+    return Number((settings.startingPortfolio * Math.pow(1 + rate, settings.targetCompletions)).toFixed(2));
+  }, [settings.startingPortfolio, settings.growthPerCompletion, settings.targetCompletions]);
+  const progressPercent = useMemo(() => {
+    return settings.targetCompletions > 0 ? (progress.completions / settings.targetCompletions) * 100 : 0;
+  }, [progress.completions, settings.targetCompletions]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Welcome Section */}
-{{ ... }}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -73,7 +71,8 @@ export default function Dashboard() {
             </div>
             <div className="bg-blue-500/30 rounded-xl p-4">
               <p className="text-blue-100 text-sm">Portfolio</p>
-              <p className="text-2xl font-bold">${progress.currentBalance.toFixed(2)}</p>
+              <p className="text-2xl font-bold">${actualBalance.toFixed(2)}</p>
+              <p className="text-xs text-blue-100 mt-1">Projected: ${projectedBalance.toFixed(2)}</p>
             </div>
             <div className="bg-blue-500/30 rounded-xl p-4">
               <p className="text-blue-100 text-sm">Discipline</p>
