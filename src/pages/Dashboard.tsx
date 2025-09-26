@@ -6,6 +6,7 @@ import AnimatedProgressIcon, { ProgressGrid } from '../components/AnimatedProgre
 import CompoundingChart from '../components/CompoundingChart';
 import QuickActions from '../components/QuickActions';
 import RecentActivity from '../components/RecentActivity';
+import AchievementsPanel from '../components/AchievementsPanel';
 
 export default function Dashboard() {
   const { settings, progress, updateProgress, updateSettings } = useUser();
@@ -133,6 +134,9 @@ export default function Dashboard() {
 
             {/* Recent Activity */}
             <RecentActivity />
+
+            {/* Achievements & Milestones */}
+            <AchievementsPanel />
 
             {/* Next Milestone */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
