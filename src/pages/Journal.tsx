@@ -485,6 +485,30 @@ function Journal() {
       // Contribute PnL-based percent toward automated progress
       if (gainPct > 0) recordTradeProgress(Number(gainPct.toFixed(4)), true);
     }
+    // Achievements: first-trade, rule-master (50 compliant), legendary-trader (100 compliant)
+    try {
+      const nextTrades = [newTrade, ...trades];
+      const compliantCount = nextTrades.filter((t:any)=> t && t.ruleCompliant).length;
+      const raw = localStorage.getItem('user_achievements') || '[]';
+      let arr:any[]; try { arr = JSON.parse(raw); if (!Array.isArray(arr)) arr = []; } catch { arr = []; }
+      const set = new Set<string>(arr as string[]);
+      const unlocked: string[] = [];
+      if (newTrade.ruleCompliant && !set.has('first-trade')) { set.add('first-trade'); unlocked.push('first-trade'); }
+      if (compliantCount >= 50 && !set.has('rule-master')) { set.add('rule-master'); unlocked.push('rule-master'); }
+      if (compliantCount >= 100 && !set.has('legendary-trader')) { set.add('legendary-trader'); unlocked.push('legendary-trader'); }
+      if (unlocked.length > 0) {
+        const out = Array.from(set.values());
+        localStorage.setItem('user_achievements', JSON.stringify(out));
+        try { window.dispatchEvent(new CustomEvent('rg:data-change', { detail: { keys: ['user_achievements'] } })); } catch {}
+        // Log
+        try {
+          const log = JSON.parse(localStorage.getItem('activity_log') || '[]');
+          const now = Date.now();
+          unlocked.forEach(id => log.push({ ts: now, type: 'achievement', title: id }));
+          localStorage.setItem('activity_log', JSON.stringify(log));
+        } catch {}
+      }
+    } catch {}
     addToast('success', 'Journal entry added.');
     setShowNewEntry(false);
     resetForm();
