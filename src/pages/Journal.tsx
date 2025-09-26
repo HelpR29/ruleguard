@@ -2,6 +2,7 @@ import React, { useEffect, useState, Component, ReactNode } from 'react';
 import { Plus, BookOpen, Calendar, TrendingUp, TrendingDown, BarChart3, Activity } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useUser } from '../context/UserContext';
+import { RULE_TEMPLATES } from '../utils/ruleTemplates';
 import { useTradesStorage } from '../hooks/useStorage';
 import { saveAttachment, deleteAttachment } from '../utils/db';
 import StockChart from '../components/StockChart';
@@ -83,7 +84,7 @@ function Journal() {
   const [activeTab, setActiveTab] = useState('trades');
   const [showNewEntry, setShowNewEntry] = useState(false);
   const { addToast } = useToast();
-  const { recordTradeProgress, settings, rules: userRules } = useUser() as any;
+  const { recordTradeProgress, settings, rules: userRules, addRule, updateRuleMeta } = useUser() as any;
   const [premiumStatus] = useState<string>(() => {
     try { return localStorage.getItem('premium_status') || 'none'; } catch { return 'none'; }
   });
@@ -280,6 +281,8 @@ function Journal() {
   const [showRulePicker, setShowRulePicker] = useState(false);
   const [ruleQuery, setRuleQuery] = useState('');
   const [customRuleText, setCustomRuleText] = useState('');
+  const [defaultCustomCategory, setDefaultCustomCategory] = useState<string>('entry-exit');
+  const [saveRulePrompt, setSaveRulePrompt] = useState<{ text: string; category: string; tags: string } | null>(null);
 
   // Auto-open rule picker when opening modal if user has rules and none selected
   useEffect(() => {
@@ -939,12 +942,139 @@ function Journal() {
                 <p className="text-xs text-gray-500 mb-2">Pick rules you intended to follow. You can mark each as Followed or Broken below.</p>
                 {form.appliedRules.length > 0 && (
                   <div className="mb-2 flex gap-1 flex-wrap">
-                    {form.appliedRules.map((r, i) => (
-                      <span key={i} className="px-2 py-0.5 rounded-full chip text-xs flex items-center gap-1">
-                        {r}
-                        <button className="text-gray-400 hover:text-gray-700" onClick={()=>setForm(prev=>({...prev, appliedRules: prev.appliedRules.filter(x=>x!==r)}))}>×</button>
-                      </span>
-                    ))}
+                    {form.appliedRules.map((r, i) => {
+                      const exists = Array.isArray(userRules) && userRules.some((ur: any) => ur && ur.text === r);
+                      return (
+                        <span key={i} className="px-2 py-0.5 rounded-full chip text-xs flex items-center gap-1">
+                          {r}
+                          {!exists && (
+                            <button
+                              type="button"
+                              className="text-[10px] text-blue-700 hover:underline"
+                              onClick={() => setSaveRulePrompt({ text: r, category: 'entry-exit', tags: '' })}
+                              title="Save this custom rule to your Rules"
+                            >Save</button>
+                          )}
+                          <button className="text-gray-400 hover:text-gray-700" onClick={()=>setForm(prev=>({...prev, appliedRules: prev.appliedRules.filter(x=>x!==r)}))}>×</button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+                {(() => {
+                  const customTexts = (form.appliedRules||[]).filter(r => !(Array.isArray(userRules) && userRules.some((ur:any)=> ur && ur.text === r)));
+                  if (customTexts.length === 0) return null;
+                  return (
+                    <div className="mb-2 p-2 rounded-lg border border-blue-100 bg-blue-50/60 flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <label className="text-[11px] text-blue-900">Default category for custom rules</label>
+                        <select value={defaultCustomCategory} onChange={(e)=>setDefaultCustomCategory(e.target.value)} className="px-2 py-1 border border-blue-200 rounded text-xs">
+                          {RULE_TEMPLATES.map((tpl:any)=> (
+                            <option key={tpl.category} value={tpl.category}>{tpl.categoryName}</option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          className="ml-auto text-xs px-2 py-1 rounded border border-blue-300 bg-white text-blue-800 hover:bg-blue-50"
+                          onClick={() => {
+                            if (customTexts.length === 0) return;
+                            try {
+                              customTexts.forEach(txt => addRule(txt, []));
+                              setTimeout(() => {
+                                try {
+                                  const raw = localStorage.getItem('user_rules');
+                                  if (raw) {
+                                    const arr = JSON.parse(raw);
+                                    if (Array.isArray(arr)) {
+                                      for (const txt of customTexts) {
+                                        const matches = arr.filter((r:any)=> r && r.text === txt);
+                                        const target = matches.sort((a:any,b:any)=> String(b.id).localeCompare(String(a.id)))[0];
+                                        if (target) {
+                                          target.category = defaultCustomCategory;
+                                          target.tags = Array.from(new Set([...(target.tags||[]), defaultCustomCategory]));
+                                        }
+                                      }
+                                      localStorage.setItem('user_rules', JSON.stringify(arr));
+                                      try { window.dispatchEvent(new CustomEvent('rg:data-change', { detail: { keys: ['user_rules'] } })); } catch {}
+                                    }
+                                  }
+                                } catch {}
+                              }, 0);
+                              addToast('success', `Saved ${customTexts.length} custom rule${customTexts.length>1?'s':''} to your Rules.`);
+                            } catch {
+                              addToast('warning', 'Could not save custom rules.');
+                            }
+                          }}
+                        >Save all custom rules</button>
+                      </div>
+                    </div>
+                  );
+                })()}
+                {saveRulePrompt && (
+                  <div className="mb-2 p-3 rounded-lg border border-blue-200 bg-blue-50 text-xs">
+                    <div className="mb-2 font-medium text-blue-900">Add "{saveRulePrompt.text}" to Rules</div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+                      <div>
+                        <label className="block text-[11px] text-blue-900 mb-1">Category</label>
+                        <select
+                          value={saveRulePrompt.category}
+                          onChange={(e)=>setSaveRulePrompt(prev=> prev && ({ ...prev, category: e.target.value }))}
+                          className="w-full px-2 py-1 border border-blue-200 rounded"
+                        >
+                          {RULE_TEMPLATES.map((tpl:any)=> (
+                            <option key={tpl.category} value={tpl.category}>{tpl.categoryName}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-[11px] text-blue-900 mb-1">Tags (comma-separated)</label>
+                        <input
+                          value={saveRulePrompt.tags}
+                          onChange={(e)=>setSaveRulePrompt(prev=> prev && ({ ...prev, tags: e.target.value }))}
+                          placeholder="entry, confirmation, patience"
+                          className="w-full px-2 py-1 border border-blue-200 rounded"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="px-2 py-1 rounded border border-blue-300 bg-white text-blue-800 hover:bg-blue-50"
+                        onClick={() => {
+                          const text = saveRulePrompt.text.trim();
+                          if (!text) return;
+                          const tags = saveRulePrompt.tags.split(',').map(t=>t.trim()).filter(Boolean);
+                          try {
+                            addRule(text, tags);
+                            // Update category via id lookup
+                            setTimeout(() => {
+                              try {
+                                const raw = localStorage.getItem('user_rules');
+                                if (raw) {
+                                  const arr = JSON.parse(raw);
+                                  if (Array.isArray(arr)) {
+                                    // find most recent with matching text
+                                    const matches = arr.filter((r:any)=> r && r.text === text);
+                                    const target = matches.sort((a:any,b:any)=> String(b.id).localeCompare(String(a.id)))[0];
+                                    if (target) {
+                                      target.category = saveRulePrompt.category;
+                                      target.tags = Array.from(new Set([...(target.tags||[]), ...tags, saveRulePrompt.category])).filter(Boolean);
+                                      localStorage.setItem('user_rules', JSON.stringify(arr));
+                                      try { window.dispatchEvent(new CustomEvent('rg:data-change', { detail: { keys: ['user_rules'] } })); } catch {}
+                                    }
+                                  }
+                                }
+                              } catch {}
+                            }, 0);
+                            setSaveRulePrompt(null);
+                            addToast('success', 'Rule saved to your Rules.');
+                          } catch {
+                            addToast('warning', 'Could not save rule.');
+                          }
+                        }}
+                      >Add to Rules</button>
+                      <button type="button" className="text-blue-800 hover:underline" onClick={()=>setSaveRulePrompt(null)}>Cancel</button>
+                    </div>
                   </div>
                 )}
                 {/* Quick add custom rule */}
