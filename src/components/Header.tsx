@@ -417,6 +417,7 @@ export default function Header() {
       {showAvatarModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">Profile Avatar</h3>
               <button
                 onClick={() => setShowAvatarModal(false)}
