@@ -215,7 +215,7 @@ export default function Header() {
         <div className="flex items-center gap-3">
           {/* Discipline Score */}
           <div
-            className="hidden sm:flex items-center gap-2"
+            className="hidden sm:flex items-center gap-2 relative group"
             title="Discipline Score = % of trades logged as rule‑compliant. It rises when you follow selected rules, and decreases when you record violations."
           >
             <div className="text-right" title="Discipline Score explanation">
@@ -248,6 +248,16 @@ export default function Header() {
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-xs font-bold text-green-600">{progress.disciplineScore}</span>
               </div>
+            </div>
+            {/* Tooltip bubble */}
+            <div
+              role="tooltip"
+              className="absolute right-0 -top-2 -translate-y-full w-64 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-lg p-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity"
+            >
+              <p className="font-semibold mb-1">Discipline Score</p>
+              <p>
+                Percent of trades logged as rule‑compliant. Increases with compliance and decreases with violations.
+              </p>
             </div>
           </div>
 
