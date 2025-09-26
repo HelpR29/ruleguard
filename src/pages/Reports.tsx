@@ -579,6 +579,7 @@ export default function Reports() {
               <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
                 <BarChart3 className="h-6 w-6 text-purple-600" />
               </div>
+
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
                 <p className="text-gray-600">Track your trading performance</p>

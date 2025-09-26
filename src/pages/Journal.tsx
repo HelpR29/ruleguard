@@ -207,6 +207,30 @@ function Journal() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // One-time backfill: fix PnL for Short trades that were computed with Long formula
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('journal_fix_pnl_v1') === 'true') return;
+      let changed = false;
+      const next = (trades as any[]).map(t => {
+        if (!t || typeof t.entry !== 'number' || typeof t.exit !== 'number' || typeof t.size !== 'number') return t;
+        const delta = (t.type === 'Long') ? (t.exit - t.entry) : (t.entry - t.exit);
+        const expected = Number((delta * t.size).toFixed(2));
+        if (typeof t.pnl !== 'number' || Number(t.pnl.toFixed?.(2) ?? t.pnl) !== expected) {
+          changed = true;
+          return { ...t, pnl: expected };
+        }
+        return t;
+      });
+      if (changed) {
+        setTrades(next as any);
+        try { localStorage.setItem('journal_trades', JSON.stringify(next)); } catch {}
+      }
+      localStorage.setItem('journal_fix_pnl_v1', 'true');
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // One-time cleanup: strip any leftover base64 images arrays from trades to slim localStorage
   useEffect(() => {
     try {
@@ -493,7 +517,19 @@ function Journal() {
                     <div className="flex items-center gap-3">
                       <div className={`w-3 h-3 rounded-full ${trade.ruleCompliant ? 'bg-green-500' : 'bg-red-500'}`}></div>
                       <div>
-                        <h3 className="font-semibold text-gray-900">{trade.symbol} - {trade.type}</h3>
+                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                          {trade.symbol}
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-xs border ${
+                              trade.type === 'Long'
+                                ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                                : 'bg-sky-100 text-sky-800 border-sky-200'
+                            }`}
+                            title={trade.type === 'Long' ? 'Long (profit when price rises)' : 'Short (profit when price falls)'}
+                          >
+                            {trade.type}
+                          </span>
+                        </h3>
                         <p className="text-sm text-gray-600">{trade.date}</p>
                       </div>
                     </div>
@@ -509,9 +545,16 @@ function Journal() {
                             <TrendingDown className="h-4 w-4 text-red-500" />
                           )}
                           <span className="text-gray-600">
-                            {((trade.exit - trade.entry) / trade.entry * 100).toFixed(1)}%
+                            {(trade.type === 'Long'
+                              ? ((trade.exit - trade.entry) / trade.entry * 100)
+                              : ((trade.entry - trade.exit) / trade.entry * 100)
+                            ).toFixed(1)}%
                           </span>
                         </div>
+                        <span className={`px-2 py-0.5 rounded-full text-xs border ${trade.pnl > 0 ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}`}
+                          title={trade.pnl > 0 ? 'Profitable trade' : 'Losing trade'}>
+                          {trade.pnl > 0 ? 'Win' : 'Loss'}
+                        </span>
                         {typeof trade.target === 'number' && typeof trade.stop === 'number' && (
                           (() => {
                             const risk = trade.type === 'Long' ? (trade.entry - trade.stop) : (trade.stop - trade.entry);
