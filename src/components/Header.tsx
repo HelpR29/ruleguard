@@ -44,6 +44,9 @@ export default function Header() {
   const [premiumStatus, setPremiumStatus] = useState<'none' | 'premium' | 'discount_25' | 'discount_50' | 'free_monthly'>('none');
   const [achievements, setAchievements] = useState<string[]>([]);
   const pageName = pageNames[location.pathname] || 'LockIn';
+  // Premium trial countdown
+  const [premiumExpiresAt, setPremiumExpiresAt] = useState<Date | null>(null);
+  const [trialDaysLeft, setTrialDaysLeft] = useState<number>(0);
 
   // Refs for keyboard navigation
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -62,6 +65,8 @@ export default function Header() {
       setAchievements(Array.isArray(ach) ? ach : []);
       const savedAvatar = localStorage.getItem('user_avatar');
       if (savedAvatar) setUserAvatar(savedAvatar);
+      const exp = localStorage.getItem('premium_expires_at');
+      if (exp) setPremiumExpiresAt(new Date(exp));
     } catch {}
     // compute initial unread notifications
     const computeUnread = () => {
@@ -77,11 +82,37 @@ export default function Header() {
     window.addEventListener('rg:notifications-change', onNotifChange as EventListener);
     window.addEventListener('storage', (e: StorageEvent) => {
       if (e.key === 'app_notifications') computeUnread();
+      if (e.key === 'premium_expires_at') {
+        try { setPremiumExpiresAt(e.newValue ? new Date(e.newValue) : null); } catch {}
+      }
     });
+    // Listen for explicit premium change events from Friends.tsx
+    const onPremiumChange = () => {
+      try {
+        const exp = localStorage.getItem('premium_expires_at');
+        setPremiumExpiresAt(exp ? new Date(exp) : null);
+      } catch {}
+    };
+    window.addEventListener('rg:premium-change', onPremiumChange as EventListener);
     return () => {
       window.removeEventListener('rg:notifications-change', onNotifChange as EventListener);
+      window.removeEventListener('rg:premium-change', onPremiumChange as EventListener);
     };
   }, []);
+
+  // Recompute trial days left periodically (every hour) and on premiumExpiresAt change
+  useEffect(() => {
+    const computeDays = () => {
+      if (!premiumExpiresAt) { setTrialDaysLeft(0); return; }
+      const now = new Date();
+      const ms = premiumExpiresAt.getTime() - now.getTime();
+      const days = Math.ceil(ms / (24*60*60*1000));
+      setTrialDaysLeft(days > 0 ? days : 0);
+    };
+    computeDays();
+    const id = setInterval(computeDays, 60 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [premiumExpiresAt]);
 
   // Keyboard navigation handler
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -213,6 +244,17 @@ export default function Header() {
 
         {/* Right Section */}
         <div className="flex items-center gap-3">
+          {/* Trial Countdown Chip */}
+          {premiumExpiresAt && trialDaysLeft > 0 && (
+            <div
+              className="hidden sm:flex items-center gap-2 px-2 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700"
+              title={`Trial ends on ${premiumExpiresAt.toLocaleDateString()} ${premiumExpiresAt.toLocaleTimeString()}`}
+              aria-label={`Trial: ${trialDaysLeft} days left`}
+            >
+              <Crown className="h-4 w-4 text-indigo-600" />
+              <span className="text-xs font-semibold">Trial: {trialDaysLeft} day{trialDaysLeft===1?'':'s'} left</span>
+            </div>
+          )}
           {/* Discipline Score */}
           <div
             className="hidden sm:flex items-center gap-2 relative group"
