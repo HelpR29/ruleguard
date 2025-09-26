@@ -521,7 +521,7 @@ function Journal() {
                 <p className="text-2xl font-bold text-blue-700">{trades.length}</p>
               </div>
             </Tooltip>
-            <Tooltip content="Percentage of profitable trades out of total trades">
+            <Tooltip content="Profitable trades (%)">
               <div className="bg-green-50 rounded-xl p-4">
                 <p className="text-green-600 text-sm mb-1">Win Rate</p>
                 <p className="text-2xl font-bold text-green-700">
@@ -543,7 +543,7 @@ function Journal() {
                 </p>
               </div>
             </Tooltip>
-            <Tooltip content="Compliance rate (applied rules only)">
+            <Tooltip content="Compliant trades (%)">
               <div className="bg-amber-50 rounded-xl p-4">
                 <p className="text-amber-600 text-sm mb-1">Rule Compliance</p>
                 <p className="text-2xl font-bold text-amber-700">
