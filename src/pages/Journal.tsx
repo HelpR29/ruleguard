@@ -443,19 +443,29 @@ function Journal() {
         const rulesArr = JSON.parse(raw);
         if (Array.isArray(rulesArr)) {
           const byText = new Map<string, any>();
+          const byId = new Map<string, any>();
           for (const r of rulesArr) {
             if (r && typeof r.text === 'string') byText.set(r.text, r);
+            if (r && r.id != null) byId.set(String(r.id), r);
           }
           const todayStr = (form.date ? new Date(form.date) : new Date()).toISOString().slice(0,10);
+          // Build text->id index from current selection if available
+          const selectedMap = new Map<string, string>();
+          (form.appliedRules || []).forEach((txt, idx) => {
+            const rid = String((form.appliedRuleIds || [])[idx] || '');
+            if (rid) selectedMap.set(txt, rid);
+          });
           for (const txt of rulesViolated) {
-            const r = byText.get(txt);
+            const rid = selectedMap.get(txt);
+            const r = rid ? (byId.get(rid) || byText.get(txt)) : byText.get(txt);
             if (r) {
               r.violations = Math.max(0, Number(r.violations || 0)) + 1;
               r.lastViolation = todayStr;
             }
           }
           for (const txt of rulesFollowed) {
-            const r = byText.get(txt);
+            const rid = selectedMap.get(txt);
+            const r = rid ? (byId.get(rid) || byText.get(txt)) : byText.get(txt);
             if (r) {
               r.violations = Math.max(0, Number(r.violations || 0) - 1);
               if (r.violations === 0) r.lastViolation = null;
