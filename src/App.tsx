@@ -100,8 +100,16 @@ function App() {
           <ToastProvider>
             <AuthProvider>
               <Router>
-                {/* Show display-name prompt even before onboarding, so the user sets a name first */}
-                <DisplayNamePrompt />
+                {/* Show display-name prompt before onboarding, but not on auth routes */}
+                {(() => {
+                  const AuthlessPrompt = () => {
+                    const loc = useLocation();
+                    const path = loc.pathname;
+                    const isAuth = path === '/login' || path === '/signup';
+                    return isAuth ? null : <DisplayNamePrompt />;
+                  };
+                  return <AuthlessPrompt />;
+                })()}
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     <Route path="/login" element={<SignIn />} />

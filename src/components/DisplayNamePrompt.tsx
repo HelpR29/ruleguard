@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 
 export default function DisplayNamePrompt() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile, loading } = useAuth();
   const [displayName, setDisplayName] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +29,9 @@ export default function DisplayNamePrompt() {
       }
     }
   }, [user, profile, displayName]);
+
+  // Do not render while auth is loading to avoid flicker
+  if (loading) return null;
 
   // Show when:
   // - user is present
@@ -84,8 +87,17 @@ export default function DisplayNamePrompt() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={(e) => { /* consume backdrop clicks so modal doesn't close */ e.stopPropagation(); }}
+      onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); } }}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={() => setIsSkipped(true)}
           className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-full"
