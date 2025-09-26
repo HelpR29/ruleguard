@@ -317,6 +317,28 @@ export default function AnalyticsDashboard({
     });
   }, [trades, filters]);
 
+  // Filtered trades list for tables/exports (mirrors analytics date filter)
+  const filteredTrades = useMemo(() => {
+    const { start, end } = getDateWindow();
+    return (trades as any[]).filter((t: any) => {
+      const dateStr = (t.entryDate || t.date || '').slice(0,10);
+      if (!dateStr) return false;
+      const dsNum = Number(dateStr.replace(/-/g, ''));
+      const sNum = Number(start.toISOString().slice(0,10).replace(/-/g, ''));
+      const eNum = Number(end.toISOString().slice(0,10).replace(/-/g, ''));
+      if (dsNum < sNum || dsNum > eNum) return false;
+      // Apply symbol/type/emotion filters if provided
+      if (filters.symbols.length && !filters.symbols.includes((t.symbol || '').toUpperCase())) return false;
+      if (filters.tradeTypes.length && !filters.tradeTypes.includes(t.type)) return false;
+      if (filters.emotions.length) {
+        const emos = Array.isArray(t.emotions) ? t.emotions : (t.emotion ? [String(t.emotion)] : []);
+        if (!emos.some((e: string) => filters.emotions.includes(e))) return false;
+      }
+      if (typeof filters.ruleCompliant === 'boolean' && t.ruleCompliant !== filters.ruleCompliant) return false;
+      return true;
+    }).sort((a: any, b: any) => String(b.date || b.entryDate).localeCompare(String(a.date || a.entryDate)));
+  }, [trades, filters, getDateWindow]);
+
   // Calculate KPI cards (PF mirrors Reports: sum profits / |sum losses| over date filter, no cap)
   const kpiCards = useMemo((): KPICard[] => {
     const totalPnL = analyticsData.reduce((sum, day) => sum + day.pnl, 0);
@@ -843,6 +865,83 @@ export default function AnalyticsDashboard({
             {renderChart(chartId)}
           </div>
         ))}
+      </div>
+
+      {/* Trades Table with Long/Short chip */}
+      <div className="rounded-2xl p-6 card-surface">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Trades</h3>
+          <button
+            onClick={() => {
+              // Build CSV with direction/type column
+              const rows = filteredTrades.map((t: any) => ({
+                date: String(t.date || t.entryDate || '').slice(0,10),
+                symbol: t.symbol,
+                type: t.type,
+                entry: t.entry,
+                exit: t.exit,
+                size: t.size ?? t.quantity ?? '',
+                pnl: t.pnl ?? t.profitLoss ?? 0,
+                target: t.target ?? '',
+                stop: t.stop ?? '',
+                compliant: t.ruleCompliant ? 'yes' : 'no',
+              }));
+              const headers = Object.keys(rows[0] || { date:'', symbol:'', type:'', entry:'', exit:'', size:'', pnl:'', target:'', stop:'', compliant:'' });
+              const esc = (v: any) => {
+                const s = String(v ?? '');
+                if (s.includes(',') || s.includes('"') || s.includes('\n')) return '"' + s.replace(/"/g, '""') + '"';
+                return s;
+              };
+              const csv = [headers.join(',')].concat(rows.map(r => headers.map(h => esc((r as any)[h])).join(','))).join('\n');
+              const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url; a.download = `trades-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+              setTimeout(() => URL.revokeObjectURL(url), 500);
+            }}
+            className="px-3 py-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            Export Trades CSV
+          </button>
+        </div>
+        {filteredTrades.length === 0 ? (
+          <p className="text-sm text-gray-500">No trades in the selected range.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
+                  <th className="py-2 pr-4">Date</th>
+                  <th className="py-2 pr-4">Symbol</th>
+                  <th className="py-2 pr-4">Direction</th>
+                  <th className="py-2 pr-4">Entry</th>
+                  <th className="py-2 pr-4">Exit</th>
+                  <th className="py-2 pr-4">Size</th>
+                  <th className="py-2 pr-4">P&L</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTrades.slice(0, 50).map((t: any) => (
+                  <tr key={t.id} className="border-b border-gray-100 dark:border-gray-800">
+                    <td className="py-2 pr-4">{String(t.date || t.entryDate || '').slice(0,10)}</td>
+                    <td className="py-2 pr-4 font-medium text-gray-900 dark:text-white">{t.symbol}</td>
+                    <td className="py-2 pr-4">
+                      <span className={`px-2 py-0.5 rounded-full text-[11px] border ${t.type === 'Long' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-sky-100 text-sky-800 border-sky-200'}`}>
+                        {t.type}
+                      </span>
+                    </td>
+                    <td className="py-2 pr-4">{t.entry}</td>
+                    <td className="py-2 pr-4">{t.exit}</td>
+                    <td className="py-2 pr-4">{t.size ?? t.quantity ?? ''}</td>
+                    <td className={`py-2 pr-4 font-medium ${Number(t.pnl ?? t.profitLoss ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {Number(t.pnl ?? t.profitLoss ?? 0) >= 0 ? '+' : ''}${Number(t.pnl ?? t.profitLoss ?? 0).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Summary Statistics */}
