@@ -16,6 +16,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     progressObject: 'beer' as 'beer' | 'wine' | 'donut' | 'diamond' | 'trophy',
     rules: [] as string[]
   });
+  const [openPack, setOpenPack] = useState<string | null>(null);
 
   const progressObjects = [
     { value: 'beer', emoji: '🍺', label: 'Beer' },
@@ -231,13 +232,13 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 <h4 className="text-sm font-semibold text-gray-800 mb-2">Recommended Packs</h4>
                 <div className="grid md:grid-cols-3 gap-3">
                   {packs.map(p => (
-                    <div key={p.name} className="group relative rounded-lg border border-gray-200 bg-white p-3">
+                    <div key={p.name} className="relative rounded-lg border border-gray-200 bg-white p-3">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-medium text-gray-900">{p.name}</span>
                         <span className="text-[10px] text-gray-500">{p.rules.length} rules</span>
                       </div>
                       <p className="text-xs text-gray-600 mb-2">{p.desc}</p>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 items-center">
                         <button
                           type="button"
                           className="px-2 py-1 text-xs rounded bg-blue-600 text-white hover:bg-blue-700"
@@ -252,22 +253,38 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                           className="px-2 py-1 text-xs rounded border border-gray-300 hover:bg-gray-50"
                           onClick={() => setFormData(prev => ({ ...prev, rules: prev.rules.filter(r => !p.rules.includes(r)) }))}
                         >Clear</button>
+                        <button
+                          type="button"
+                          className="text-xs text-gray-600 hover:text-gray-900 underline-offset-2 hover:underline"
+                          onClick={() => setOpenPack(prev => prev === p.name ? null : p.name)}
+                          aria-expanded={openPack === p.name}
+                          aria-controls={`pack-popover-${p.name}`}
+                        >View</button>
                       </div>
 
-                      {/* Hover tooltip with pack contents */}
-                      <div className="hidden group-hover:block focus-within:block absolute left-0 right-0 top-full mt-2 z-50">
-                        <div className="rounded-lg border border-gray-200 bg-white shadow-lg p-3">
-                          <p className="text-xs font-semibold text-gray-800 mb-2">Included rules</p>
-                          <ul className="space-y-1">
-                            {p.rules.map(rule => (
-                              <li key={rule} className="text-[11px] text-gray-700 flex items-start gap-2">
-                                <span className="mt-1 inline-block w-1.5 h-1.5 rounded-full bg-gray-300"></span>
-                                <span>{rule}</span>
-                              </li>
-                            ))}
-                          </ul>
+                      {/* Popover toggled by View button */}
+                      {openPack === p.name && (
+                        <div id={`pack-popover-${p.name}`} className="absolute left-0 right-0 top-full mt-2 z-50">
+                          <div className="rounded-lg border border-gray-200 bg-white shadow-lg p-3">
+                            <div className="flex items-center justify-between mb-1">
+                              <p className="text-xs font-semibold text-gray-800">Included rules</p>
+                              <button
+                                type="button"
+                                className="text-[11px] text-gray-500 hover:text-gray-800"
+                                onClick={() => setOpenPack(null)}
+                              >Close</button>
+                            </div>
+                            <ul className="space-y-1">
+                              {p.rules.map(rule => (
+                                <li key={rule} className="text-[11px] text-gray-700 flex items-start gap-2">
+                                  <span className="mt-1 inline-block w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                                  <span>{rule}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>
