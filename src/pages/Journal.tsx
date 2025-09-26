@@ -59,6 +59,26 @@ class AnalyticsErrorBoundary extends Component<{ children: ReactNode }, { hasErr
   }
 }
 
+class SectionErrorBoundary extends Component<{ label: string; children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { label: string; children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error: any, info: any) { try { console.error(`Section crashed: ${this.props.label}`, error, info); } catch {} }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center">
+          <p className="text-red-700 font-medium mb-2">{this.props.label} failed to load</p>
+          <button onClick={() => this.setState({ hasError: false })} className="px-3 py-1 text-sm rounded bg-blue-600 text-white">Retry</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function Journal() {
   const [activeTab, setActiveTab] = useState('trades');
   const [showNewEntry, setShowNewEntry] = useState(false);
@@ -653,35 +673,39 @@ function Journal() {
                   isOpen={showAnalyticsFilters}
                   onToggle={() => setShowAnalyticsFilters(!showAnalyticsFilters)}
                 />
-                <AIInsights
-                  trades={trades as any}
-                  period="weekly"
-                  isLoading={false}
-                  onAnalysisComplete={(count) => {
-                    console.log('Analysis complete with', count, 'insights');
-                  }}
-                />
-                <AdvancedAnalytics
-                  trades={trades as any}
-                  period="week"
-                  onExport={(format) => {
-                    console.log('Exporting analytics as:', format);
-                    // Export functionality
-                    const dataStr = JSON.stringify(trades, null, 2);
-                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-                    const url = URL.createObjectURL(dataBlob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `trading-journal-${new Date().toISOString().split('T')[0]}.${format}`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
-                  }}
-                  onFilterChange={(filters: any) => {
-                    console.log('Analytics filters changed:', filters);
-                  }}
-                />
+                <SectionErrorBoundary label="AI Insights">
+                  <AIInsights
+                    trades={trades as any}
+                    period="weekly"
+                    isLoading={false}
+                    onAnalysisComplete={(count) => {
+                      console.log('Analysis complete with', count, 'insights');
+                    }}
+                  />
+                </SectionErrorBoundary>
+                <SectionErrorBoundary label="Advanced Analytics">
+                  <AdvancedAnalytics
+                    trades={trades as any}
+                    period="week"
+                    onExport={(format) => {
+                      console.log('Exporting analytics as:', format);
+                      // Export functionality
+                      const dataStr = JSON.stringify(trades, null, 2);
+                      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                      const url = URL.createObjectURL(dataBlob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = `trading-journal-${new Date().toISOString().split('T')[0]}.${format}`;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      URL.revokeObjectURL(url);
+                    }}
+                    onFilterChange={(filters: any) => {
+                      console.log('Analytics filters changed:', filters);
+                    }}
+                  />
+                </SectionErrorBoundary>
               </div>
             </AnalyticsErrorBoundary>
           )}

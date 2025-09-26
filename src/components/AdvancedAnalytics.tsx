@@ -141,9 +141,7 @@ export default function AnalyticsDashboard({
 
   const [selectedCharts, setSelectedCharts] = useState<string[]>([
     'pnl-trend',
-    'performance-breakdown',
-    'emotion-analysis',
-    'risk-reward'
+    'performance-breakdown'
   ]);
 
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -805,7 +803,7 @@ export default function AnalyticsDashboard({
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-              {emotionData.length}
+              {emotionChartData.length}
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400">Emotion Types</p>
           </div>
