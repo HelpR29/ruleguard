@@ -558,18 +558,7 @@ export default function AnalyticsDashboard({
           {chartId === 'performance-breakdown' && (
             <ReferenceLine y={50} stroke="#e5e7eb" strokeDasharray="3 3" />
           )}
-          {/* Last-point labels for Performance Breakdown */}
-          {chartId === 'performance-breakdown' && analyticsData.length > 0 && (
-            (() => {
-              const last = analyticsData[analyticsData.length - 1] as any;
-              return (
-                <>
-                  <ReferenceLine x={last.date} stroke="transparent" label={{ value: `${last.winRate.toFixed(0)}%`, position: 'top', fill: '#10b981', fontSize: 11 }} />
-                  <ReferenceLine x={last.date} stroke="transparent" label={{ value: `${((last.completions/(last.trades?.length||1))*100||0).toFixed(0)}%`, position: 'insideTop', fill: '#f59e0b', fontSize: 11 }} />
-                </>
-              );
-            })()
-          )}
+          {/* Last-point labels moved to header badges to avoid overlap */}
           <Legend verticalAlign="top" height={24} />
         </LineChart>
       );
@@ -839,13 +828,31 @@ export default function AnalyticsDashboard({
                 </button>
               </div>
               {/* Compact legend badges below title, wrap on small widths */}
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-2 flex flex-wrap gap-2 items-center">
                 {chartConfigs[chartId]?.map((c, i) => (
                   <span key={i} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] border border-gray-200 text-gray-700">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
                     {c.name}
                   </span>
                 ))}
+                {/* For performance-breakdown, show last values as badges here to avoid chart overlap */}
+                {chartId === 'performance-breakdown' && analyticsData.length > 0 && (
+                  (() => {
+                    const last = analyticsData[analyticsData.length - 1] as any;
+                    return (
+                      <>
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] border border-green-200 text-green-700 bg-green-50">
+                          <span className="w-2 h-2 rounded-full bg-[#10b981]" />
+                          Win Rate {Number(last.winRate || 0).toFixed(0)}%
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] border border-amber-200 text-amber-700 bg-amber-50">
+                          <span className="w-2 h-2 rounded-full bg-[#f59e0b]" />
+                          Compliance {Number(last.ruleCompliance || 0).toFixed(0)}%
+                        </span>
+                      </>
+                    );
+                  })()
+                )}
               </div>
             </div>
 
