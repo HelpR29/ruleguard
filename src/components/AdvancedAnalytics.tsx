@@ -152,6 +152,23 @@ export default function AnalyticsDashboard({
   const formatCurrencyShort = useCallback((n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 }).format(n), []);
   const formatPercent = useCallback((n: number) => `${n.toFixed(0)}%`, []);
 
+  // Date range helper for PF/kpis to mirror Reports behavior
+  const getDateWindow = useCallback(() => {
+    const today = new Date();
+    const start = new Date(today);
+    if (filters.dateRange === '7d') start.setDate(today.getDate() - 6);
+    else if (filters.dateRange === '30d') start.setDate(today.getDate() - 29);
+    else if (filters.dateRange === '90d') start.setDate(today.getDate() - 89);
+    else if (filters.dateRange === '1y') start.setFullYear(today.getFullYear() - 1);
+    else if (filters.dateRange === 'custom' && filters.startDate) {
+      start.setTime(filters.startDate.getTime());
+    } else {
+      // default to 30d like dashboard
+      start.setDate(today.getDate() - 29);
+    }
+    return { start, end: today };
+  }, [filters]);
+
   // Chart configurations
   const chartConfigs: Record<string, ChartConfig[]> = {
     'pnl-trend': [
@@ -300,7 +317,7 @@ export default function AnalyticsDashboard({
     });
   }, [trades, filters]);
 
-  // Calculate KPI cards
+  // Calculate KPI cards (PF mirrors Reports: sum profits / |sum losses| over date filter, no cap)
   const kpiCards = useMemo((): KPICard[] => {
     const totalPnL = analyticsData.reduce((sum, day) => sum + day.pnl, 0);
     const totalTrades = trades.length;
@@ -317,10 +334,34 @@ export default function AnalyticsDashboard({
     }, 0) / Math.max(1, rrTrades.length);
 
     const totalCompletions = trades.filter((t: any) => t.ruleCompliant).length;
-    const totalViolations = trades.filter((t: any) => !t.ruleCompliant).length;
 
-    const profitFactor = totalViolations > 0 ?
-      Math.abs(totalPnL / (totalViolations * 100)) : Infinity;
+    // Profit Factor computed from trades in current date window
+    const { start, end } = getDateWindow();
+    let totalProfits = 0;
+    let totalLosses = 0; // negative sum
+    let inRange = 0;
+    for (const t of trades as any[]) {
+      const dateStr = (t.entryDate || t.date || '').slice(0,10);
+      if (!dateStr) continue;
+      const dsNum = Number(dateStr.replace(/-/g, ''));
+      const sNum = Number(start.toISOString().slice(0,10).replace(/-/g, ''));
+      const eNum = Number(end.toISOString().slice(0,10).replace(/-/g, ''));
+      if (dsNum < sNum || dsNum > eNum) continue;
+      inRange++;
+      const raw = (t.pnl ?? t.profitLoss ?? 0);
+      const pnl = typeof raw === 'number' ? raw : Number(String(raw).replace(/[^0-9.-]/g, ''));
+      if (!Number.isFinite(pnl)) continue;
+      if (pnl > 0) totalProfits += pnl;
+      else if (pnl < 0) totalLosses += pnl;
+    }
+    let profitFactor: number | null = null;
+    if (inRange === 0) profitFactor = null;
+    else if (totalProfits === 0 && totalLosses === 0) profitFactor = 0;
+    else if (totalLosses === 0 && totalProfits > 0) profitFactor = Infinity;
+    else {
+      const denom = Math.abs(totalLosses);
+      profitFactor = denom > 0 ? (totalProfits / denom) : null;
+    }
 
     return [
       {
@@ -377,7 +418,7 @@ export default function AnalyticsDashboard({
       {
         id: 'profit-factor',
         title: 'Profit Factor',
-        value: profitFactor === Infinity ? '∞' : profitFactor.toFixed(2),
+        value: profitFactor === null ? '—' : (profitFactor === Infinity ? '∞' : profitFactor.toFixed(2)),
         change: 15.8,
         changeType: 'positive',
         icon: <TrendingUp className="h-5 w-5" />,
@@ -385,7 +426,7 @@ export default function AnalyticsDashboard({
         format: 'number'
       }
     ];
-  }, [analyticsData, trades]);
+  }, [analyticsData, trades, getDateWindow]);
 
   // Calculate emotion data for pie chart
   // Emotion data (counts map)
@@ -480,9 +521,9 @@ export default function AnalyticsDashboard({
     if (primary === 'bar') {
       child = (
         <BarChart {...chartProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="date" stroke="#666" fontSize={12} />
-          <YAxis stroke="#666" fontSize={12}
+          <CartesianGrid strokeDasharray="4 6" stroke="#f3f4f6" />
+          <XAxis dataKey="date" stroke="#666" fontSize={12} axisLine={false} tickLine={false} />
+          <YAxis stroke="#666" fontSize={12} axisLine={false} tickLine={false}
             tickFormatter={(v: number) => chartId === 'pnl-trend' ? formatCurrencyShort(v) : String(v)}
           />
           <Tooltip
@@ -504,9 +545,9 @@ export default function AnalyticsDashboard({
     } else if (primary === 'line') {
       child = (
         <LineChart {...chartProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="date" stroke="#666" fontSize={12} />
-          <YAxis stroke="#666" fontSize={12}
+          <CartesianGrid strokeDasharray="4 6" stroke="#f3f4f6" />
+          <XAxis dataKey="date" stroke="#666" fontSize={12} axisLine={false} tickLine={false} />
+          <YAxis stroke="#666" fontSize={12} axisLine={false} tickLine={false}
             domain={chartId === 'performance-breakdown' ? [0, 100] : undefined}
             tickFormatter={(v: number) => chartId === 'performance-breakdown' ? formatPercent(v) : String(v)}
           />
@@ -517,15 +558,27 @@ export default function AnalyticsDashboard({
           {chartId === 'performance-breakdown' && (
             <ReferenceLine y={50} stroke="#e5e7eb" strokeDasharray="3 3" />
           )}
+          {/* Last-point labels for Performance Breakdown */}
+          {chartId === 'performance-breakdown' && analyticsData.length > 0 && (
+            (() => {
+              const last = analyticsData[analyticsData.length - 1] as any;
+              return (
+                <>
+                  <ReferenceLine x={last.date} stroke="transparent" label={{ value: `${last.winRate.toFixed(0)}%`, position: 'top', fill: '#10b981', fontSize: 11 }} />
+                  <ReferenceLine x={last.date} stroke="transparent" label={{ value: `${((last.completions/(last.trades?.length||1))*100||0).toFixed(0)}%`, position: 'insideTop', fill: '#f59e0b', fontSize: 11 }} />
+                </>
+              );
+            })()
+          )}
           <Legend verticalAlign="top" height={24} />
         </LineChart>
       );
     } else if (primary === 'area') {
       child = (
         <AreaChart {...chartProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="date" stroke="#666" fontSize={12} />
-          <YAxis stroke="#666" fontSize={12} tickFormatter={(v: number) => chartId === 'pnl-trend' ? formatCurrencyShort(v) : String(v)} />
+          <CartesianGrid strokeDasharray="4 6" stroke="#f3f4f6" />
+          <XAxis dataKey="date" stroke="#666" fontSize={12} axisLine={false} tickLine={false} />
+          <YAxis stroke="#666" fontSize={12} axisLine={false} tickFormatter={(v: number) => chartId === 'pnl-trend' ? formatCurrencyShort(v) : String(v)} />
           <Tooltip formatter={(v: number, name: string) => chartId === 'pnl-trend' ? [formatCurrencyShort(v), name] : [v, name]} />
           {chartId === 'pnl-trend' && (
             <>
@@ -536,6 +589,13 @@ export default function AnalyticsDashboard({
                 </linearGradient>
               </defs>
               <ReferenceLine y={0} stroke="#e5e7eb" />
+              {/* Last-point label for PnL Trend */}
+              {analyticsData.length > 0 && (
+                (() => {
+                  const last = analyticsData[analyticsData.length - 1] as any;
+                  return <ReferenceLine x={last.date} stroke="transparent" label={{ value: formatCurrencyShort(last.cumulativePnl), position: 'top', fill: '#10b981', fontSize: 11 }} />
+                })()
+              )}
             </>
           )}
           {config.map((chartConfig, index) => (
@@ -546,9 +606,9 @@ export default function AnalyticsDashboard({
     } else if (primary === 'scatter') {
       child = (
         <ScatterChart {...chartProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="date" stroke="#666" fontSize={12} />
-          <YAxis stroke="#666" fontSize={12} />
+          <CartesianGrid strokeDasharray="4 6" stroke="#f3f4f6" />
+          <XAxis dataKey="date" stroke="#666" fontSize={12} axisLine={false} tickLine={false} />
+          <YAxis stroke="#666" fontSize={12} axisLine={false} tickLine={false} />
           <Tooltip formatter={(v: number, name: string) => name.toLowerCase().includes('risk') ? [`1:${Number(v).toFixed(2)}`, 'R:R'] : [v, name]} />
           {config.map((chartConfig, index) => (
             <Scatter key={index} dataKey={chartConfig.dataKey} fill={chartConfig.color} name={chartConfig.name} />
@@ -774,6 +834,13 @@ export default function AnalyticsDashboard({
                 {chartId.replace('-', ' ')}
               </h3>
               <div className="flex items-center gap-2">
+                {/* Compact legend badges */}
+                {chartConfigs[chartId]?.map((c, i) => (
+                  <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] border border-gray-200 text-gray-700">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
+                    {c.name}
+                  </span>
+                ))}
                 <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                   <Settings className="h-4 w-4" />
                 </button>
