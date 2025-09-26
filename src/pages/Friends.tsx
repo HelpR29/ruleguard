@@ -31,6 +31,15 @@ export default function Friends() {
   const [selectedTrade, setSelectedTrade] = useState<any | null>(null);
   const { addToast } = useToast();
 
+  // Normalize user-entered code to RG-XXXXXX or RG-XXXXXXXX
+  const normalizeCode = (raw: string): string | null => {
+    let s = (raw || '').toUpperCase();
+    s = s.replace(/[^A-Z0-9]/g, ''); // strip non-alphanumerics
+    if (s.startsWith('RG')) s = s.slice(2);
+    if (s.length === 6 || s.length === 8) return `RG-${s}`;
+    return null;
+  };
+
   const premiumStatus = useMemo(() => {
     try { return localStorage.getItem('premium_status') || 'none'; } catch { return 'none'; }
   }, []);
@@ -52,8 +61,9 @@ export default function Friends() {
   }, []);
 
   const addFriend = async () => {
-    const code = addCode.trim().toUpperCase();
-    if (!/^RG-[A-Z0-9]{6,8}$/.test(code)) { addToast('warning', 'Invalid code format (use RG-XXXXXX or RG-XXXXXXXX)'); return; }
+    const codeNorm = normalizeCode(addCode);
+    if (!codeNorm) { addToast('warning', 'Invalid code format (use RG-XXXXXX or RG-XXXXXXXX)'); return; }
+    const code = codeNorm;
     if (friends.some(f => f.code === code)) { addToast('info', 'Already following this code.'); return; }
 
     // Attempt referral redemption via Supabase Edge Function (optional)
@@ -199,6 +209,15 @@ export default function Friends() {
                   <UserPlus className="h-4 w-4"/> {adding? 'Adding...':'Add'}
                 </button>
               </div>
+              {(() => {
+                const norm = normalizeCode(addCode);
+                if (!addCode) return null;
+                return (
+                  <p className={`text-xs mt-2 ${norm? 'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-amber-700 bg-amber-50 border border-amber-200'} rounded px-2 py-1` }>
+                    {norm ? `Looks good: ${norm}` : 'Code must be RG-XXXXXX or RG-XXXXXXXX'}
+                  </p>
+                );
+              })()}
               {!isSupabaseConfigured() && (
                 <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded mt-2 px-2 py-1">
                   Supabase not configured in this environment. Adding will only follow locally without trial extension.
