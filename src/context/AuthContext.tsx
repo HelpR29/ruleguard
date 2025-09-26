@@ -51,6 +51,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (e) {
       console.error('Error fetching profile', e);
+      try {
+        const localName = localStorage.getItem('display_name');
+        if (localName) {
+          setProfile({ display_name: localName });
+          return;
+        }
+      } catch {}
       setProfile(null);
     }
   };
