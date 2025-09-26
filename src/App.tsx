@@ -1,22 +1,21 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Header from './components/Header';
-import MobileNav from './components/MobileNav';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import PWAInstall from './components/PWAInstall';
-import { UserProvider } from './context/UserContext';
-import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
+import { AuthProvider } from './context/AuthContext';
+import { UserProvider } from './context/UserContext';
 import { PWAProvider } from './context/PWAContext';
+import Header from './components/Header';
 import Toasts from './components/Toasts';
-const ProtectedRoute = React.lazy(() => import('./components/ProtectedRoute'));
+import ProtectedRoute from './components/ProtectedRoute';
+import DisplayNamePrompt from './components/DisplayNamePrompt';
+import AuthDebug from './components/AuthDebug';
 
 // Lazy load all pages for code splitting
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Rules = React.lazy(() => import('./pages/Rules'));
 const Journal = React.lazy(() => import('./pages/Journal'));
-const Reports = React.lazy(() => import('./pages/Reports'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const Leaderboard = React.lazy(() => import('./pages/Leaderboard'));
@@ -26,6 +25,9 @@ const Onboarding = React.lazy(() => import('./pages/Onboarding'));
 const Friends = React.lazy(() => import('./pages/Friends'));
 const SignIn = React.lazy(() => import('./pages/SignIn'));
 const SignUp = React.lazy(() => import('./pages/SignUp'));
+const Reports = React.lazy(() => import('./pages/Reports'));
+const MobileNav = React.lazy(() => import('./components/MobileNav'));
+const PWAInstall = React.lazy(() => import('./components/PWAInstall'));
 
 // Loading component for Suspense fallback
 const PageLoader = () => (
@@ -78,7 +80,9 @@ function App() {
             <UserProvider>
               <Router>
                 <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                  <AuthDebug />
                   <Header />
+                  <DisplayNamePrompt />
 
                   <main className="pb-20 lg:pb-6" id="main-content">
                     <Suspense fallback={<PageLoader />}>
