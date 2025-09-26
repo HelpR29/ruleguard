@@ -138,7 +138,7 @@ export default function CompoundingChart() {
         <div className="bg-amber-50 rounded-xl p-4">
           <p className="text-sm text-amber-600 mb-1">Remaining</p>
           <p className="text-lg font-bold text-amber-700">
-            {settings.targetCompletions - progress.completions}
+            {(settings.targetCompletions - progress.completions).toFixed(2)}
           </p>
         </div>
       </div>

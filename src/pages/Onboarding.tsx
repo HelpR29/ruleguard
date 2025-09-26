@@ -189,6 +189,77 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             </p>
           </div>
 
+          {/* Recommended Packs */}
+          {(() => {
+            const pack = (name: string, rules: string[], desc: string) => ({ name, rules, desc });
+            const riskBasics = pack(
+              'Risk Basics',
+              [
+                'Never risk more than 2% of capital per trade',
+                'Always use stop losses on every trade',
+                'Maintain favorable risk-reward ratios (minimum 1:2)',
+                "Don't add to losing positions",
+                'Limit daily loss to 5% of capital',
+              ],
+              'Foundational risk management to protect capital.'
+            );
+            const psychologyEssentials = pack(
+              'Psychology Essentials',
+              [
+                'Never engage in revenge trading after a loss',
+                'Avoid FOMO - only trade when your setup criteria are met',
+                'Accept losses gracefully and move on',
+                "Don't overtrade when on a winning streak",
+                'Take breaks after significant wins or losses',
+              ],
+              'Mindset rules to reduce emotional mistakes.'
+            );
+            const entryExitCore = pack(
+              'Entry & Exit Core',
+              [
+                'Only enter trades that match your predefined setup',
+                'Exit when your profit target is reached',
+                'Exit immediately when stop loss is hit',
+                'Wait for confirmation before entering',
+                'Scale out of positions gradually',
+              ],
+              'Clarity for getting in and out consistently.'
+            );
+            const packs = [riskBasics, psychologyEssentials, entryExitCore];
+            return (
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">Recommended Packs</h4>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {packs.map(p => (
+                    <div key={p.name} className="rounded-lg border border-gray-200 bg-white p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium text-gray-900">{p.name}</span>
+                        <span className="text-[10px] text-gray-500">{p.rules.length} rules</span>
+                      </div>
+                      <p className="text-xs text-gray-600 mb-2">{p.desc}</p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className="px-2 py-1 text-xs rounded bg-blue-600 text-white hover:bg-blue-700"
+                          onClick={() => setFormData(prev => {
+                            const s = new Set(prev.rules);
+                            p.rules.forEach(r => s.add(r));
+                            return { ...prev, rules: Array.from(s) };
+                          })}
+                        >Apply</button>
+                        <button
+                          type="button"
+                          className="px-2 py-1 text-xs rounded border border-gray-300 hover:bg-gray-50"
+                          onClick={() => setFormData(prev => ({ ...prev, rules: prev.rules.filter(r => !p.rules.includes(r)) }))}
+                        >Clear</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Templates grouped by category */}
           <div className="space-y-5">
             {RULE_TEMPLATES.map((tpl) => (

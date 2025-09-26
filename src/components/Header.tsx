@@ -34,6 +34,7 @@ export default function Header() {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -62,6 +63,24 @@ export default function Header() {
       const savedAvatar = localStorage.getItem('user_avatar');
       if (savedAvatar) setUserAvatar(savedAvatar);
     } catch {}
+    // compute initial unread notifications
+    const computeUnread = () => {
+      try {
+        const arr = JSON.parse(localStorage.getItem('app_notifications') || '[]');
+        const cnt = Array.isArray(arr) ? arr.filter((n: any) => !n.read).length : 0;
+        setUnreadCount(cnt);
+      } catch { setUnreadCount(0); }
+    };
+    computeUnread();
+
+    const onNotifChange = () => computeUnread();
+    window.addEventListener('rg:notifications-change', onNotifChange as EventListener);
+    window.addEventListener('storage', (e: StorageEvent) => {
+      if (e.key === 'app_notifications') computeUnread();
+    });
+    return () => {
+      window.removeEventListener('rg:notifications-change', onNotifChange as EventListener);
+    };
   }, []);
 
   // Keyboard navigation handler
@@ -231,7 +250,13 @@ export default function Header() {
               className="h-5 w-5 text-gray-600 dark:text-gray-300" 
               onClick={() => setShowNotifications(true)}
             />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+            {unreadCount > 0 && (
+              <span
+                className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"
+                aria-label={`${unreadCount} unread notifications`}
+                title={`${unreadCount} unread notifications`}
+              />
+            )}
           </button>
           
           <button 
