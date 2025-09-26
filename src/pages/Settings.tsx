@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Settings as SettingsIcon, User, Bell, Shield, Palette, Download, Lock } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
 
 export default function Settings() {
   const { settings, updateSettings } = useUser();
   const [activeTab, setActiveTab] = useState('profile');
   const { theme, toggleTheme } = useTheme();
+  const { addToast } = useToast();
 
   // Profile name + lock
   const [displayName, setDisplayName] = useState<string>(() => {
@@ -49,6 +51,47 @@ export default function Settings() {
     try { localStorage.setItem('ui_card', cardStyle); } catch {}
     try { document.documentElement.setAttribute('data-card', cardStyle); } catch {}
   }, [cardStyle]);
+
+  // Premium + monthly lock for Trading Settings
+  const isPremiumOrChampion = useMemo(() => {
+    try {
+      const ps = localStorage.getItem('premium_status') || 'none';
+      const ach = JSON.parse(localStorage.getItem('user_achievements') || '[]');
+      return ps === 'premium' || (Array.isArray(ach) && ach.includes('champion'));
+    } catch {
+      return false;
+    }
+  }, []);
+  const [lastTradingEdit, setLastTradingEdit] = useState<string | null>(() => {
+    try { return localStorage.getItem('trading_settings_last_edit'); } catch { return null; }
+  });
+  const nextEditDate = useMemo(() => {
+    if (!lastTradingEdit) return null;
+    try {
+      const d = new Date(lastTradingEdit);
+      d.setDate(d.getDate() + 30);
+      return d;
+    } catch { return null; }
+  }, [lastTradingEdit]);
+  const canEditTradingNow = isPremiumOrChampion && (!nextEditDate || nextEditDate <= new Date());
+
+  const handleTradingChange = (partial: Partial<typeof settings>) => {
+    if (!isPremiumOrChampion) {
+      addToast('warning', 'Editing trading settings requires Premium.');
+      return;
+    }
+    if (!canEditTradingNow) {
+      const when = nextEditDate ? nextEditDate.toISOString().slice(0,10) : '';
+      addToast('info', `Trading settings locked. Next edit: ${when}`);
+      return;
+    }
+    updateSettings(partial);
+    const now = new Date().toISOString();
+    try { localStorage.setItem('trading_settings_last_edit', now); } catch {}
+    setLastTradingEdit(now);
+    const when = (() => { const d = new Date(now); d.setDate(d.getDate() + 30); return d.toISOString().slice(0,10); })();
+    addToast('success', `Trading settings updated. Next edit available on ${when}.`);
+  };
 
   const progressObjects = [
     { value: 'beer', emoji: '🍺', label: 'Beer' },
@@ -165,6 +208,17 @@ export default function Settings() {
               <div className="space-y-6">
                 <div className="bg-white rounded-2xl p-6 shadow-sm">
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Portfolio Settings</h3>
+                  <div className="mb-3 text-xs">
+                    {isPremiumOrChampion ? (
+                      canEditTradingNow ? (
+                        <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 border border-green-200">Editable now (Premium)</span>
+                      ) : (
+                        <span className="px-2 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-200">Locked until {nextEditDate?.toLocaleDateString?.() || ''}</span>
+                      )
+                    ) : (
+                      <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200">Premium required to edit</span>
+                    )}
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -173,8 +227,9 @@ export default function Settings() {
                       <input
                         type="number"
                         value={settings.startingPortfolio}
-                        onChange={(e) => updateSettings({ startingPortfolio: Number(e.target.value) })}
+                        onChange={(e) => handleTradingChange({ startingPortfolio: Number(e.target.value) })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        disabled={!canEditTradingNow}
                       />
                     </div>
                     <div>
@@ -184,8 +239,9 @@ export default function Settings() {
                       <input
                         type="number"
                         value={settings.targetCompletions}
-                        onChange={(e) => updateSettings({ targetCompletions: Number(e.target.value) })}
+                        onChange={(e) => handleTradingChange({ targetCompletions: Number(e.target.value) })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        disabled={!canEditTradingNow}
                       />
                     </div>
                     <div>
@@ -196,11 +252,17 @@ export default function Settings() {
                         type="number"
                         step="0.1"
                         value={settings.growthPerCompletion}
-                        onChange={(e) => updateSettings({ growthPerCompletion: Number(e.target.value) })}
+                        onChange={(e) => handleTradingChange({ growthPerCompletion: Number(e.target.value) })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        disabled={!canEditTradingNow}
                       />
                     </div>
                   </div>
+                  {!isPremiumOrChampion && (
+                    <div className="mt-3 text-sm">
+                      <a href="/premium" className="text-blue-700 hover:underline">Upgrade to Premium</a> to edit trading settings.
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-white rounded-2xl p-6 shadow-sm">
