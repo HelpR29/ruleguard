@@ -298,6 +298,7 @@ function Journal() {
       ruleCompliant: true,
       imageIds: [],
       imagePreviews: [],
+      appliedRules: [],
     });
   };
   const handleImageFiles = async (files: FileList | null) => {
@@ -842,6 +843,85 @@ function Journal() {
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
                 <textarea rows={4} value={form.notes} onChange={(e)=>setForm({...form, notes: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800" placeholder="What happened? What did you learn?" />
+              </div>
+
+              {/* Applied Rules quick picker */}
+              <div className="md:col-span-2">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">Applied Rules</label>
+                  <button type="button" className="text-xs text-gray-600 hover:text-gray-900" onClick={()=>setShowRulePicker(v=>!v)}>
+                    {showRulePicker ? 'Hide' : 'Select'}
+                  </button>
+                </div>
+                {form.appliedRules.length > 0 && (
+                  <div className="mb-2 flex gap-1 flex-wrap">
+                    {form.appliedRules.map((r, i) => (
+                      <span key={i} className="px-2 py-0.5 rounded-full chip text-xs flex items-center gap-1">
+                        {r}
+                        <button className="text-gray-400 hover:text-gray-700" onClick={()=>setForm(prev=>({...prev, appliedRules: prev.appliedRules.filter(x=>x!==r)}))}>×</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {showRulePicker && (
+                  <div className="rounded-lg border border-gray-200 p-2 max-h-48 overflow-y-auto bg-gray-50">
+                    <input
+                      value={ruleQuery}
+                      onChange={(e)=>setRuleQuery(e.target.value)}
+                      placeholder="Search your rules..."
+                      className="w-full px-2 py-1 mb-2 border border-gray-300 rounded"
+                    />
+                    <div className="space-y-1">
+                      {Array.isArray(userRules) && userRules.length > 0 ? (
+                        userRules
+                          .filter((r:any)=> r && r.text)
+                          .filter((r:any)=> r.text.toLowerCase().includes(ruleQuery.toLowerCase()))
+                          .slice(0, 100)
+                          .map((r:any) => (
+                            <label key={r.id || r.text} className="flex items-start gap-2 text-sm">
+                              <input
+                                type="checkbox"
+                                checked={form.appliedRules.includes(r.text)}
+                                onChange={(e)=>{
+                                  setForm(prev=>{
+                                    const on = e.target.checked;
+                                    const exists = prev.appliedRules.includes(r.text);
+                                    if (on && !exists) return { ...prev, appliedRules: [...prev.appliedRules, r.text] };
+                                    if (!on && exists) return { ...prev, appliedRules: prev.appliedRules.filter(x=>x!==r.text) };
+                                    return prev;
+                                  });
+                                }}
+                              />
+                              <div>
+                                <span className="font-medium text-gray-800">{r.text}</span>
+                                {Array.isArray(r.tags) && r.tags.length > 0 && (
+                                  <div className="mt-0.5 flex gap-1 flex-wrap">
+                                    {r.tags.slice(0,6).map((t:string)=>(<span key={t} className="px-1 py-0.5 rounded text-[10px] bg-white/70 border border-gray-200 text-gray-700">{t}</span>))}
+                                  </div>
+                                )}
+                              </div>
+                            </label>
+                          ))
+                      ) : (
+                        <p className="text-xs text-gray-500">You have no saved rules yet.</p>
+                      )}
+                    </div>
+                    {Array.isArray(userRules) && userRules.length > 0 && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <button type="button" className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-white" onClick={()=>setForm(prev=>({...prev, appliedRules: Array.from(new Set([...(prev.appliedRules||[]), ...userRules.map((r:any)=>r.text)]))}))}>Select All</button>
+                        <button type="button" className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-white" onClick={()=>setForm(prev=>({...prev, appliedRules: []}))}>Clear</button>
+                        <button type="button" className="ml-auto text-xs text-blue-700 hover:underline" onClick={()=>{
+                          const idx = new Map<string,string[]>();
+                          try { (userRules||[]).forEach((r:any)=> idx.set(r.text, Array.isArray(r.tags)? r.tags: [])); } catch {}
+                          const manual = form.tags.split(',').map(t=>t.trim()).filter(Boolean);
+                          const auto = (form.appliedRules||[]).flatMap((t)=> idx.get(t) || []);
+                          const merged = Array.from(new Set([...manual, ...auto]));
+                          setForm(prev=>({...prev, tags: merged.join(', ')}));
+                        }}>Add tags from selected</button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               {/* Images input and previews */}
               <div className="md:col-span-2">
