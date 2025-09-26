@@ -17,6 +17,33 @@ export default function Profile() {
     try { return JSON.parse(localStorage.getItem('user_achievements') || '[]'); } catch { return []; }
   });
 
+  // Following count sourced from local friends list (temporary until server follows)
+  const [followingCount, setFollowingCount] = useState<number>(() => {
+    try {
+      const raw = localStorage.getItem('friends') || '[]';
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr.length : 0;
+    } catch { return 0; }
+  });
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'friends') {
+        try {
+          const arr = JSON.parse(e.newValue || '[]');
+          setFollowingCount(Array.isArray(arr) ? arr.length : 0);
+        } catch {}
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    // Also poll immediately in case updated within same tab
+    try {
+      const raw = localStorage.getItem('friends') || '[]';
+      const arr = JSON.parse(raw);
+      setFollowingCount(Array.isArray(arr) ? arr.length : 0);
+    } catch {}
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
   const saveDisplayName = () => {
     const canEdit = premiumStatus === 'premium' || achievements.includes('champion');
     if (!canEdit) {
