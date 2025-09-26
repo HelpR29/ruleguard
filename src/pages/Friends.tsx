@@ -26,6 +26,7 @@ export default function Friends() {
   const [addCode, setAddCode] = useState('');
   const [selected, setSelected] = useState<Friend | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
+  const [selectedTrade, setSelectedTrade] = useState<any | null>(null);
   const { addToast } = useToast();
 
   const premiumStatus = useMemo(() => {
@@ -75,6 +76,51 @@ export default function Friends() {
   };
 
   const canViewDeep = premiumStatus === 'premium';
+
+  // Helper to load or synthesize friend trades
+  const getFriendTrades = (friendId: string) => {
+    try {
+      const raw = localStorage.getItem(`friend_trades_${friendId}`);
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) return arr;
+      }
+    } catch {}
+    // synthesize 5 demo trades deterministically from id
+    const seed = Number(friendId) || Date.now();
+    const rnd = (n: number) => Math.abs(Math.sin(seed + n));
+    const syms = ['AAPL','TSLA','NVDA','AMD','META','MSFT'];
+    const out = Array.from({ length: 5 }).map((_, i) => {
+      const type = rnd(i) > 0.5 ? 'Long' : 'Short';
+      const entry = Number((100 + rnd(i+1) * 200).toFixed(2));
+      // move 1-5% in favorable/unfavorable direction
+      const movePct = (rnd(i+2) * 0.08 - 0.04); // -4%..+4%
+      const exit = Number((type === 'Long' ? entry * (1 + movePct) : entry * (1 - movePct)).toFixed(2));
+      const size = Math.round(10 + rnd(i+3) * 190);
+      const pnl = Number(((type === 'Long' ? (exit - entry) : (entry - exit)) * size).toFixed(2));
+      const date = new Date(Date.now() - i * 86400000).toISOString().slice(0,10);
+      const stop = Number((entry * (type === 'Long' ? 0.98 : 1.02)).toFixed(2));
+      const target = Number((entry * (type === 'Long' ? 1.03 : 0.97)).toFixed(2));
+      return {
+        id: `${friendId}-${i}`,
+        date,
+        symbol: syms[i % syms.length],
+        type,
+        entry,
+        exit,
+        size,
+        pnl,
+        emotion: ['Confident','FOMO','Fear','Neutral'][Math.floor(rnd(i+4)*4)],
+        notes: 'Shared summary not available',
+        ruleCompliant: rnd(i+5) > 0.2,
+        target,
+        stop,
+        tags: ['breakout','trend','risk','momentum'].slice(0, 1 + Math.floor(rnd(i+6)*3))
+      };
+    });
+    try { localStorage.setItem(`friend_trades_${friendId}`, JSON.stringify(out)); } catch {}
+    return out;
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
@@ -223,12 +269,109 @@ export default function Friends() {
                     <li>Top Tags: risk, momentum, breakout</li>
                   </ul>
                 </div>
+
+                {/* Recent Trades */}
+                <div className="md:col-span-3">
+                  <div className="mt-4 p-4 rounded-xl border border-gray-200 bg-white">
+                    <div className="flex items-center justify-between mb-3">
+                      <h5 className="font-semibold text-gray-900">Recent Trades</h5>
+                      {!canViewDeep && (
+                        <a href="/premium" className="text-xs text-purple-700 hover:underline">Unlock details</a>
+                      )}
+                    </div>
+                    {(() => {
+                      const trades = getFriendTrades(selected.id);
+                      const wins = trades.filter((t:any)=> (t.pnl||0) > 0).length;
+                      const avg = trades.length ? Math.round(trades.reduce((s:any,t:any)=>s+(t.pnl||0),0)/trades.length) : 0;
+                      return (
+                        <>
+                          <div className="mb-3 flex items-center gap-3 text-xs">
+                            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">Trades {trades.length}</span>
+                            <span className="px-2 py-0.5 rounded-full bg-green-50 text-green-800 border border-green-200">Win {Math.round((wins/Math.max(1,trades.length))*100)}%</span>
+                            <span className="px-2 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200">Avg P&L ${avg}</span>
+                          </div>
+                          <div className="divide-y divide-gray-100">
+                            {trades.map((t:any)=> (
+                              <div key={t.id} className="py-2 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className={`w-2.5 h-2.5 rounded-full ${t.pnl>0?'bg-green-500':t.pnl<0?'bg-red-500':'bg-gray-400'}`}></div>
+                                  <div>
+                                    <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                                      <span>{t.symbol}</span>
+                                      <span className={`px-2 py-0.5 rounded-full text-[11px] border ${t.type==='Long'?'bg-emerald-100 text-emerald-800 border-emerald-200':'bg-sky-100 text-sky-800 border-sky-200'}`}>{t.type}</span>
+                                    </div>
+                                    <p className="text-xs text-gray-500">{t.date}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <span className={`text-sm font-semibold ${t.pnl>0?'text-green-600':t.pnl<0?'text-red-600':'text-gray-600'}`}>{t.pnl>0?'+':''}${Number(t.pnl||0).toFixed(2)}</span>
+                                  {canViewDeep ? (
+                                    <button onClick={()=>setSelectedTrade(t)} className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-50">View</button>
+                                  ) : (
+                                    <span className="text-[11px] text-gray-400">Details locked</span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
               </div>
             )}
 
             <div className="mt-6 flex items-center justify-between">
               <button onClick={()=>removeFriend(selected.id)} className="px-3 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 text-sm">Remove Friend</button>
               <button onClick={()=>setSelected(null)} className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Trade Details Modal (Premium only) */}
+      {selected && selectedTrade && canViewDeep && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-lg">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-lg font-bold text-gray-900">{selectedTrade.symbol} — {selectedTrade.type}</h4>
+              <button onClick={()=>setSelectedTrade(null)} className="p-2 rounded hover:bg-gray-100">✕</button>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div><span className="text-gray-500">Date:</span> <span className="font-medium">{selectedTrade.date}</span></div>
+              <div><span className="text-gray-500">Size:</span> <span className="font-medium">{selectedTrade.size} shares</span></div>
+              <div><span className="text-gray-500">Entry:</span> <span className="font-medium">${selectedTrade.entry}</span></div>
+              <div><span className="text-gray-500">Exit:</span> <span className="font-medium">${selectedTrade.exit}</span></div>
+              <div><span className="text-gray-500">Target:</span> <span className="font-medium">${selectedTrade.target}</span></div>
+              <div><span className="text-gray-500">Stop:</span> <span className="font-medium">${selectedTrade.stop}</span></div>
+              <div><span className="text-gray-500">Emotion:</span> <span className="font-medium">{selectedTrade.emotion}</span></div>
+              <div><span className="text-gray-500">Compliance:</span> <span className="font-medium">{selectedTrade.ruleCompliant? 'Yes':'No'}</span></div>
+            </div>
+            <div className="mt-4 flex items-center justify-between">
+              {(() => {
+                const risk = selectedTrade.type==='Long' ? (selectedTrade.entry - selectedTrade.stop) : (selectedTrade.stop - selectedTrade.entry);
+                const reward = selectedTrade.type==='Long' ? (selectedTrade.target - selectedTrade.entry) : (selectedTrade.entry - selectedTrade.target);
+                const rr = (risk>0 && reward>0) ? (reward/risk) : null;
+                const pct = (selectedTrade.type==='Long' ? ((selectedTrade.exit - selectedTrade.entry)/selectedTrade.entry*100) : ((selectedTrade.entry - selectedTrade.exit)/selectedTrade.entry*100));
+                return (
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className={`px-2 py-0.5 rounded-full border ${selectedTrade.pnl>0?'bg-green-100 text-green-800 border-green-200':'bg-red-100 text-red-800 border-red-200'}`}>{selectedTrade.pnl>0?'Win':'Loss'}</span>
+                    <span className="text-gray-700 font-medium">{pct.toFixed(2)}%</span>
+                    {rr && <span className="text-gray-700 font-medium">R:R 1:{rr.toFixed(2)}</span>}
+                  </div>
+                );
+              })()}
+              <span className={`font-bold ${selectedTrade.pnl>0?'text-green-600':'text-red-600'}`}>{selectedTrade.pnl>0?'+':''}${Number(selectedTrade.pnl||0).toFixed(2)}</span>
+            </div>
+            <div className="mt-4">
+              <p className="text-sm text-gray-600">Tags:</p>
+              <div className="mt-1 flex gap-2 flex-wrap">
+                {(selectedTrade.tags||[]).map((t:string, i:number)=>(<span key={i} className="px-2 py-0.5 rounded-full border border-gray-200 bg-gray-50 text-xs">{t}</span>))}
+              </div>
+            </div>
+            <div className="mt-6 text-right">
+              <button onClick={()=>setSelectedTrade(null)} className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">Close</button>
             </div>
           </div>
         </div>
