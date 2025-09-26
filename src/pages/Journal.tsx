@@ -1197,6 +1197,7 @@ function Journal() {
                       </div>
                     ))}
                   </div>
+                  <p className="mt-2 text-xs text-gray-500">Only trades with at least one Followed rule and no Broken rules contribute to progress.</p>
                 </div>
               )}
               {/* Images input and previews */}
