@@ -92,6 +92,35 @@ export default function Reports() {
     return count ? sum / count : 0;
   }, [trades]);
 
+  // Top applied rules performance (from trades.rules)
+  const topAppliedRules = useMemo(() => {
+    try {
+      const map = new Map<string, { count: number; wins: number; totalPnl: number }>();
+      for (const t of Array.isArray(trades) ? (trades as any[]) : []) {
+        const rules: string[] = Array.isArray((t as any).rules) ? (t as any).rules : [];
+        if (!rules.length) continue;
+        const pnlNum = Number((t as any).pnl ?? (t as any).profitLoss ?? 0) || 0;
+        for (const r of rules) {
+          const prev = map.get(r) || { count: 0, wins: 0, totalPnl: 0 };
+          prev.count += 1;
+          if (pnlNum > 0) prev.wins += 1;
+          prev.totalPnl += pnlNum;
+          map.set(r, prev);
+        }
+      }
+      const rows = Array.from(map.entries()).map(([rule, v]) => ({
+        rule,
+        count: v.count,
+        winRate: v.count ? Math.round((v.wins / v.count) * 100) : 0,
+        avgPnl: v.count ? v.totalPnl / v.count : 0,
+        totalPnl: v.totalPnl,
+      })).sort((a,b)=> b.totalPnl - a.totalPnl);
+      return rows;
+    } catch {
+      return [] as Array<{ rule: string; count: number; winRate: number; avgPnl: number; totalPnl: number }>;
+    }
+  }, [trades, version]);
+
   
 
   // Monthly aggregation (last 30 days)
@@ -578,6 +607,31 @@ export default function Reports() {
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
                 <BarChart3 className="h-6 w-6 text-purple-600" />
+              </div>
+
+              {/* Top Performing Rules */}
+              <div className="rounded-2xl p-6 card-surface md:col-span-2">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="text-gray-600 text-sm">Top Performing Rules</p>
+                    <p className="text-lg font-bold text-gray-900">By Total P&L</p>
+                  </div>
+                </div>
+                {topAppliedRules.length === 0 ? (
+                  <p className="text-sm text-gray-500">No applied rules on trades yet.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {topAppliedRules.slice(0,3).map((r) => (
+                      <li key={r.rule} className="flex items-center justify-between">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{r.rule}</p>
+                          <p className="text-xs text-gray-500">{r.count} trades • {r.winRate}% win</p>
+                        </div>
+                        <div className={`text-sm font-semibold ${r.avgPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>{r.avgPnl >= 0 ? '+' : ''}${r.avgPnl.toFixed(2)}</div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               <div>
