@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { RULE_TEMPLATES } from '../utils/ruleTemplates';
 
 interface UserSettings {
   startingPortfolio: number;
@@ -79,13 +80,31 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const raw = localStorage.getItem('user_rules');
       if (raw) return JSON.parse(raw) as UserRule[];
       // seed from onboarding settings.rules if present
-      const seeded = (settings.rules || []).map<UserRule>((text, idx) => ({
-        id: `seed-${idx}-${Date.now()}`,
-        text,
-        active: true,
-        violations: 0,
-        lastViolation: null,
-      }));
+      // Build a lookup from template text -> { category, tags }
+      const tplIndex = (() => {
+        const m = new Map<string, { category: UserRule['category']; tags: string[] }>();
+        for (const tpl of RULE_TEMPLATES) {
+          for (const r of tpl.rules) {
+            m.set(r.text, { category: tpl.category, tags: r.tags ? [...r.tags] : [] });
+          }
+        }
+        return m;
+      })();
+
+      const seeded = (settings.rules || []).map<UserRule>((text, idx) => {
+        const meta = tplIndex.get(text);
+        const category = meta?.category;
+        const tags = meta ? [...meta.tags, meta.category || ''] .filter(Boolean) : [];
+        return {
+          id: `seed-${idx}-${Date.now()}`,
+          text,
+          active: true,
+          violations: 0,
+          lastViolation: null,
+          category,
+          tags,
+        } as UserRule;
+      });
       if (seeded.length) localStorage.setItem('user_rules', JSON.stringify(seeded));
       return seeded;
     } catch {

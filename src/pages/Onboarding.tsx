@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import Logo from '../components/Logo';
+import { RULE_TEMPLATES, CATEGORY_COLORS } from '../utils/ruleTemplates';
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -24,16 +25,15 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     { value: 'trophy', emoji: '🏆', label: 'Trophy' },
   ];
 
-  const predefinedRules = [
-    { text: 'Never risk more than 2% per trade', description: 'Protects capital by limiting the maximum loss on any single trade.' },
-    { text: 'Only trade setups with 2:1 RR or better', description: 'Ensures that potential rewards outweigh the risks.' },
-    { text: 'Maximum 3 trades per day', description: 'Prevents over-trading and emotional decision-making.' },
-    { text: 'No revenge trading after losses', description: 'Avoids impulsive trades to win back money, which often leads to bigger losses.' },
-    { text: 'Always use stop losses', description: 'A critical rule to automatically exit a trade at a predetermined price to limit losses.' },
-    { text: 'Follow the trading plan', description: 'Stick to your pre-defined strategy, entries, and exits without deviation.' },
-    { text: 'No trading on FOMO', description: 'Avoid entering a trade based on fear of missing out on a big move.' },
-    { text: 'Review trades daily', description: 'Analyze your trades at the end of each day to learn from mistakes and successes.' },
-  ];
+  // Helper to toggle a rule text into formData.rules
+  const toggleRule = (text: string, checked: boolean) => {
+    setFormData(prev => {
+      const exists = prev.rules.includes(text);
+      if (checked && !exists) return { ...prev, rules: [...prev.rules, text] };
+      if (!checked && exists) return { ...prev, rules: prev.rules.filter(r => r !== text) };
+      return prev;
+    });
+  };
 
   const steps = [
     {
@@ -181,34 +181,76 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       title: 'Set Your Trading Rules',
       description: 'Define your discipline framework',
       content: (
-        <div className="max-w-md mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto space-y-6">
           <div className="text-center">
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Your Trading Rules</h3>
             <p className="text-gray-700">
-              Set the rules that will keep you disciplined. Our AI will check every trade against these.
+              Choose from template categories below. You can also add custom rules.
             </p>
           </div>
 
-          <div className="space-y-4">
-            {/* Predefined Rules */}
-            {predefinedRules.map((rule) => (
-              <label key={rule.text} className="flex items-center gap-3" title={rule.description}>
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setFormData({ ...formData, rules: [...formData.rules, rule.text] });
-                    } else {
-                      setFormData({ ...formData, rules: formData.rules.filter(r => r !== rule.text) });
-                    }
-                  }}
-                />
-                <span className="text-gray-700">{rule.text}</span>
-              </label>
+          {/* Templates grouped by category */}
+          <div className="space-y-5">
+            {RULE_TEMPLATES.map((tpl) => (
+              <div key={tpl.category} className={`rounded-xl border ${CATEGORY_COLORS[tpl.category].border} ${CATEGORY_COLORS[tpl.category].bg} p-4`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{tpl.categoryIcon}</span>
+                    <h4 className="font-semibold">{tpl.categoryName}</h4>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="px-2 py-1 text-xs rounded border border-gray-300 hover:bg-white"
+                      onClick={() => {
+                        // select all in category
+                        setFormData(prev => {
+                          const adds = tpl.rules.map(r => r.text).filter(t => !prev.rules.includes(t));
+                          return { ...prev, rules: [...prev.rules, ...adds] };
+                        });
+                      }}
+                    >
+                      Select All
+                    </button>
+                    <button
+                      type="button"
+                      className="px-2 py-1 text-xs rounded border border-gray-300 hover:bg-white"
+                      onClick={() => {
+                        // clear all in category
+                        setFormData(prev => ({ ...prev, rules: prev.rules.filter(t => !tpl.rules.some(r => r.text === t)) }));
+                      }}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {tpl.rules.map(rule => (
+                    <label key={rule.text} className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        className="mt-0.5 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        checked={formData.rules.includes(rule.text)}
+                        onChange={(e) => toggleRule(rule.text, e.target.checked)}
+                      />
+                      <div>
+                        <span className="text-gray-800 text-sm font-medium">{rule.text}</span>
+                        <p className="text-xs text-gray-600">{rule.description}</p>
+                        <div className="mt-1 flex gap-1 flex-wrap">
+                          {rule.tags.map((tag) => (
+                            <span key={tag} className="px-1.5 py-0.5 rounded-full text-[10px] bg-white/70 text-gray-700 border border-gray-200">{tag}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
 
+          {/* Custom rule add */}
           <div className="pt-4 border-t border-gray-200">
             <p className="text-sm text-gray-600 mb-2">Add custom rule:</p>
             <div className="flex gap-2">
