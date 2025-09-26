@@ -529,6 +529,62 @@ export default function AnalyticsDashboard({
             <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
             <p>No data available</p>
           </div>
+
+      {/* Performance by Applied Rule */}
+      <div className="rounded-2xl p-6 card-surface">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Performance by Applied Rule</h3>
+          <span className="text-xs text-gray-500">From filtered trades</span>
+        </div>
+        {(() => {
+          // Aggregate metrics per rule from filteredTrades[].rules
+          const map = new Map<string, { count: number; wins: number; totalPnl: number }>();
+          for (const t of filteredTrades as any[]) {
+            const rules: string[] = Array.isArray((t as any).rules) ? (t as any).rules : [];
+            for (const r of rules) {
+              const item = map.get(r) || { count: 0, wins: 0, totalPnl: 0 };
+              item.count += 1;
+              if (Number(t.pnl ?? t.profitLoss ?? 0) > 0) item.wins += 1;
+              item.totalPnl += Number(t.pnl ?? t.profitLoss ?? 0) || 0;
+              map.set(r, item);
+            }
+          }
+          const rows = Array.from(map.entries()).map(([rule, v]) => ({
+            rule,
+            count: v.count,
+            winRate: v.count ? (v.wins / v.count) * 100 : 0,
+            avgPnl: v.count ? v.totalPnl / v.count : 0,
+            totalPnl: v.totalPnl,
+          })).sort((a,b)=> b.totalPnl - a.totalPnl).slice(0, 10);
+          if (rows.length === 0) return <p className="text-sm text-gray-500">No applied-rule data in the selected range.</p>;
+          return (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
+                    <th className="py-2 pr-4">Rule</th>
+                    <th className="py-2 pr-4">Trades</th>
+                    <th className="py-2 pr-4">Win Rate</th>
+                    <th className="py-2 pr-4">Avg P&L</th>
+                    <th className="py-2 pr-4">Total P&L</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <tr key={row.rule} className="border-b border-gray-100 dark:border-gray-800">
+                      <td className="py-2 pr-4 font-medium text-gray-900 dark:text-white">{row.rule}</td>
+                      <td className="py-2 pr-4">{row.count}</td>
+                      <td className="py-2 pr-4">{row.winRate.toFixed(0)}%</td>
+                      <td className={`py-2 pr-4 ${row.avgPnl>=0?'text-green-600':'text-red-600'}`}>{row.avgPnl>=0?'+':''}${row.avgPnl.toFixed(2)}</td>
+                      <td className={`py-2 pr-4 ${row.totalPnl>=0?'text-green-600':'text-red-600'}`}>{row.totalPnl>=0?'+':''}${row.totalPnl.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
+      </div>
         </div>
       );
     }
