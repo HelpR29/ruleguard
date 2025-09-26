@@ -16,7 +16,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 function genCode(): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let s = 'RG-';
-  for (let i = 0; i < 6; i++) s += alphabet[Math.floor(Math.random()*alphabet.length)];
+  for (let i = 0; i < 8; i++) s += alphabet[Math.floor(Math.random()*alphabet.length)];
   return s;
 }
 
@@ -52,7 +52,7 @@ export default function Friends() {
 
   const addFriend = async () => {
     const code = addCode.trim().toUpperCase();
-    if (!/^RG-[A-Z0-9]{6,8}$/.test(code)) { addToast('warning', 'Invalid code format'); return; }
+    if (!/^RG-[A-Z0-9]{8}$/.test(code)) { addToast('warning', 'Invalid code format'); return; }
     if (friends.some(f => f.code === code)) { addToast('info', 'Already following this code.'); return; }
 
     // Attempt referral redemption via Supabase Edge Function (optional)
@@ -180,7 +180,7 @@ export default function Friends() {
             <div className="p-4 rounded-xl border border-gray-200">
               <label className="block text-sm font-medium text-gray-700 mb-2">Add Friend by Code</label>
               <div className="flex gap-2">
-                <input value={addCode} onChange={e=>setAddCode(e.target.value)} placeholder="RG-ABC123" className="flex-1 px-3 py-2 border border-gray-300 rounded-lg" />
+                <input value={addCode} onChange={e=>setAddCode(e.target.value)} placeholder="RG-ABC12345" className="flex-1 px-3 py-2 border border-gray-300 rounded-lg" />
                 <button onClick={addFriend} className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"><UserPlus className="h-4 w-4"/> Add</button>
               </div>
               <p className="text-xs text-gray-500 mt-2">Ask your friend to share their code. Your code is shown above.</p>
