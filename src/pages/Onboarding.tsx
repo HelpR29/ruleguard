@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { ArrowRight, ArrowLeft, CheckCircle, ChevronDown } from 'lucide-react';
 import Logo from '../components/Logo';
 import { RULE_TEMPLATES, CATEGORY_COLORS } from '../utils/ruleTemplates';
 
@@ -17,6 +17,20 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     rules: [] as string[]
   });
   const [openPack, setOpenPack] = useState<string | null>(null);
+  const packsRef = useRef<HTMLDivElement | null>(null);
+
+  // Close pack popover when clicking outside the packs container
+  useEffect(() => {
+    if (!openPack) return;
+    const handler = (e: MouseEvent) => {
+      const el = packsRef.current;
+      if (el && !el.contains(e.target as Node)) {
+        setOpenPack(null);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [openPack]);
 
   const progressObjects = [
     { value: 'beer', emoji: '🍺', label: 'Beer' },
@@ -228,7 +242,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             );
             const packs = [riskBasics, psychologyEssentials, entryExitCore];
             return (
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <div ref={packsRef} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <h4 className="text-sm font-semibold text-gray-800 mb-2">Recommended Packs</h4>
                 <div className="grid md:grid-cols-3 gap-3">
                   {packs.map(p => (
@@ -255,11 +269,16 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                         >Clear</button>
                         <button
                           type="button"
-                          className="text-xs text-gray-600 hover:text-gray-900 underline-offset-2 hover:underline"
+                          className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 underline-offset-2 hover:underline"
                           onClick={() => setOpenPack(prev => prev === p.name ? null : p.name)}
                           aria-expanded={openPack === p.name}
                           aria-controls={`pack-popover-${p.name}`}
-                        >View</button>
+                        >
+                          View
+                          <ChevronDown
+                            className={`h-3.5 w-3.5 transition-transform ${openPack === p.name ? 'rotate-180' : ''}`}
+                          />
+                        </button>
                       </div>
 
                       {/* Popover toggled by View button */}
