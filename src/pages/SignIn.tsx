@@ -18,6 +18,7 @@ export default function SignIn() {
   const location = useLocation() as any;
   const redirectTo = location.state?.from || '/';
   const notice = location.state?.notice;
+  const showResendHelper = !!(error && /confirm/i.test(error));
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,28 +161,29 @@ export default function SignIn() {
           
           <div className="mt-4 space-y-3">
             <p className="text-sm text-gray-600">No account? <Link to="/signup" className="text-blue-600">Create one</Link></p>
-            
-            {/* Email confirmation help */}
-            <div className="border-t pt-3">
-              <p className="text-sm text-gray-700 mb-2">Need to confirm your email?</p>
-              <div className="space-y-2">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={resendEmail}
-                  onChange={(e) => setResendEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={resendConfirmation}
-                  disabled={resendingEmail || !resendEmail.trim()}
-                  className="w-full px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700 disabled:bg-gray-300"
-                >
-                  {resendingEmail ? 'Sending...' : '📧 Resend Confirmation Email'}
-                </button>
+
+            {showResendHelper && (
+              <div className="border-t pt-3">
+                <p className="text-sm text-gray-700 mb-2">Need to confirm your email?</p>
+                <div className="space-y-2">
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={resendEmail}
+                    onChange={(e) => setResendEmail(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={resendConfirmation}
+                    disabled={resendingEmail || !resendEmail.trim()}
+                    className="w-full px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700 disabled:bg-gray-300"
+                  >
+                    {resendingEmail ? 'Sending...' : '📧 Resend Confirmation Email'}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
