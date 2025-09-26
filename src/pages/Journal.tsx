@@ -617,6 +617,13 @@ function Journal() {
                   </div>
 
                   <p className="text-gray-700 bg-gray-50 rounded-lg p-3 text-sm">{trade.notes}</p>
+                  {Array.isArray((trade as any).rules) && (trade as any).rules.length > 0 && (
+                    <div className="mt-2 flex items-center gap-2 flex-wrap">
+                      {(trade as any).rules.map((r: string, idx: number) => (
+                        <span key={`${r}-${idx}`} className="px-2 py-0.5 rounded-full text-[11px] bg-white border border-gray-200 text-gray-700">{r}</span>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Attachments */}
                   {Array.isArray(trade.imageIds) && trade.imageIds.length > 0 && (
