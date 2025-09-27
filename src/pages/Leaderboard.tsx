@@ -116,6 +116,8 @@ export default function Leaderboard() {
       try {
         const yourRank = ranked.find(u=>u.id==='you' || u.name===dn)?.rank || ranked.length;
         localStorage.setItem('current_user_rank', String(yourRank));
+        // store a generic rank for demo achievements panel unlocks
+        localStorage.setItem('leaderboard_rank', String(yourRank));
         localStorage.setItem('monthly_leaderboard_data', JSON.stringify(ranked));
       } catch {}
     } catch (error) {
@@ -261,6 +263,11 @@ export default function Leaderboard() {
               <p className="text-sm text-gray-500">Resets in</p>
               <p className="text-lg font-bold text-orange-600">{getDaysUntilReset()} days</p>
             </div>
+          </div>
+
+          {/* Podium Rewards Explainer */}
+          <div className="mt-2 p-3 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs">
+            Podium rewards: Champion prize is concealed and awarded to Rank #1. Rank #2 receives +3 days Premium. Rank #3 receives +1 day Premium.
           </div>
 
           {/* Tabs */}
