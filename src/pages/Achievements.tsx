@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Award, Trophy, Target, TrendingUp, Zap, Star, Crown, Medal, CheckCircle, Lock } from 'lucide-react';
+import { Award, Trophy, Target, TrendingUp, Zap, Crown, Medal, CheckCircle, Lock } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 
 interface Achievement {
@@ -24,6 +24,7 @@ const categoryColors = {
 
 export default function Achievements() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<'all'|'unlocked'|'locked'>('all');
   const { progress, settings } = useUser();
 
   // Live stats
@@ -112,9 +113,13 @@ export default function Achievements() {
     ];
   }, [stats]);
 
-  const filteredAchievements = selectedCategory === 'all'
+  let filteredAchievements = selectedCategory === 'all'
     ? achievements
     : achievements.filter(a => a.category === selectedCategory);
+
+  if (statusFilter !== 'all') {
+    filteredAchievements = filteredAchievements.filter(a => statusFilter === 'unlocked' ? a.unlocked : !a.unlocked);
+  }
 
   const unlockedCount = achievements.filter(a => a.unlocked).length;
   const totalCount = achievements.length;
@@ -149,9 +154,9 @@ export default function Achievements() {
           </div>
         </div>
 
-        {/* Category Filter */}
+        {/* Filters */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <div className="flex gap-2 overflow-x-auto">
+          <div className="flex flex-wrap gap-2 items-center">
             {['all', 'progress', 'discipline', 'streak', 'growth', 'special'].map((category) => (
               <button
                 key={category}
@@ -165,6 +170,26 @@ export default function Achievements() {
                 {category.charAt(0).toUpperCase() + category.slice(1)}
               </button>
             ))}
+
+            <div className="ml-auto flex gap-2">
+              {[
+                { id: 'all', label: 'All' },
+                { id: 'unlocked', label: 'Unlocked' },
+                { id: 'locked', label: 'Locked' },
+              ].map((opt:any) => (
+                <button
+                  key={opt.id}
+                  onClick={() => setStatusFilter(opt.id)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    statusFilter === opt.id
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -215,14 +240,67 @@ export default function Achievements() {
                     {achievement.description}
                   </p>
                   
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
                       <p className="text-xs text-gray-500 mb-1">Requirement</p>
                       <p className="text-sm font-medium text-gray-700">{achievement.requirement}</p>
+                      {/* Progress Bar for locked achievements */}
+                      {(() => {
+                        // compute progress per achievement
+                        let current = 0; let target = 0; let unit = '';
+                        switch (achievement.id) {
+                          case 'first_completion': current = stats.completions; target = 1; unit = ''; break;
+                          case 'week_streak': current = stats.streak; target = 7; unit = 'days'; break;
+                          case 'ten_completions': current = stats.completions; target = 10; unit = ''; break;
+                          case 'growth_master': current = Math.max(0, stats.growthPct); target = 25; unit = '%'; break;
+                          case 'discipline_king': current = Math.max(0, stats.discipline); target = 95; unit = '%'; break;
+                          case 'halfway_hero': current = stats.completions; target = 25; unit = ''; break;
+                          case 'champion': current = stats.completions; target = 50; unit = ''; break;
+                        }
+                        const pct = target > 0 ? Math.min(100, Math.max(0, (current / target) * 100)) : 0;
+                        return (
+                          <div className={`mt-2 ${achievement.unlocked ? 'hidden' : ''}`}>
+                            <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                              <span>Progress</span>
+                              <span>
+                                {unit === '%'
+                                  ? `${Math.min(current, target).toFixed(0)}${unit} / ${target}${unit}`
+                                  : `${Math.min(current, target)} / ${target}`}
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full" style={{ width: `${pct}%` }} />
+                            </div>
+                            {/* Next step tip */}
+                            {(() => {
+                              const remaining = Math.max(0, target - current);
+                              if (remaining <= 0) return null;
+                              let tip = '';
+                              switch (achievement.id) {
+                                case 'first_completion':
+                                  tip = 'Log your first compliant trade to unlock this.'; break;
+                                case 'ten_completions':
+                                  tip = `Complete ${remaining} more compliant trade${remaining>1?'s':''} to unlock.`; break;
+                                case 'halfway_hero':
+                                  tip = `Complete ${remaining} more to reach 25.`; break;
+                                case 'champion':
+                                  tip = `Complete ${remaining} more to reach 50.`; break;
+                                case 'week_streak':
+                                  tip = `Maintain your streak for ${remaining} more day${remaining>1?'s':''}.`; break;
+                                case 'growth_master':
+                                  tip = `Increase portfolio growth to ${target}% (current ${Math.max(0,current).toFixed(0)}%).`; break;
+                                case 'discipline_king':
+                                  tip = `Improve discipline to ${target}% (current ${Math.max(0,current).toFixed(0)}%).`; break;
+                              }
+                              return <p className="mt-2 text-xs text-gray-500">{tip}</p>;
+                            })()}
+                          </div>
+                        );
+                      })()}
                     </div>
                     
                     {achievement.reward && (
-                      <div className="text-right">
+                      <div className="text-right min-w-[140px]">
                         <p className="text-xs text-gray-500 mb-1">Reward</p>
                         <p className="text-sm font-medium text-blue-600">{achievement.reward}</p>
                       </div>
