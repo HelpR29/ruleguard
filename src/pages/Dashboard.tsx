@@ -16,6 +16,11 @@ export default function Dashboard() {
   const [showNextGoal, setShowNextGoal] = useState(false);
   const [nextGoalType, setNextGoalType] = useState<'same' | 'increase' | 'custom'>('same');
   const [customTarget, setCustomTarget] = useState(settings.targetCompletions);
+  const [customGrowth, setCustomGrowth] = useState(settings.growthPerCompletion);
+  // Premium trial modal state
+  const [showTrialModal, setShowTrialModal] = useState(false);
+  const [inviteCode, setInviteCode] = useState('');
+  const [activating, setActivating] = useState(false);
   // Actual portfolio = starting + sum(PnL)
   const actualBalance = useMemo(() => {
     try {
@@ -214,7 +219,10 @@ export default function Dashboard() {
                 <p className="text-purple-100 text-sm mb-4">
                   Get advanced analytics, AI coaching, and exclusive features
                 </p>
-                <button className="w-full bg-white text-purple-600 py-3 rounded-xl font-semibold hover:bg-purple-50 transition-colors">
+                <button
+                  onClick={() => setShowTrialModal(true)}
+                  className="w-full bg-white text-purple-600 py-3 rounded-xl font-semibold hover:bg-purple-50 transition-colors"
+                >
                   Start Free Trial
                 </button>
               </div>
@@ -416,6 +424,78 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Premium Trial Modal */}
+      {showTrialModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Enter Invite Code</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Enter your invite code to unlock a free premium trial.</p>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value)}
+                placeholder="e.g. LOCKIN30"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowTrialModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                  disabled={activating}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (activating) return;
+                    setActivating(true);
+                    const { ok, days } = validateInviteCode(inviteCode);
+                    if (!ok) {
+                      addToast('error', 'Invalid invite code');
+                      setActivating(false);
+                      return;
+                    }
+                    try {
+                      const now = new Date();
+                      const exp = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+                      localStorage.setItem('premium_status', 'premium');
+                      localStorage.setItem('premium_expires_at', exp.toISOString());
+                      // Notify header and any listeners
+                      window.dispatchEvent(new Event('rg:premium-change'));
+                      addToast('success', `Premium trial activated for ${days} day${days>1?'s':''}!`);
+                      setShowTrialModal(false);
+                    } catch (e) {
+                      addToast('error', 'Failed to activate trial');
+                    } finally {
+                      setActivating(false);
+                    }
+                  }}
+                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-purple-300"
+                  disabled={activating || !inviteCode.trim()}
+                >
+                  {activating ? 'Activating...' : 'Activate Trial'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+// Helper to validate invite codes
+function validateInviteCode(code: string): { ok: boolean; days: number } {
+  const c = code.trim().toUpperCase();
+  const ALLOWED: Record<string, number> = {
+    'LOCKIN30': 30,
+    'LOCKIN-30': 30,
+    'BETA30': 30,
+    'EARLYBIRD14': 14,
+    'VIPTRIAL60': 60,
+  };
+  if (ALLOWED[c]) return { ok: true, days: ALLOWED[c] };
+  return { ok: false, days: 0 };
 }

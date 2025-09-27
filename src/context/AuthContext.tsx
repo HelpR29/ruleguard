@@ -33,38 +33,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
-      
-      // If no profile exists yet, use localStorage fallback if available
-      let finalProfile = data;
-      if (!data?.display_name) {
-        try {
-          const localName = localStorage.getItem('display_name');
-          if (localName) {
-            finalProfile = { display_name: localName };
-          }
-        } catch {}
-      }
-      
-      setProfile(finalProfile);
-      
-      // Keep localStorage in sync
+      setProfile(data);
+      // Keep localStorage in sync for convenience only (do not read from it)
       try {
-        if (finalProfile?.display_name) localStorage.setItem('display_name', finalProfile.display_name);
+        if (data?.display_name) localStorage.setItem('display_name', data.display_name);
         else localStorage.removeItem('display_name');
       } catch {}
     } catch (e) {
       console.error('Error fetching profile', e);
-      // Fallback to localStorage if DB fails
-      try {
-        const localName = localStorage.getItem('display_name');
-        if (localName) {
-          setProfile({ display_name: localName });
-        } else {
-          setProfile(null);
-        }
-      } catch {
-        setProfile(null);
-      }
+      setProfile(null);
     }
   };
 
@@ -82,10 +59,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(sess ?? null);
       const nextUser = sess?.user ?? null;
       setUser(nextUser);
-      // If the authenticated user changed, clear onboarding flag so new accounts see onboarding
+      // If the authenticated user changed, clear onboarding flag and any cached display name
       const nextId = nextUser?.id || null;
       if (nextId && nextId !== prevUserId) {
-        try { localStorage.removeItem('onboarding_complete'); } catch {}
+        try {
+          localStorage.removeItem('onboarding_complete');
+          localStorage.removeItem('display_name');
+        } catch {}
         setPrevUserId(nextId);
       }
       fetchProfile(nextUser);
