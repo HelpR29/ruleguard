@@ -7,7 +7,7 @@ import NotificationPanel from './NotificationPanel';
 import AvatarSelector from './AvatarSelector';
 import Logo from './Logo';
 import { useAuth } from '../context/AuthContext';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+// removed unused supabase imports
 
 const pageNames: Record<string, string> = {
   '/': 'Dashboard',
@@ -34,7 +34,7 @@ export default function Header() {
   const location = useLocation();
   const { progress } = useUser();
   const { theme, toggleTheme } = useTheme();
-  const { user, profile, signOut, refreshProfile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
