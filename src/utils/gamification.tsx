@@ -467,14 +467,11 @@ export class GamificationEngine {
     const levels = Array.from(this.levels.values()).sort((a, b) => a.level - b.level);
 
     let currentLevel = 1;
-    let experienceToNext = 0;
 
     for (const level of levels) {
       if (experience >= level.experienceRequired) {
         currentLevel = level.level;
-        experienceToNext = level.experienceRequired;
       } else {
-        experienceToNext = level.experienceRequired - experience;
         break;
       }
     }
