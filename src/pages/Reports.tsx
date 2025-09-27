@@ -906,8 +906,8 @@ export default function Reports() {
                         <AlertTriangle className="h-4 w-4 text-amber-600" /> Weaknesses Detected
                       </h5>
                       <ul className="list-disc pl-6 space-y-1 text-sm text-blue-900">
-                        {weaknesses.map((w, i) => (
-                          <li key={i}>{w}</li>
+                        {weaknesses.map((w) => (
+                          <li key={w}>{w}</li>
                         ))}
                       </ul>
                     </div>
@@ -917,8 +917,8 @@ export default function Reports() {
                         <CheckCircle2 className="h-4 w-4 text-green-600" /> Action Plan (Next 5 Sessions)
                       </h5>
                       <ol className="list-decimal pl-6 space-y-1 text-sm text-blue-900">
-                        {recommendations.map((rec, i) => (
-                          <li key={i}>{rec}</li>
+                        {recommendations.map((rec) => (
+                          <li key={rec}>{rec}</li>
                         ))}
                       </ol>
                     </div>
@@ -995,7 +995,7 @@ export default function Reports() {
                   </div>
                 </div>
                 <div className="text-xs text-gray-600">
-                  <span className="font-medium">Top Risky Hours:</span> {topRiskyHours.length ? topRiskyHours.map((e,i)=>`${e.day} ${e.hour}:00 (${e.count})`).join(', ') : 'None yet'}
+                  <span className="font-medium">Top Risky Hours:</span> {topRiskyHours.length ? topRiskyHours.map((e)=>`${e.day} ${e.hour}:00 (${e.count})`).join(', ') : 'None yet'}
                 </div>
               </div>
               <div className="mt-4 flex justify-end">
