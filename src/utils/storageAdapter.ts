@@ -82,6 +82,8 @@ class StorageAdapter {
       'user_achievements'
     ];
     return syncKeys.some(syncKey => key.includes(syncKey));
+  }
+
   private async backgroundFetch(key: string): Promise<void> {
     try {
       // Map localStorage keys to hybrid database methods
@@ -101,7 +103,7 @@ class StorageAdapter {
     try {
       // Map localStorage keys to hybrid database methods
       if (key === 'journal_trades') {
-        const trades = JSON.parse(value);
+        JSON.parse(value);
         // Convert to Trade format and sync
         // This would need proper mapping
         console.log('📤 Background syncing trades to Supabase');
