@@ -497,5 +497,9 @@ function validateInviteCode(code: string): { ok: boolean; days: number } {
     'VIPTRIAL60': 60,
   };
   if (ALLOWED[c]) return { ok: true, days: ALLOWED[c] };
+  // Accept friend invite codes (RG-XXXXXX or RG-XXXXXXXX) as 7-day trials
+  if (/^RG-[A-Z0-9]{6,8}$/.test(c)) {
+    return { ok: true, days: 7 };
+  }
   return { ok: false, days: 0 };
 }

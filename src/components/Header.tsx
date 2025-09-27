@@ -334,7 +334,12 @@ export default function Header() {
             )}
           </button>
           
-          <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <button
+            onClick={() => navigate('/achievements')}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="View achievements and milestones"
+            title="View achievements and milestones"
+          >
             <Crown className="h-5 w-5 text-purple-600" />
           </button>
           

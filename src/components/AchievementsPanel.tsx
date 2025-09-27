@@ -23,20 +23,31 @@ export default function AchievementsPanel() {
 
   const milestones = useMemo(() => {
     const defs = [
-      { id: 'comp-5', title: '5 Completions', desc: 'Reach 5 compliant progress completions', target: 5, current: progress.completions || 0 },
-      { id: 'comp-25', title: '25 Completions', desc: 'Reach 25 compliant completions', target: 25, current: progress.completions || 0 },
-      { id: 'streak-7', title: '7-Day Streak', desc: 'Maintain a 7 day trading streak', target: 7, current: progress.streak || 0 },
+      { id: 'comp-30', title: '30 Completions', desc: 'Reach 30 compliant progress completions', target: 30, current: progress.completions || 0 },
+      { id: 'comp-100', title: '100 Completions', desc: 'Reach 100 compliant completions', target: 100, current: progress.completions || 0 },
+      { id: 'streak-14', title: '14-Day Streak', desc: 'Maintain a 14 day trading streak', target: 14, current: progress.streak || 0 },
     ];
     return defs.map(d => ({ ...d, done: (d.current || 0) >= d.target }));
   }, [progress]);
 
   const achDefs = useMemo(() => {
+    // Optional rank reading for special podium achievements
+    let rank: number | null = null;
+    try {
+      const r = localStorage.getItem('leaderboard_rank');
+      if (r) rank = Number(r);
+    } catch {}
+
     const defs = [
       { id: 'first-trade', title: 'First Steps', desc: 'Complete your first compliant trade', icon: '🎯' },
-      { id: 'rule-master', title: 'Rule Master', desc: '50 rule-compliant trades', icon: '👑' },
+      { id: 'rule-master', title: 'Rule Master', desc: '100 rule-compliant trades', icon: '👑' },
       { id: 'streak-warrior', title: 'Streak Warrior', desc: '30-day trading streak', icon: '🔥' },
+      // Special podium achievements (Champion prize concealed)
+      { id: 'leader-champion', title: 'Leader Champion', desc: 'Rank #1 on the global leaderboard. Prize: ???', icon: '🏆', unlocked: rank === 1 },
+      { id: 'leader-second', title: 'Podium — 2nd Place', desc: 'Rank #2 on the global leaderboard. Reward: +3 days Premium', icon: '🥈', unlocked: rank === 2 },
+      { id: 'leader-third', title: 'Podium — 3rd Place', desc: 'Rank #3 on the global leaderboard. Reward: +1 day Premium', icon: '🥉', unlocked: rank === 3 },
     ];
-    const items = defs.map(d => ({ ...d, unlocked: unlocked.includes(d.id) }));
+    const items = defs.map(d => ({ ...d, unlocked: typeof d.unlocked === 'boolean' ? d.unlocked : unlocked.includes(d.id) }));
     return showAll ? items : items.slice(0, 3);
   }, [unlocked, showAll]);
 
