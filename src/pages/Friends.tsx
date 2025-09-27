@@ -190,7 +190,6 @@ export default function Friends() {
           <ul className="text-sm space-y-1 list-disc pl-5">
             <li>Invite codes look like <span className="font-mono">RG-XXXXXXXX</span> and are unique to each user. Share yours with friends.</li>
             <li>Friends can paste your code here to connect with you. They can also enter the same code on the Dashboard’s <em>Start Free Trial</em> to unlock a 7‑day Premium trial.</li>
-            <li>Podium rewards: Champion prize is concealed and awarded to Rank #1 on the leaderboard. Rank #2 receives +3 days Premium. Rank #3 receives +1 day Premium.</li>
           </ul>
         </div>
 
