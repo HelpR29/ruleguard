@@ -60,7 +60,12 @@ export default function Dashboard() {
               <h2 className="text-2xl font-bold mb-2">Welcome back, Trader!</h2>
               <p className="text-blue-100">Keep building your discipline streak</p>
             </div>
-            <button className="bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-xl flex items-center gap-2">
+            <button
+              onClick={() => setShowTrialModal(true)}
+              className="bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-xl flex items-center gap-2"
+              aria-label="Upgrade to Pro - Start Free Trial"
+              title="Upgrade to Pro"
+            >
               <Star className="h-4 w-4" />
               <span className="text-sm font-medium">Upgrade to Pro</span>
             </button>
