@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ArrowRight, ArrowLeft, CheckCircle, ChevronDown } from 'lucide-react';
 import Logo from '../components/Logo';
 import { RULE_TEMPLATES, CATEGORY_COLORS } from '../utils/ruleTemplates';
+import { useAuth } from '../context/AuthContext';
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -18,6 +19,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   });
   const [openPacks, setOpenPacks] = useState<string[]>([]);
   const packsRef = useRef<HTMLDivElement | null>(null);
+  const { profile } = useAuth();
 
   // Close pack popover when clicking outside the packs container
   useEffect(() => {
@@ -82,6 +84,18 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
               <h3 className="font-semibold text-purple-900">Growth Projection</h3>
               <p className="text-sm text-purple-700">Compound your success</p>
             </div>
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={() => {
+                try { localStorage.setItem('force_name_prompt', '1'); } catch {}
+                window.dispatchEvent(new Event('rg:force-name-prompt'));
+              }}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Change display name
+            </button>
           </div>
         </div>
       )
@@ -488,6 +502,12 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   const handlePrev = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
+    } else {
+      // When on the first step, if user hasn't set a display name yet, re-open the prompt
+      if (!profile?.display_name) {
+        try { localStorage.setItem('force_name_prompt', '1'); } catch {}
+        window.dispatchEvent(new Event('rg:force-name-prompt'));
+      }
     }
   };
 
