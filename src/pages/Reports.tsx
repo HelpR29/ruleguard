@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { BarChart3, Download, TrendingUp, TrendingDown, Award, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, Award, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useUser } from '../context/UserContext';
 import PnlCard from '../components/PnlCard';
@@ -643,17 +643,14 @@ export default function Reports() {
               {syncedText && (
                 <span className="text-xs text-gray-500 mr-2">{syncedText}</span>
               )}
-              <button onClick={() => buildShareCard()} className="flex items-center gap-2 accent-btn">
-                <Download className="h-4 w-4" />
-                Share
+              <button onClick={() => buildShareCard()} className="accent-btn">
+                Share Report
               </button>
-              <button onClick={() => buildShareCard(true)} className="flex items-center gap-2 accent-outline">
-                <Download className="h-4 w-4" />
-                Export PDF
+              <button onClick={() => buildShareCard(true)} className="accent-outline">
+                Export as PDF
               </button>
-              <button onClick={() => exportCSV(activeReport as any)} className="flex items-center gap-2 accent-outline">
-                <Download className="h-4 w-4" />
-                Export CSV
+              <button onClick={() => exportCSV(activeReport as any)} className="accent-outline">
+                Export as CSV
               </button>
             </div>
           </div>
@@ -762,7 +759,7 @@ export default function Reports() {
               {/* Profit Factor with local selector */}
               <div className="rounded-2xl p-6 card-surface">
                 <div className="flex items-center gap-3 mb-2">
-                  <Info className="h-8 w-8 text-gray-500" />
+                  <span className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-100 text-gray-600 font-medium">?</span>
                   <div>
                     <p className="text-gray-600 text-sm flex items-center gap-2">
                       Profit factor
