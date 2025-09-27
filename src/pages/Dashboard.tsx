@@ -439,6 +439,7 @@ export default function Dashboard() {
                 placeholder="e.g. LOCKIN30"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm"
               />
+              <p className="text-[11px] text-gray-500">Trials are limited to one per user/device; misuse may void eligibility.</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowTrialModal(false)}
@@ -451,6 +452,30 @@ export default function Dashboard() {
                   onClick={async () => {
                     if (activating) return;
                     setActivating(true);
+                    // Basic rate-limit: deny if last attempt < 10s ago
+                    try {
+                      const last = Number(localStorage.getItem('trial_last_attempt') || '0');
+                      const nowTs = Date.now();
+                      if (nowTs - last < 10_000) {
+                        addToast('warning', 'Please wait a few seconds before trying again.');
+                        setActivating(false);
+                        return;
+                      }
+                      localStorage.setItem('trial_last_attempt', String(nowTs));
+                    } catch {}
+
+                    // Disallow if already premium and not expired
+                    try {
+                      const status = localStorage.getItem('premium_status');
+                      const expISO = localStorage.getItem('premium_expires_at');
+                      const exp = expISO ? new Date(expISO) : null;
+                      if (status === 'premium' && exp && exp.getTime() > Date.now()) {
+                        addToast('info', 'You already have an active Premium period.');
+                        setActivating(false);
+                        return;
+                      }
+                    } catch {}
+
                     const { ok, days } = validateInviteCode(inviteCode);
                     if (!ok) {
                       addToast('error', 'Invalid invite code');
@@ -458,10 +483,36 @@ export default function Dashboard() {
                       return;
                     }
                     try {
+                      // Enforce one-time trial per device/account
+                      const userId = localStorage.getItem('supabase_user_id') || 'anonymous';
+                      const trialKey = `trial_used_${userId}`;
+                      if (localStorage.getItem(trialKey) === '1') {
+                        addToast('warning', 'Free trial already used on this account/device.');
+                        setActivating(false);
+                        return;
+                      }
+
+                      // Record minimal history and prevent multiple friend-code trials
+                      const histRaw = localStorage.getItem('trial_history') || '[]';
+                      let hist: any[] = [];
+                      try { hist = JSON.parse(histRaw); } catch { hist = []; }
+                      const friendCode = /^RG-[A-Z0-9]{6,8}$/.test(inviteCode.trim().toUpperCase());
+                      if (friendCode && hist.some(h => h.type === 'friend')) {
+                        addToast('warning', 'Friend-code trial already redeemed.');
+                        setActivating(false);
+                        return;
+                      }
+
                       const now = new Date();
                       const exp = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
                       localStorage.setItem('premium_status', 'premium');
                       localStorage.setItem('premium_expires_at', exp.toISOString());
+                      localStorage.setItem(trialKey, '1');
+                      try {
+                        const entry = { when: now.toISOString(), days, code: inviteCode.trim(), type: friendCode ? 'friend' : 'promo' };
+                        hist.push(entry);
+                        localStorage.setItem('trial_history', JSON.stringify(hist.slice(-10)));
+                      } catch {}
                       // Notify header and any listeners
                       window.dispatchEvent(new Event('rg:premium-change'));
                       addToast('success', `Premium trial activated for ${days} day${days>1?'s':''}!`);

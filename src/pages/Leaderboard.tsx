@@ -265,11 +265,6 @@ export default function Leaderboard() {
             </div>
           </div>
 
-          {/* Podium Rewards Explainer */}
-          <div className="mt-2 p-3 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs">
-            Podium rewards: Champion prize is concealed and awarded to Rank #1. Rank #2 receives +3 days Premium. Rank #3 receives +1 day Premium.
-          </div>
-
           {/* Tabs */}
           <div className="flex gap-2 mb-4">
             {[
