@@ -178,19 +178,19 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-5 gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 sm:gap-4">
             {progressObjects.map((obj) => (
               <button
                 key={obj.value}
                 onClick={() => setFormData({ ...formData, progressObject: obj.value as any })}
-                className={`p-6 rounded-2xl border-2 transition-colors ${
+                className={`p-4 sm:p-6 rounded-2xl border-2 transition-colors ${
                   formData.progressObject === obj.value
                     ? 'border-blue-500 bg-blue-50 scale-105'
                     : 'border-gray-200 hover:border-gray-300 hover:scale-102'
                 }`}
               >
-                <div className="text-4xl mb-3">{obj.emoji}</div>
-                <p className="text-sm font-medium text-gray-700">{obj.label}</p>
+                <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">{obj.emoji}</div>
+                <p className="text-xs sm:text-sm font-medium text-gray-700">{obj.label}</p>
               </button>
             ))}
           </div>
@@ -198,9 +198,9 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           {/* Preview */}
           <div className="bg-gray-50 rounded-xl p-4">
             <h4 className="font-semibold text-gray-700 mb-3">Your Progress Wall Preview</h4>
-            <div className="grid grid-cols-10 gap-1">
-              {Array.from({ length: Math.min(formData.targetCompletions, 50) }).map((_, i) => (
-                <div key={i} className="text-lg">
+            <div className="grid grid-cols-8 sm:grid-cols-10 gap-1">
+              {Array.from({ length: Math.min(formData.targetCompletions, 40) }).map((_, i) => (
+                <div key={i} className="text-sm sm:text-lg">
                   {progressObjects.find(p => p.value === formData.progressObject)?.emoji}
                 </div>
               ))}
@@ -261,7 +261,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             return (
               <div ref={packsRef} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <h4 className="text-sm font-semibold text-gray-800 mb-2">Recommended Packs</h4>
-                <div className="grid md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {packs.map(p => (
                     <div key={p.name} className="relative rounded-lg border border-gray-200 bg-white p-3">
                       <div className="flex items-center justify-between mb-1">
@@ -541,8 +541,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-xl max-w-2xl w-full p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4 sm:p-6">
+      <div className="bg-white rounded-3xl shadow-xl max-w-2xl w-full p-6 sm:p-8">
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">

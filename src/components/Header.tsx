@@ -171,13 +171,13 @@ export default function Header() {
           </div>
           {/* Desktop Top Nav */}
           <nav
-            className="hidden lg:flex items-center gap-4 text-sm ml-2"
+            className="hidden lg:flex items-center gap-2 text-sm ml-2"
             role="navigation"
             aria-label="Main navigation"
           >
             <Link
               to="/"
-              className={`px-3 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              className={`px-2 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                 location.pathname==='/'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'
               }`}
               aria-current={location.pathname==='/' ? 'page' : undefined}
@@ -186,7 +186,7 @@ export default function Header() {
             </Link>
             <Link
               to="/rules"
-              className={`px-3 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              className={`px-2 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                 location.pathname==='/rules'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'
               }`}
               aria-current={location.pathname==='/rules' ? 'page' : undefined}
@@ -195,7 +195,7 @@ export default function Header() {
             </Link>
             <Link
               to="/journal"
-              className={`px-3 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              className={`px-2 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                 location.pathname==='/journal'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'
               }`}
               aria-current={location.pathname==='/journal' ? 'page' : undefined}
@@ -204,7 +204,7 @@ export default function Header() {
             </Link>
             <Link
               to="/reports"
-              className={`px-3 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              className={`px-2 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                 location.pathname==='/reports'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'
               }`}
               aria-current={location.pathname==='/reports' ? 'page' : undefined}
@@ -213,7 +213,7 @@ export default function Header() {
             </Link>
             <Link
               to="/friends"
-              className={`px-3 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              className={`px-2 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                 location.pathname==='/friends'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'
               }`}
               aria-current={location.pathname==='/friends' ? 'page' : undefined}
@@ -222,7 +222,7 @@ export default function Header() {
             </Link>
             <Link
               to="/leaderboard"
-              className={`px-3 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              className={`px-2 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                 location.pathname==='/leaderboard'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'
               }`}
               aria-current={location.pathname==='/leaderboard' ? 'page' : undefined}
@@ -231,7 +231,7 @@ export default function Header() {
             </Link>
             <Link
               to="/settings"
-              className={`px-3 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              className={`px-2 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                 location.pathname==='/settings'?'bg-blue-50 text-blue-700 border border-blue-200':'text-gray-600 hover:bg-gray-100'
               }`}
               aria-current={location.pathname==='/settings' ? 'page' : undefined}
@@ -242,7 +242,7 @@ export default function Header() {
         </div>
 
         {/* Right Section */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {/* Auth buttons when logged out */}
           {!user && (
             <div className="hidden sm:flex items-center gap-2 mr-2">
@@ -342,8 +342,8 @@ export default function Header() {
             <Settings className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
           
-          <div className="hidden md:flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 mr-1">
-            <span className="truncate max-w-[120px]" title={profile?.display_name || 'Trading Pro'}>{profile?.display_name || 'Trading Pro'}</span>
+          <div className="hidden lg:flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 mr-1">
+            <span className="truncate max-w-[100px]" title={profile?.display_name || 'Trading Pro'}>{profile?.display_name || 'Trading Pro'}</span>
           </div>
           <button 
             className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
