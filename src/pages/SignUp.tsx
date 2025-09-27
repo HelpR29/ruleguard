@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Logo from '../components/Logo';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 export default function SignUp() {
   const { signUp } = useAuth();
@@ -41,15 +41,9 @@ export default function SignUp() {
       setError(error.message || 'Unable to sign up');
       return;
     }
-    // Check if user is immediately signed in or needs email confirmation
-    const { data } = await supabase.auth.getSession();
-    if (data?.session) {
-      addToast('success', 'Account created successfully! Welcome to LockIn.');
-      navigate('/profile');
-    } else {
-      addToast('info', 'Account created! Please check your email to confirm your account.');
-      navigate('/login', { state: { notice: 'Check your email to confirm your account, then log in.' } });
-    }
+    // Always require email confirmation for new signups
+    addToast('info', 'Account created! Please check your email to confirm your account.');
+    navigate('/login', { state: { notice: 'Check your email to confirm your account, then log in.' } });
   };
 
   return (

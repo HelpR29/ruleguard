@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, startTransition } from 'react';
 import { ArrowRight, ArrowLeft, CheckCircle, ChevronDown } from 'lucide-react';
 import Logo from '../components/Logo';
 import { RULE_TEMPLATES, CATEGORY_COLORS } from '../utils/ruleTemplates';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -19,7 +20,9 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   });
   const [openPacks, setOpenPacks] = useState<string[]>([]);
   const packsRef = useRef<HTMLDivElement | null>(null);
+  const lastToastRef = useRef<{ key: string; time: number } | null>(null);
   const { profile } = useAuth();
+  const { addToast } = useToast();
 
   // Close pack popover when clicking outside the packs container
   useEffect(() => {
@@ -270,11 +273,34 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                         <button
                           type="button"
                           className="px-2 py-1 text-xs rounded bg-blue-600 text-white hover:bg-blue-700"
-                          onClick={() => setFormData(prev => {
-                            const s = new Set(prev.rules);
-                            p.rules.forEach(r => s.add(r));
-                            return { ...prev, rules: Array.from(s) };
-                          })}
+                          onClick={() => {
+                            setFormData(prev => {
+                              const s = new Set(prev.rules);
+                              let added = 0;
+                              p.rules.forEach(r => { if (!s.has(r)) { s.add(r); added++; } });
+
+                              // Scroll to relevant section immediately
+                              const sectionMap: Record<string, string> = {
+                                'Risk Basics': 'risk',
+                                'Psychology Essentials': 'psychology',
+                                'Entry & Exit Core': 'entry-exit',
+                              };
+                              const target = document.getElementById(`section-${sectionMap[p.name]}`);
+                              if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                              // Throttle duplicate toasts in React Strict Mode
+                              const key = `apply-${p.name}-${added}`;
+                              const now = Date.now();
+                              const last = lastToastRef.current;
+                              if (!last || last.key !== key || now - last.time > 1000) {
+                                if (added > 0) addToast('success', `Added ${added} rule${added>1?'s':''} from ${p.name}`);
+                                else addToast('info', `${p.name} already applied`);
+                                lastToastRef.current = { key, time: now };
+                              }
+
+                              return { ...prev, rules: Array.from(s) };
+                            });
+                          }}
                         >Apply</button>
                         <button
                           type="button"
@@ -328,7 +354,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           {/* Templates grouped by category */}
           <div className="space-y-5">
             {RULE_TEMPLATES.map((tpl) => (
-              <div key={tpl.category} className={`rounded-xl border ${CATEGORY_COLORS[tpl.category].border} ${CATEGORY_COLORS[tpl.category].bg} p-4`}>
+              <div key={tpl.category} id={`section-${tpl.category}`} className={`rounded-xl border ${CATEGORY_COLORS[tpl.category].border} ${CATEGORY_COLORS[tpl.category].bg} p-4`}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{tpl.categoryIcon}</span>
@@ -495,7 +521,10 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       // Save settings and complete onboarding
       localStorage.setItem('onboarding_complete', 'true');
       localStorage.setItem('user_settings', JSON.stringify(formData));
-      onComplete();
+      // Defer route tree switch to avoid suspending during click
+      startTransition(() => {
+        onComplete();
+      });
     }
   };
 
@@ -539,18 +568,15 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
         {/* Navigation */}
         <div className="flex justify-between">
-          <button
-            onClick={handlePrev}
-            disabled={currentStep === 0}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-colors ${
-              currentStep === 0
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-            }`}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </button>
+          {currentStep > 0 ? (
+            <button
+              onClick={handlePrev}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl transition-colors text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </button>
+          ) : (<div />)}
 
           <button
             onClick={handleNext}

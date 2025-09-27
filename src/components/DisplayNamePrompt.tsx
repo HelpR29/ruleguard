@@ -16,7 +16,7 @@ export default function DisplayNamePrompt() {
 
   // Listen for external requests to force showing the prompt (e.g., from Onboarding Back button)
   useEffect(() => {
-    const handleForce = () => setForcePrompt(true);
+    const handleForce = () => { setForcePrompt(true); setIsSkipped(false); };
     window.addEventListener('rg:force-name-prompt', handleForce as any);
     // Also respect a transient localStorage flag
     try { if (localStorage.getItem('force_name_prompt') === '1') setForcePrompt(true); } catch {}
@@ -47,7 +47,7 @@ export default function DisplayNamePrompt() {
   // - not skipped
   // - onboarding not yet complete
   // - no display_name exists yet in DB profile, unless forced
-  if (!user || isSkipped || onboardingComplete || (!!profile?.display_name && !forcePrompt)) {
+  if (!user || onboardingComplete || (!!profile?.display_name && !forcePrompt) || (isSkipped && !forcePrompt)) {
     return null;
   }
 
@@ -64,10 +64,13 @@ export default function DisplayNamePrompt() {
       try {
         const { error } = await supabase
           .from('profiles')
-          .upsert({
-            user_id: (user as any).id,
-            display_name: displayName.trim(),
-          });
+          .upsert(
+            {
+              user_id: (user as any).id,
+              display_name: displayName.trim(),
+            },
+            { onConflict: 'user_id' }
+          );
         if (error) {
           // Non-fatal: continue with local fallback and UI update
           console.warn('DB upsert failed, falling back to localStorage:', error.message);

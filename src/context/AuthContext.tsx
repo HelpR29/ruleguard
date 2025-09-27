@@ -33,15 +33,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
-      setProfile(data);
-      // Keep localStorage in sync (for any legacy readers), but do not use it as a fallback
+      
+      // If no profile exists yet, use localStorage fallback if available
+      let finalProfile = data;
+      if (!data?.display_name) {
+        try {
+          const localName = localStorage.getItem('display_name');
+          if (localName) {
+            finalProfile = { display_name: localName };
+          }
+        } catch {}
+      }
+      
+      setProfile(finalProfile);
+      
+      // Keep localStorage in sync
       try {
-        if (data?.display_name) localStorage.setItem('display_name', data.display_name);
+        if (finalProfile?.display_name) localStorage.setItem('display_name', finalProfile.display_name);
         else localStorage.removeItem('display_name');
       } catch {}
     } catch (e) {
       console.error('Error fetching profile', e);
-      setProfile(null);
+      // Fallback to localStorage if DB fails
+      try {
+        const localName = localStorage.getItem('display_name');
+        if (localName) {
+          setProfile({ display_name: localName });
+        } else {
+          setProfile(null);
+        }
+      } catch {
+        setProfile(null);
+      }
     }
   };
 
