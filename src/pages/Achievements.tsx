@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Award, Trophy, Target, TrendingUp, Zap, Star, Crown, Medal, CheckCircle, Lock } from 'lucide-react';
+import { useUser } from '../context/UserContext';
 
 interface Achievement {
   id: string;
@@ -13,79 +14,6 @@ interface Achievement {
   reward?: string;
 }
 
-const achievements: Achievement[] = [
-  {
-    id: 'first_completion',
-    title: 'First Steps',
-    description: 'Complete your first trading rule successfully',
-    icon: Target,
-    category: 'progress',
-    unlocked: true,
-    unlockedAt: '2024-01-15',
-    requirement: '1 completion',
-    reward: '+10 Discipline Points'
-  },
-  {
-    id: 'week_streak',
-    title: 'Week Warrior',
-    description: 'Maintain a 7-day discipline streak - Unlocks avatar selection',
-    icon: Zap,
-    category: 'streak',
-    unlocked: true,
-    unlockedAt: '2024-01-20',
-    requirement: '7-day streak',
-    reward: 'Avatar Selection Unlocked'
-  },
-  {
-    id: 'ten_completions',
-    title: 'Perfect Ten',
-    description: 'Reach 10 successful completions',
-    icon: Award,
-    category: 'progress',
-    unlocked: false,
-    requirement: '10 completions'
-  },
-  {
-    id: 'growth_master',
-    title: 'Growth Master',
-    description: 'Achieve 25% portfolio growth - Earn badge and 25% premium discount',
-    icon: TrendingUp,
-    category: 'growth',
-    unlocked: false,
-    requirement: '25% growth',
-    reward: 'Growth Badge + 25% Premium Discount'
-  },
-  {
-    id: 'discipline_king',
-    title: 'Discipline King',
-    description: 'Maintain 95% discipline score for a month - Earn crown badge and 50% premium discount',
-    icon: Crown,
-    category: 'discipline',
-    unlocked: false,
-    requirement: '95% discipline for 30 days',
-    reward: 'Crown Badge + 50% Premium Discount'
-  },
-  {
-    id: 'halfway_hero',
-    title: 'Halfway Hero',
-    description: 'Complete 25 out of 50 bottles',
-    icon: Medal,
-    category: 'progress',
-    unlocked: false,
-    requirement: '25 completions'
-  },
-  {
-    id: 'champion',
-    title: 'Champion',
-    description: 'Complete all 50 bottles successfully - Earn champion badge and free monthly premium access',
-    icon: Trophy,
-    category: 'special',
-    unlocked: false,
-    requirement: '50 completions',
-    reward: 'Champion Badge + Free Monthly Premium'
-  }
-];
-
 const categoryColors = {
   progress: 'bg-blue-100 text-blue-800',
   discipline: 'bg-purple-100 text-purple-800',
@@ -96,9 +24,96 @@ const categoryColors = {
 
 export default function Achievements() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  
-  const filteredAchievements = selectedCategory === 'all' 
-    ? achievements 
+  const { progress, settings } = useUser();
+
+  // Live stats
+  const stats = useMemo(() => {
+    const completions = Number(progress?.completions || 0);
+    const streak = Number(progress?.streak || 0);
+    const discipline = Number(progress?.disciplineScore || 0);
+    const starting = Number(settings?.startingPortfolio || 0);
+    const growthPer = Number(settings?.growthPerCompletion || 0) / 100;
+    const current = starting ? starting * Math.pow(1 + growthPer, completions) : 0;
+    const growthPct = starting ? ((current - starting) / starting) * 100 : 0;
+    return { completions, streak, discipline, growthPct };
+  }, [progress, settings]);
+
+  // Build achievements dynamically from live stats
+  const achievements: Achievement[] = useMemo(() => {
+    return [
+      {
+        id: 'first_completion',
+        title: 'First Steps',
+        description: 'Complete your first trading rule successfully',
+        icon: Target,
+        category: 'progress',
+        unlocked: stats.completions >= 1,
+        requirement: '1 completion',
+        reward: '+10 Discipline Points'
+      },
+      {
+        id: 'week_streak',
+        title: 'Week Warrior',
+        description: 'Maintain a 7-day discipline streak - Unlocks avatar selection',
+        icon: Zap,
+        category: 'streak',
+        unlocked: stats.streak >= 7,
+        requirement: '7-day streak',
+        reward: 'Avatar Selection Unlocked'
+      },
+      {
+        id: 'ten_completions',
+        title: 'Perfect Ten',
+        description: 'Reach 10 successful completions',
+        icon: Award,
+        category: 'progress',
+        unlocked: stats.completions >= 10,
+        requirement: '10 completions'
+      },
+      {
+        id: 'growth_master',
+        title: 'Growth Master',
+        description: 'Achieve 25% portfolio growth - Earn badge and 25% premium discount',
+        icon: TrendingUp,
+        category: 'growth',
+        unlocked: stats.growthPct >= 25,
+        requirement: '25% growth',
+        reward: 'Growth Badge + 25% Premium Discount'
+      },
+      {
+        id: 'discipline_king',
+        title: 'Discipline King',
+        description: 'Maintain 95% discipline score for a month - Earn crown badge and 50% premium discount',
+        icon: Crown,
+        category: 'discipline',
+        unlocked: stats.discipline >= 95,
+        requirement: '95% discipline for 30 days',
+        reward: 'Crown Badge + 50% Premium Discount'
+      },
+      {
+        id: 'halfway_hero',
+        title: 'Halfway Hero',
+        description: 'Complete 25 out of 50 bottles',
+        icon: Medal,
+        category: 'progress',
+        unlocked: stats.completions >= 25,
+        requirement: '25 completions'
+      },
+      {
+        id: 'champion',
+        title: 'Champion',
+        description: 'Complete all 50 bottles successfully - Earn champion badge and free monthly premium access',
+        icon: Trophy,
+        category: 'special',
+        unlocked: stats.completions >= 50,
+        requirement: '50 completions',
+        reward: 'Champion Badge + Free Monthly Premium'
+      }
+    ];
+  }, [stats]);
+
+  const filteredAchievements = selectedCategory === 'all'
+    ? achievements
     : achievements.filter(a => a.category === selectedCategory);
 
   const unlockedCount = achievements.filter(a => a.unlocked).length;
