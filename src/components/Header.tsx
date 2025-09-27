@@ -34,7 +34,7 @@ export default function Header() {
   const location = useLocation();
   const { progress } = useUser();
   const { theme, toggleTheme } = useTheme();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, loading } = useAuth();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -243,8 +243,8 @@ export default function Header() {
 
         {/* Right Section */}
         <div className="flex items-center gap-2">
-          {/* Auth buttons when logged out */}
-          {!user && (
+          {/* Auth buttons when logged out (hide during auth loading to prevent flicker) */}
+          {!user && !loading && (
             <div className="hidden sm:flex items-center gap-2 mr-2">
               <Link to="/login" className="px-3 py-1 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50">Log in</Link>
               <Link to="/signup" className="px-3 py-1 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Sign up</Link>
