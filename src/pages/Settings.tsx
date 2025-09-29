@@ -7,8 +7,7 @@ import { useToast } from '../context/ToastContext';
 export default function Settings() {
   const { settings, updateSettings } = useUser();
   const [activeTab, setActiveTab] = useState('profile');
-  const { theme, toggleTheme } = useTheme();
-  const { addToast } = useToast();
+const { addToast } = useToast();
 
   const EDIT_COOLDOWN_DAYS = 30;
 
