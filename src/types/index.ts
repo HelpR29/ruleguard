@@ -1,5 +1,5 @@
 /**
- * Core application types for RuleGuard trading discipline application
+ * Core application types for LockIn trading discipline application
  * Provides comprehensive type safety across all components and features
  */
 

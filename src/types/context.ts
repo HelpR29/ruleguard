@@ -1,5 +1,5 @@
 /**
- * Context and hook types for RuleGuard application
+ * Context and hook types for LockIn application
  * Provides type-safe interfaces for React contexts and custom hooks
  */
 
