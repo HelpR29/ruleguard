@@ -115,7 +115,7 @@ export const SecureInput = React.forwardRef<HTMLInputElement, FormFieldProps>(({
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -135,12 +135,12 @@ export const SecureInput = React.forwardRef<HTMLInputElement, FormFieldProps>(({
           maxLength={maxLength}
           className={`w-full px-3 py-2 border rounded-lg transition-all duration-200 ${
             fieldError
-              ? 'border-red-300 dark:border-red-600 focus:border-red-500 focus:ring-red-500'
+              ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
               : isFocused
-                ? 'border-blue-500 dark:border-blue-400 ring-1 ring-blue-500 dark:ring-blue-400'
-                : 'border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400'
+                ? 'border-blue-500 ring-1 ring-blue-500'
+                : 'border-gray-300 focus:border-blue-500:border-blue-400 focus:ring-1 focus:ring-blue-500:ring-blue-400'
           } ${
-            disabled ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed' : 'bg-white dark:bg-gray-700'
+            disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
           }`}
           {...props}
         />
@@ -149,7 +149,7 @@ export const SecureInput = React.forwardRef<HTMLInputElement, FormFieldProps>(({
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600:text-gray-300"
             disabled={disabled}
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -161,7 +161,7 @@ export const SecureInput = React.forwardRef<HTMLInputElement, FormFieldProps>(({
         <motion.p
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1"
+          className="text-sm text-red-600 flex items-center gap-1"
         >
           <AlertCircle className="h-4 w-4" />
           {fieldError}
@@ -222,7 +222,7 @@ export const SecureTextarea = React.forwardRef<HTMLTextAreaElement, FormFieldPro
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -240,12 +240,12 @@ export const SecureTextarea = React.forwardRef<HTMLTextAreaElement, FormFieldPro
         maxLength={maxLength}
         className={`w-full px-3 py-2 border rounded-lg transition-all duration-200 resize-vertical ${
           fieldError
-            ? 'border-red-300 dark:border-red-600 focus:border-red-500 focus:ring-red-500'
+            ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
             : isFocused
-              ? 'border-blue-500 dark:border-blue-400 ring-1 ring-blue-500 dark:ring-blue-400'
-              : 'border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400'
+              ? 'border-blue-500 ring-1 ring-blue-500'
+              : 'border-gray-300 focus:border-blue-500:border-blue-400 focus:ring-1 focus:ring-blue-500:ring-blue-400'
         } ${
-          disabled ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed' : 'bg-white dark:bg-gray-700'
+          disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
         }`}
         rows={4}
         {...props}
@@ -256,7 +256,7 @@ export const SecureTextarea = React.forwardRef<HTMLTextAreaElement, FormFieldPro
           <motion.p
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1"
+            className="text-sm text-red-600 flex items-center gap-1"
           >
             <AlertCircle className="h-4 w-4" />
             {fieldError}
@@ -264,7 +264,7 @@ export const SecureTextarea = React.forwardRef<HTMLTextAreaElement, FormFieldPro
         )}
 
         {maxLength && (
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-xs text-gray-500">
             {value?.length || 0}/{maxLength}
           </span>
         )}
@@ -313,7 +313,7 @@ export const SecureSelect = React.forwardRef<HTMLSelectElement, FormFieldProps>(
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -329,12 +329,12 @@ export const SecureSelect = React.forwardRef<HTMLSelectElement, FormFieldProps>(
         disabled={disabled}
         className={`w-full px-3 py-2 border rounded-lg transition-all duration-200 ${
           fieldError
-            ? 'border-red-300 dark:border-red-600 focus:border-red-500 focus:ring-red-500'
+            ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
             : isFocused
-              ? 'border-blue-500 dark:border-blue-400 ring-1 ring-blue-500 dark:ring-blue-400'
-              : 'border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400'
+              ? 'border-blue-500 ring-1 ring-blue-500'
+              : 'border-gray-300 focus:border-blue-500:border-blue-400 focus:ring-1 focus:ring-blue-500:ring-blue-400'
         } ${
-          disabled ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed' : 'bg-white dark:bg-gray-700'
+          disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
         }`}
         {...props}
       >
@@ -358,7 +358,7 @@ export const SecureSelect = React.forwardRef<HTMLSelectElement, FormFieldProps>(
         <motion.p
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1"
+          className="text-sm text-red-600 flex items-center gap-1"
         >
           <AlertCircle className="h-4 w-4" />
           {fieldError}
@@ -436,7 +436,7 @@ export const SecureFileUpload = React.forwardRef<HTMLInputElement, FormFieldProp
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -447,15 +447,15 @@ export const SecureFileUpload = React.forwardRef<HTMLInputElement, FormFieldProp
         onDrop={handleDrop}
         className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 ${
           isDragOver
-            ? 'border-blue-400 bg-blue-50 dark:border-blue-300 dark:bg-blue-900/20'
-            : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+            ? 'border-blue-400 bg-blue-50/20'
+            : 'border-gray-300 hover:border-gray-400:border-gray-500'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       >
         <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-gray-600">
           {placeholder || 'Drop files here or click to browse'}
         </p>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+        <p className="text-xs text-gray-500 mt-1">
           Max file size: {Math.round(SECURITY_CONFIG.MAX_FILE_SIZE / 1024 / 1024)}MB
         </p>
 
@@ -477,25 +477,25 @@ export const SecureFileUpload = React.forwardRef<HTMLInputElement, FormFieldProp
       {files.length > 0 && (
         <div className="space-y-2">
           {files.map((file, index) => (
-            <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
+            <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded flex items-center justify-center">
-                  <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
+                  <span className="text-xs font-medium text-blue-600">
                     {file.name.substring(0, 2).toUpperCase()}
                   </span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate max-w-48">
+                  <p className="text-sm font-medium text-gray-900 truncate max-w-48">
                     {file.name}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500">
                     {(file.size / 1024).toFixed(1)} KB
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => removeFile(index)}
-                className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                className="p-1 text-gray-400 hover:text-red-600:text-red-400"
                 disabled={disabled}
               >
                 <X className="h-4 w-4" />
@@ -509,7 +509,7 @@ export const SecureFileUpload = React.forwardRef<HTMLInputElement, FormFieldProp
         <motion.p
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1"
+          className="text-sm text-red-600 flex items-center gap-1"
         >
           <AlertCircle className="h-4 w-4" />
           {error}
@@ -663,7 +663,7 @@ export const SecureForm = ({
         <button
           type="button"
           onClick={() => formRef.current?.reset()}
-          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50:bg-gray-700 transition-colors"
           disabled={disabled || isSubmitting}
         >
           Reset

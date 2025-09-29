@@ -143,7 +143,7 @@ export default function Header() {
 
   return (
     <header
-      className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30"
+      className="bg-white border-b border-gray-200 sticky top-0 z-30"
       role="banner"
       aria-label="Main navigation header"
       onKeyDown={handleKeyDown}
@@ -267,7 +267,7 @@ export default function Header() {
             title="Discipline Score = % of trades logged as rule‑compliant. It rises when you follow selected rules, and decreases when you record violations."
           >
             <div className="text-right" title="Discipline Score explanation">
-              <p className="text-xs text-gray-500 dark:text-gray-300" aria-label="Current discipline score percentage">
+              <p className="text-xs text-gray-500" aria-label="Current discipline score percentage">
                 Discipline Score
               </p>
               <p className="text-sm font-bold text-green-600" aria-label={`${progress.disciplineScore} percent discipline score`}>
@@ -309,9 +309,9 @@ export default function Header() {
             </div>
           </div>
 
-          <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative">
+          <button className="p-2 rounded-lg hover:bg-gray-100:bg-gray-800 transition-colors relative">
             <Bell 
-              className="h-5 w-5 text-gray-600 dark:text-gray-300" 
+              className="h-5 w-5 text-gray-600" 
               onClick={() => setShowNotifications(true)}
             />
             {unreadCount > 0 && (
@@ -325,33 +325,33 @@ export default function Header() {
           
           <button 
             onClick={toggleTheme}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-100:bg-gray-800 transition-colors"
           >
             {theme === 'light' ? (
-              <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+              <Moon className="h-5 w-5 text-gray-600" />
             ) : (
-              <Sun className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+              <Sun className="h-5 w-5 text-gray-600" />
             )}
           </button>
           
           <button
             onClick={() => navigate('/achievements')}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-100:bg-gray-800 transition-colors"
             aria-label="View achievements and milestones"
             title="View achievements and milestones"
           >
             <Crown className="h-5 w-5 text-purple-600" />
           </button>
           
-          <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onClick={()=>navigate('/settings')}>
-            <Settings className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+          <button className="p-2 rounded-lg hover:bg-gray-100:bg-gray-800 transition-colors" onClick={()=>navigate('/settings')}>
+            <Settings className="h-5 w-5 text-gray-600" />
           </button>
           
-          <div className="hidden lg:flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 mr-1">
+          <div className="hidden lg:flex items-center gap-2 text-sm text-gray-700 mr-1">
             <span className="truncate max-w-[100px]" title={profile?.display_name || 'Trading Pro'}>{profile?.display_name || 'Trading Pro'}</span>
           </div>
           <button 
-            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
+            className="p-1 rounded-lg hover:bg-gray-100:bg-gray-800 transition-colors relative"
             onClick={() => setShowProfileMenu(prev => !prev)}
           >
             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -365,10 +365,10 @@ export default function Header() {
             </div>
           </button>
           {showProfileMenu && (
-            <div className="absolute right-4 top-14 bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 w-56 z-40">
+            <div className="absolute right-4 top-14 bg-white shadow-lg rounded-xl border border-gray-200 w-56 z-40">
               <button
                 onClick={() => { setShowProfileMenu(false); navigate('/profile'); }}
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2"
+                className="w-full text-left px-4 py-2 hover:bg-gray-50:bg-gray-700 text-sm flex items-center gap-2"
               >
                 <User className="h-4 w-4" />
                 View Profile
@@ -383,27 +383,27 @@ export default function Header() {
                     setShowUpgradeModal(true);
                   }
                 }}
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2"
+                className="w-full text-left px-4 py-2 hover:bg-gray-50:bg-gray-700 text-sm flex items-center gap-2"
               >
                 <Settings className="h-4 w-4" />
                 Edit Profile
               </button>
               <button
                 onClick={() => { setShowProfileMenu(false); navigate('/settings'); }}
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+                className="w-full text-left px-4 py-2 hover:bg-gray-50:bg-gray-700 text-sm"
               >
                 Settings
               </button>
               <button
                 onClick={() => { setShowProfileMenu(false); navigate('/premium'); }}
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+                className="w-full text-left px-4 py-2 hover:bg-gray-50:bg-gray-700 text-sm"
               >
                 Premium
               </button>
-              <div className="h-px bg-gray-200 dark:bg-gray-700 my-1" />
+              <div className="h-px bg-gray-200 my-1" />
               <button
                 onClick={handleLogout}
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-red-600"
+                className="w-full text-left px-4 py-2 hover:bg-gray-50:bg-gray-700 text-sm text-red-600"
               >
                 Logout
               </button>
@@ -421,14 +421,14 @@ export default function Header() {
       {/* Avatar Selection Modal */}
       {showAvatarModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Profile Avatar</h3>
+              <h3 className="text-xl font-bold text-gray-900">Profile Avatar</h3>
               <button
                 onClick={() => setShowAvatarModal(false)}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="p-2 rounded-lg hover:bg-gray-100:bg-gray-700 transition-colors"
               >
-                <span className="text-gray-500 dark:text-gray-300">✕</span>
+                <span className="text-gray-500">✕</span>
               </button>
             </div>
             <AvatarSelector
@@ -440,7 +440,7 @@ export default function Header() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowAvatarModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50:bg-gray-700 transition-colors"
               >
                 Cancel
               </button>
@@ -466,15 +466,15 @@ export default function Header() {
       {/* Upgrade Prompt Modal */}
       {showUpgradeModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Upgrade required</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Upgrade required</h3>
+            <p className="text-gray-600 mb-4">
               Avatar editing is locked after initial setup. Unlock editing with Premium, or by earning the Champion badge.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowUpgradeModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50:bg-gray-700 transition-colors"
               >
                 Not now
               </button>

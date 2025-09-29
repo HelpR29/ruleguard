@@ -47,7 +47,7 @@ export function SearchInput({
   return (
     <div className={`relative ${className}`}>
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <Search className="h-4 w-4 text-gray-500 dark:text-gray-300" />
+        <Search className="h-4 w-4 text-gray-500" />
       </div>
       <input
         type="text"
@@ -56,13 +56,13 @@ export function SearchInput({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}
-        className="block w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+        className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
       />
       {showClearButton && localValue && (
         <button
           type="button"
           onClick={handleClear}
-          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-200"
+          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-600:text-gray-200"
         >
           <X className="h-4 w-4" />
         </button>
@@ -116,8 +116,8 @@ export function SearchFilter({
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
               showFilters
-                ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
-                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                ? 'border-blue-500 bg-blue-50 text-blue-700/20'
+                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50:bg-gray-700'
             }`}
           >
             <Filter className="h-4 w-4" />
@@ -128,18 +128,18 @@ export function SearchFilter({
 
       {/* Results Count */}
       {resultsCount !== undefined && (
-        <div className="text-sm text-gray-600 dark:text-gray-300">
+        <div className="text-sm text-gray-600">
           {resultsCount} result{resultsCount !== 1 ? 's' : ''} found
         </div>
       )}
 
       {/* Filters Panel */}
       {showFilters && filters.length > 0 && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filters.map((filter, index) => (
               <div key={index}>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   {filter.label}
                 </label>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
@@ -164,10 +164,10 @@ export function SearchFilter({
                         }}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="text-gray-700 dark:text-gray-300">
+                      <span className="text-gray-700">
                         {option.label}
                         {option.count !== undefined && (
-                          <span className="ml-1 text-gray-500 dark:text-gray-300">
+                          <span className="ml-1 text-gray-500">
                             ({option.count})
                           </span>
                         )}

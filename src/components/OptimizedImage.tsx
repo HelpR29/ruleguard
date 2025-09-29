@@ -91,10 +91,10 @@ export const ResponsiveImage = React.memo(({
   if (hasError) {
     return (
       <div
-        className={`bg-gray-200 dark:bg-gray-700 flex items-center justify-center ${className}`}
+        className={`bg-gray-200 flex items-center justify-center ${className}`}
         style={{ width, height }}
       >
-        <div className="text-gray-500 dark:text-gray-300 text-sm">
+        <div className="text-gray-500 text-sm">
           Failed to load image
         </div>
       </div>
@@ -116,7 +116,7 @@ export const ResponsiveImage = React.memo(({
       {/* Placeholder */}
       {placeholder && !isLoaded && !blurDataURL && (
         <div
-          className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse"
+          className="absolute inset-0 bg-gray-200 animate-pulse"
           style={{ width, height }}
         />
       )}

@@ -352,11 +352,11 @@ export default function SmartNotifications() {
       {/* Notification Bell Button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        className="relative p-2 rounded-lg hover:bg-gray-100:bg-gray-700 transition-colors"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        <Bell className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+        <Bell className="h-5 w-5 text-gray-600" />
 
         {unreadCount > 0 && (
           <motion.span
@@ -375,19 +375,19 @@ export default function SmartNotifications() {
         {isOpen && (
           <motion.div
             ref={panelRef}
-            className="absolute right-0 mt-2 w-96 max-h-96 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden"
+            className="absolute right-0 mt-2 w-96 max-h-96 bg-white rounded-2xl shadow-xl border border-gray-200 z-50 overflow-hidden"
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
               <div className="flex items-center gap-2">
                 <button
                   onClick={markAllAsRead}
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                  className="text-sm text-blue-600 hover:text-blue-700:text-blue-300"
                 >
                   Mark all read
                 </button>
@@ -395,15 +395,15 @@ export default function SmartNotifications() {
                   onClick={() => setActiveTab(activeTab === 'unread' ? 'all' : 'unread')}
                   className={`text-sm px-2 py-1 rounded ${
                     activeTab === 'unread'
-                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                      : 'text-gray-600 dark:text-gray-400'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'text-gray-600'
                   }`}
                 >
                   {activeTab === 'unread' ? 'All' : 'Unread'}
                 </button>
                 <button
                   onClick={() => setActiveTab('settings')}
-                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="p-1 text-gray-400 hover:text-gray-600:text-gray-300"
                 >
                   <Settings className="h-4 w-4" />
                 </button>
@@ -422,13 +422,13 @@ export default function SmartNotifications() {
             ) : (
               <div className="max-h-80 overflow-y-auto">
                 {filteredNotifications.length === 0 ? (
-                  <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                  <div className="p-8 text-center text-gray-500">
                     <Bell className="h-12 w-12 mx-auto mb-3 opacity-50" />
                     <p>No notifications</p>
                     <p className="text-sm">You're all caught up!</p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  <div className="divide-y divide-gray-200">
                     {filteredNotifications.map((notification) => (
                       <NotificationItemComponent
                         key={notification.id}
@@ -444,10 +444,10 @@ export default function SmartNotifications() {
 
             {/* Footer */}
             {activeTab !== 'settings' && notifications.length > 0 && (
-              <div className="p-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="p-3 border-t border-gray-200">
                 <button
                   onClick={clearAll}
-                  className="w-full text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                  className="w-full text-sm text-red-600 hover:text-red-700:text-red-300"
                 >
                   Clear all notifications
                 </button>
@@ -496,8 +496,8 @@ const NotificationItemComponent = ({
 
   return (
     <motion.div
-      className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${
-        !notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+      className={`p-4 hover:bg-gray-50:bg-gray-700 cursor-pointer transition-colors ${
+        !notification.read ? 'bg-blue-50/20' : ''
       }`}
       onClick={() => onMarkAsRead(notification.id)}
       initial={{ opacity: 0, x: 20 }}
@@ -512,22 +512,22 @@ const NotificationItemComponent = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
+              <p className="text-sm font-medium text-gray-900">
                 {notification.title}
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-600 mt-1">
                 {notification.message}
               </p>
               <div className="flex items-center gap-2 mt-2">
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-gray-500">
                   {getTimeAgo(notification.timestamp)}
                 </span>
                 <span className={`px-2 py-0.5 rounded-full text-xs ${
                   notification.priority === 'high'
-                    ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    ? 'bg-red-100 text-red-800'
                     : notification.priority === 'medium'
-                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                    : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-gray-100 text-gray-800'
                 }`}>
                   {notification.priority}
                 </span>
@@ -539,7 +539,7 @@ const NotificationItemComponent = ({
                 e.stopPropagation();
                 onDelete(notification.id);
               }}
-              className="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600:text-gray-300"
             >
               <X className="h-4 w-4" />
             </button>
@@ -586,7 +586,7 @@ const NotificationSettingsPanel = ({
     <div className="p-4 space-y-6 max-h-80 overflow-y-auto">
       {/* Channels */}
       <div>
-        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Notification Channels</h4>
+        <h4 className="text-sm font-medium text-gray-900 mb-3">Notification Channels</h4>
         <div className="space-y-3">
           {[
             { key: 'inApp', label: 'In-App Notifications', icon: Bell },
@@ -596,7 +596,7 @@ const NotificationSettingsPanel = ({
             <label key={key} className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Icon className="h-4 w-4 text-gray-400" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
+                <span className="text-sm text-gray-700">{label}</span>
               </div>
               <input
                 type="checkbox"
@@ -608,7 +608,7 @@ const NotificationSettingsPanel = ({
                     [key]: e.target.checked
                   }
                 })}
-                className="rounded border-gray-300 dark:border-gray-600"
+                className="rounded border-gray-300"
               />
             </label>
           ))}
@@ -617,7 +617,7 @@ const NotificationSettingsPanel = ({
 
       {/* Categories */}
       <div>
-        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Categories</h4>
+        <h4 className="text-sm font-medium text-gray-900 mb-3">Categories</h4>
         <div className="space-y-3">
           {[
             { key: 'trading', label: 'Trading Alerts' },
@@ -626,7 +626,7 @@ const NotificationSettingsPanel = ({
             { key: 'social', label: 'Social Activity' }
           ].map(({ key, label }) => (
             <label key={key} className="flex items-center justify-between">
-              <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
+              <span className="text-sm text-gray-700">{label}</span>
               <input
                 type="checkbox"
                 checked={settings.categories[key as keyof typeof settings.categories]}
@@ -637,7 +637,7 @@ const NotificationSettingsPanel = ({
                     [key]: e.target.checked
                   }
                 })}
-                className="rounded border-gray-300 dark:border-gray-600"
+                className="rounded border-gray-300"
               />
             </label>
           ))}
@@ -646,10 +646,10 @@ const NotificationSettingsPanel = ({
 
       {/* Quiet Hours */}
       <div>
-        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Quiet Hours</h4>
+        <h4 className="text-sm font-medium text-gray-900 mb-3">Quiet Hours</h4>
         <div className="space-y-3">
           <label className="flex items-center justify-between">
-            <span className="text-sm text-gray-700 dark:text-gray-300">Enable Quiet Hours</span>
+            <span className="text-sm text-gray-700">Enable Quiet Hours</span>
             <input
               type="checkbox"
               checked={settings.quietHours.enabled}
@@ -660,14 +660,14 @@ const NotificationSettingsPanel = ({
                   enabled: e.target.checked
                 }
               })}
-              className="rounded border-gray-300 dark:border-gray-600"
+              className="rounded border-gray-300"
             />
           </label>
 
           {settings.quietHours.enabled && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Start</label>
+                <label className="block text-xs text-gray-600 mb-1">Start</label>
                 <input
                   type="time"
                   value={settings.quietHours.start}
@@ -678,11 +678,11 @@ const NotificationSettingsPanel = ({
                       start: e.target.value
                     }
                   })}
-                  className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
+                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-white"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">End</label>
+                <label className="block text-xs text-gray-600 mb-1">End</label>
                 <input
                   type="time"
                   value={settings.quietHours.end}
@@ -693,7 +693,7 @@ const NotificationSettingsPanel = ({
                       end: e.target.value
                     }
                   })}
-                  className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
+                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-white"
                 />
               </div>
             </div>
@@ -703,17 +703,17 @@ const NotificationSettingsPanel = ({
 
       {/* Preferences */}
       <div>
-        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Preferences</h4>
+        <h4 className="text-sm font-medium text-gray-900 mb-3">Preferences</h4>
         <div className="space-y-3">
           <div>
-            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Frequency</label>
+            <label className="block text-xs text-gray-600 mb-1">Frequency</label>
             <select
               value={preferences.frequency}
               onChange={(e) => onPreferencesChange({
                 ...preferences,
                 frequency: e.target.value as NotificationPreferences['frequency']
               })}
-              className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
+              className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-white"
             >
               <option value="realtime">Real-time</option>
               <option value="hourly">Hourly</option>
@@ -723,7 +723,7 @@ const NotificationSettingsPanel = ({
           </div>
 
           <div>
-            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Max Notifications</label>
+            <label className="block text-xs text-gray-600 mb-1">Max Notifications</label>
             <input
               type="number"
               min="1"
@@ -733,14 +733,14 @@ const NotificationSettingsPanel = ({
                 ...preferences,
                 maxNotifications: parseInt(e.target.value)
               })}
-              className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
+              className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-white"
             />
           </div>
         </div>
       </div>
 
       {/* Permission Request */}
-      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="pt-4 border-t border-gray-200">
         <button
           onClick={onRequestPermission}
           className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

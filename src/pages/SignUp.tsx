@@ -57,7 +57,7 @@ export default function SignUp() {
           <p className="text-sm text-gray-600 mt-1">Start tracking discipline and invite friends.</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           {/* Supabase Configuration Status */}
           {!isSupabaseConfigured() && (
             <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -79,7 +79,7 @@ export default function SignUp() {
                 required 
                 autoComplete="email"
                 aria-describedby={error ? "signup-error" : undefined}
-                className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-2 rounded"
+                className="w-full border border-gray-300 bg-white p-2 rounded"
               />
             </div>
             <div>
@@ -92,7 +92,7 @@ export default function SignUp() {
                 required 
                 autoComplete="new-password"
                 aria-describedby={error ? "signup-error" : passwordStrength ? "password-strength" : undefined}
-                className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-2 rounded"
+                className="w-full border border-gray-300 bg-white p-2 rounded"
                 minLength={6}
               />
               {passwordStrength && (

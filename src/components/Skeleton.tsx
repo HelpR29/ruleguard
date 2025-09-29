@@ -7,7 +7,7 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ className = '', variant = 'rectangular', lines = 1 }: SkeletonProps) {
-  const baseClasses = 'animate-pulse bg-gray-200 dark:bg-gray-700';
+  const baseClasses = 'animate-pulse bg-gray-200';
 
   if (variant === 'circular') {
     return <div className={`rounded-full ${baseClasses} ${className}`} />;
@@ -71,7 +71,7 @@ export function ListSkeleton({ items = 5, hasAvatar = false }: ListSkeletonProps
   return (
     <div className="space-y-4">
       {Array.from({ length: items }).map((_, i) => (
-        <div key={i} className="flex items-center gap-4 p-4 rounded-lg bg-white dark:bg-gray-800">
+        <div key={i} className="flex items-center gap-4 p-4 rounded-lg bg-white">
           {hasAvatar && <Skeleton variant="circular" className="w-10 h-10" />}
           <div className="flex-1">
             <Skeleton variant="text" lines={2} />
@@ -92,7 +92,7 @@ export function TableSkeleton({ rows = 5, columns = 4 }: TableSkeletonProps) {
   return (
     <div className="rounded-2xl overflow-hidden card-surface">
       {/* Header */}
-      <div className="grid gap-4 p-4 bg-gray-50 dark:bg-gray-800" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+      <div className="grid gap-4 p-4 bg-gray-50" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
         {Array.from({ length: columns }).map((_, i) => (
           <Skeleton key={`header-${i}`} variant="text" lines={1} />
         ))}
@@ -100,7 +100,7 @@ export function TableSkeleton({ rows = 5, columns = 4 }: TableSkeletonProps) {
 
       {/* Rows */}
       {Array.from({ length: rows }).map((_, rowIndex) => (
-        <div key={rowIndex} className="grid gap-4 p-4 border-t border-gray-200 dark:border-gray-700" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+        <div key={rowIndex} className="grid gap-4 p-4 border-t border-gray-200" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
           {Array.from({ length: columns }).map((_, colIndex) => (
             <Skeleton key={`cell-${rowIndex}-${colIndex}`} variant="text" lines={1} />
           ))}

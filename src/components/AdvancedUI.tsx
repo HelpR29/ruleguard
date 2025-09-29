@@ -190,7 +190,7 @@ export const Skeleton = ({
   className?: string;
   variant?: 'rounded' | 'circular' | 'rectangular';
 }) => {
-  const baseClasses = 'animate-pulse bg-gray-200 dark:bg-gray-700';
+  const baseClasses = 'animate-pulse bg-gray-200';
 
   const variantClasses = {
     rounded: 'rounded',
@@ -250,10 +250,10 @@ export const LoadingSpinner = ({
   };
 
   const colorClasses = {
-    blue: 'text-blue-600 dark:text-blue-400',
-    green: 'text-green-600 dark:text-green-400',
-    purple: 'text-purple-600 dark:text-purple-400',
-    gray: 'text-gray-600 dark:text-gray-400'
+    blue: 'text-blue-600',
+    green: 'text-green-600',
+    purple: 'text-purple-600',
+    gray: 'text-gray-600'
   };
 
   return (
@@ -308,10 +308,10 @@ export const ThemeCard = ({
   const { theme } = useTheme();
 
   const variants = {
-    default: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700',
-    elevated: 'bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700',
-    outlined: 'bg-transparent border-2 border-gray-300 dark:border-gray-600',
-    filled: 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
+    default: 'bg-white border border-gray-200',
+    elevated: 'bg-white shadow-lg border border-gray-200',
+    outlined: 'bg-transparent border-2 border-gray-300',
+    filled: 'bg-gray-50 border border-gray-200'
   };
 
   return (
@@ -339,10 +339,10 @@ export const GradientText = ({
   gradient?: 'blue-purple' | 'green-blue' | 'purple-pink' | 'orange-red';
 }) => {
   const gradients = {
-    'blue-purple': 'from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400',
-    'green-blue': 'from-green-600 to-blue-600 dark:from-green-400 dark:to-blue-400',
-    'purple-pink': 'from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400',
-    'orange-red': 'from-orange-500 to-red-500 dark:from-orange-400 dark:to-red-400'
+    'blue-purple': 'from-blue-600 to-purple-600',
+    'green-blue': 'from-green-600 to-blue-600',
+    'purple-pink': 'from-purple-600 to-pink-600',
+    'orange-red': 'from-orange-500 to-red-500'
   };
 
   return (
@@ -481,14 +481,14 @@ export const AnimatedProgressBar = ({
   color?: 'blue' | 'green' | 'purple' | 'orange';
 }) => {
   const colors = {
-    blue: 'bg-blue-600 dark:bg-blue-400',
-    green: 'bg-green-600 dark:bg-green-400',
-    purple: 'bg-purple-600 dark:bg-purple-400',
-    orange: 'bg-orange-600 dark:bg-orange-400'
+    blue: 'bg-blue-600',
+    green: 'bg-green-600',
+    purple: 'bg-purple-600',
+    orange: 'bg-orange-600'
   };
 
   return (
-    <div className={`w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 ${className}`}>
+    <div className={`w-full bg-gray-200 rounded-full h-3 ${className}`}>
       <motion.div
         className={`h-3 rounded-full ${colors[color]}`}
         initial={{ width: 0 }}
@@ -497,7 +497,7 @@ export const AnimatedProgressBar = ({
       />
       {showPercentage && (
         <motion.span
-          className="text-xs text-gray-600 dark:text-gray-400 mt-1 block"
+          className="text-xs text-gray-600 mt-1 block"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
@@ -646,7 +646,7 @@ export const HighContrastWrapper = ({
 
   if (isHighContrast) {
     return (
-      <div className={`border-2 border-black dark:border-white ${className}`}>
+      <div className={`border-2 border-black ${className}`}>
         {children}
       </div>
     );
@@ -702,7 +702,7 @@ export const LazyImage = ({
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {placeholder === 'blur' && !isLoaded && (
-        <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse" />
+        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
       )}
 
       {isInView && (

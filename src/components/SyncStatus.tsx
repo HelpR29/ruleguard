@@ -92,14 +92,14 @@ export default function SyncStatus({ userId, compact = false }: SyncStatusProps)
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-gray-900 dark:text-white">Sync Status</h3>
+        <h3 className="text-sm font-medium text-gray-900">Sync Status</h3>
         {syncStatus.supabaseConfigured && syncStatus.isOnline && (
           <button
             onClick={handleManualSync}
             disabled={isManualSyncing || syncStatus.syncInProgress}
-            className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <RefreshCw className={`h-3 w-3 ${isManualSyncing ? 'animate-spin' : ''}`} />
             Sync Now
@@ -116,7 +116,7 @@ export default function SyncStatus({ userId, compact = false }: SyncStatusProps)
             ) : (
               <WifiOff className="h-4 w-4 text-red-500" />
             )}
-            <span className="text-sm text-gray-700 dark:text-gray-300">
+            <span className="text-sm text-gray-700">
               Connection
             </span>
           </div>
@@ -135,7 +135,7 @@ export default function SyncStatus({ userId, compact = false }: SyncStatusProps)
             ) : (
               <CloudOff className="h-4 w-4 text-gray-500" />
             )}
-            <span className="text-sm text-gray-700 dark:text-gray-300">
+            <span className="text-sm text-gray-700">
               Cloud Sync
             </span>
           </div>
@@ -154,7 +154,7 @@ export default function SyncStatus({ userId, compact = false }: SyncStatusProps)
                 (syncStatus.syncInProgress || isManualSyncing) ? 'animate-spin' : ''
               }`} 
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
+            <span className="text-sm text-gray-700">
               Status
             </span>
           </div>
@@ -166,7 +166,7 @@ export default function SyncStatus({ userId, compact = false }: SyncStatusProps)
         {/* Last Sync Time */}
         {lastSyncTime && (
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-700 dark:text-gray-300">
+            <span className="text-sm text-gray-700">
               Last Sync
             </span>
             <span className="text-sm text-gray-500">
@@ -177,10 +177,10 @@ export default function SyncStatus({ userId, compact = false }: SyncStatusProps)
 
         {/* Pending Changes */}
         {syncStatus.syncQueueSize > 0 && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+          <div className="bg-yellow-50/20 border border-yellow-200 rounded-lg p-3">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-              <span className="text-sm text-yellow-800 dark:text-yellow-200">
+              <Clock className="h-4 w-4 text-yellow-600" />
+              <span className="text-sm text-yellow-800">
                 {syncStatus.syncQueueSize} change{syncStatus.syncQueueSize !== 1 ? 's' : ''} pending sync
               </span>
             </div>
@@ -189,10 +189,10 @@ export default function SyncStatus({ userId, compact = false }: SyncStatusProps)
 
         {/* Offline Notice */}
         {!syncStatus.isOnline && syncStatus.supabaseConfigured && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+          <div className="bg-red-50/20 border border-red-200 rounded-lg p-3">
             <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-              <span className="text-sm text-red-800 dark:text-red-200">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <span className="text-sm text-red-800">
                 Working offline. Changes will sync when connection is restored.
               </span>
             </div>
@@ -201,10 +201,10 @@ export default function SyncStatus({ userId, compact = false }: SyncStatusProps)
 
         {/* No Cloud Sync Notice */}
         {!syncStatus.supabaseConfigured && (
-          <div className="bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+          <div className="bg-gray-50/20 border border-gray-200 rounded-lg p-3">
             <div className="flex items-center gap-2">
-              <Database className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-              <span className="text-sm text-gray-700 dark:text-gray-300">
+              <Database className="h-4 w-4 text-gray-600" />
+              <span className="text-sm text-gray-700">
                 Using local storage only. Set up Supabase for cloud sync.
               </span>
             </div>

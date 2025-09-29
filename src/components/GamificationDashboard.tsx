@@ -148,7 +148,7 @@ export default function GamificationDashboard({ className = '' }: GamificationDa
   const completionRate = totalAchievements > 0 ? (completedAchievements / totalAchievements) * 100 : 0;
 
   return (
-    <div className={`bg-gray-50 dark:bg-gray-900 min-h-screen ${className}`}>
+    <div className={`bg-gray-50 min-h-screen ${className}`}>
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
         <motion.div
@@ -156,10 +156,10 @@ export default function GamificationDashboard({ className = '' }: GamificationDa
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Trading Journey
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600">
             Track your progress, unlock achievements, and compete with fellow traders
           </p>
         </motion.div>
@@ -182,56 +182,56 @@ export default function GamificationDashboard({ className = '' }: GamificationDa
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+          <div className="bg-white rounded-lg p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <Zap className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Zap className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Level</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">
+                <p className="text-sm text-gray-600">Level</p>
+                <p className="text-xl font-bold text-gray-900">
                   {userLevel.currentLevel}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+          <div className="bg-white rounded-lg p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
-                <Flame className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <Flame className="h-5 w-5 text-orange-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Streak</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">
+                <p className="text-sm text-gray-600">Streak</p>
+                <p className="text-xl font-bold text-gray-900">
                   {streakData.current}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+          <div className="bg-white rounded-lg p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                <Trophy className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <div className="p-2 bg-green-100 rounded-lg">
+                <Trophy className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Achievements</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">
+                <p className="text-sm text-gray-600">Achievements</p>
+                <p className="text-xl font-bold text-gray-900">
                   {completedAchievements}/{totalAchievements}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+          <div className="bg-white rounded-lg p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                <Star className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Star className="h-5 w-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Win Rate</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">
+                <p className="text-sm text-gray-600">Win Rate</p>
+                <p className="text-xl font-bold text-gray-900">
                   {userLevel.lifetimeStats.totalTrades > 0
                     ? `${(userLevel.lifetimeStats.totalProfit / Math.max(userLevel.lifetimeStats.totalTrades, 1) * 100).toFixed(1)}%`
                     : '0%'
@@ -244,12 +244,12 @@ export default function GamificationDashboard({ className = '' }: GamificationDa
 
         {/* Navigation Tabs */}
         <motion.div
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm"
+          className="bg-white rounded-lg shadow-sm"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <div className="border-b border-gray-200 dark:border-gray-700">
+          <div className="border-b border-gray-200">
             <nav className="flex">
               {[
                 { id: 'overview', name: 'Overview', icon: Target },
@@ -262,8 +262,8 @@ export default function GamificationDashboard({ className = '' }: GamificationDa
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors ${
                     activeTab === tab.id
-                      ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      ? 'border-b-2 border-blue-500 text-blue-600'
+                      : 'text-gray-600 hover:text-gray-900:text-white'
                   }`}
                 >
                   <tab.icon className="h-4 w-4" />
@@ -338,7 +338,7 @@ const OverviewTab = ({
 
       {/* Recent Achievements */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Recent Achievements
         </h3>
 
@@ -347,25 +347,25 @@ const OverviewTab = ({
             {recentAchievements.map((achievement) => (
               <motion.div
                 key={achievement.id}
-                className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
               >
                 <div className="text-2xl">{achievement.icon}</div>
                 <div className="flex-1">
-                  <h4 className="font-medium text-gray-900 dark:text-white">
+                  <h4 className="font-medium text-gray-900">
                     {achievement.title}
                   </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600">
                     {achievement.description}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-gray-500 mt-1">
                     Unlocked {new Date(achievement.unlockedAt!).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="flex gap-1">
                   {achievement.rewards.map((reward, index) => (
-                    <div key={index} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded">
+                    <div key={index} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
                       {reward.description}
                     </div>
                   ))}
@@ -374,7 +374,7 @@ const OverviewTab = ({
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-8 text-gray-500">
             <Trophy className="h-12 w-12 mx-auto mb-3 opacity-50" />
             <p>No achievements unlocked yet</p>
             <p className="text-sm">Keep trading to unlock your first achievement!</p>
@@ -412,8 +412,8 @@ const AchievementsTab = ({
             onClick={() => onCategoryChange(category.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               selectedCategory === category.id
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                ? 'bg-blue-100 text-blue-700'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200:bg-gray-700'
             }`}
           >
             <category.icon className="h-4 w-4" />
@@ -424,25 +424,25 @@ const AchievementsTab = ({
 
       {/* Achievement Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">
+        <div className="text-center p-4 bg-gray-50 rounded-lg">
+          <div className="text-2xl font-bold text-gray-900">
             {unlockedAchievements.length}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Unlocked</div>
+          <div className="text-sm text-gray-600">Unlocked</div>
         </div>
 
-        <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">
+        <div className="text-center p-4 bg-gray-50 rounded-lg">
+          <div className="text-2xl font-bold text-gray-900">
             {lockedAchievements.length}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Locked</div>
+          <div className="text-sm text-gray-600">Locked</div>
         </div>
 
-        <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">
+        <div className="text-center p-4 bg-gray-50 rounded-lg">
+          <div className="text-2xl font-bold text-gray-900">
             {achievements.length > 0 ? Math.round((unlockedAchievements.length / achievements.length) * 100) : 0}%
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Complete</div>
+          <div className="text-sm text-gray-600">Complete</div>
         </div>
       </div>
 
@@ -461,7 +461,7 @@ const AchievementsTab = ({
           ))}
         </div>
       ) : (
-        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+        <div className="text-center py-12 text-gray-500">
           <Award className="h-16 w-16 mx-auto mb-4 opacity-50" />
           <p className="text-lg">No achievements found</p>
           <p className="text-sm">Try selecting a different category</p>
@@ -490,32 +490,32 @@ const LeaderboardTab = ({
 
       {/* Additional Leaderboard Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-          <h4 className="font-medium text-gray-900 dark:text-white mb-2">Your Rank</h4>
-          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <h4 className="font-medium text-gray-900 mb-2">Your Rank</h4>
+          <div className="text-2xl font-bold text-blue-600">
             #{entries.find(e => e.isCurrentUser)?.rank || '?'}
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600">
             Out of {entries.length} traders
           </p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-          <h4 className="font-medium text-gray-900 dark:text-white mb-2">This Week</h4>
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <h4 className="font-medium text-gray-900 mb-2">This Week</h4>
+          <div className="text-2xl font-bold text-green-600">
             +{entries.find(e => e.isCurrentUser)?.change || 0}
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600">
             Position change
           </p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-          <h4 className="font-medium text-gray-900 dark:text-white mb-2">Top 10%</h4>
-          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <h4 className="font-medium text-gray-900 mb-2">Top 10%</h4>
+          <div className="text-2xl font-bold text-purple-600">
             {entries.length > 0 ? Math.round((1 / entries.length) * 100) : 0}%
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600">
             Achievement rate
           </p>
         </div>
@@ -590,8 +590,8 @@ const BadgesTab = () => {
             onClick={() => setSelectedRarity(rarity.id)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               selectedRarity === rarity.id
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                ? 'bg-blue-100 text-blue-700'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200:bg-gray-700'
             }`}
           >
             {rarity.name}
@@ -606,8 +606,8 @@ const BadgesTab = () => {
             key={badge.id}
             className={`relative border-2 rounded-lg p-4 text-center transition-all duration-200 ${
               badge.unlockedAt
-                ? 'border-green-300 bg-green-50 dark:border-green-600 dark:bg-green-900/20'
-                : 'border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800 opacity-60'
+                ? 'border-green-300 bg-green-50/20'
+                : 'border-gray-300 bg-gray-50 opacity-60'
             }`}
             whileHover={{ scale: 1.05 }}
           >
@@ -620,15 +620,15 @@ const BadgesTab = () => {
 
             <div className="text-3xl mb-2">{badge.icon}</div>
 
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+            <h3 className="font-semibold text-gray-900 mb-1">
               {badge.name}
             </h3>
 
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+            <p className="text-sm text-gray-600 mb-3">
               {badge.description}
             </p>
 
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
+            <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
               <motion.div
                 className="bg-blue-600 h-2 rounded-full"
                 initial={{ width: 0 }}
@@ -637,7 +637,7 @@ const BadgesTab = () => {
               />
             </div>
 
-            <div className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="text-xs text-gray-500">
               {badge.progress} / {badge.maxProgress}
             </div>
 
@@ -651,7 +651,7 @@ const BadgesTab = () => {
       </div>
 
       {filteredBadges.length === 0 && (
-        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+        <div className="text-center py-12 text-gray-500">
           <Medal className="h-16 w-16 mx-auto mb-4 opacity-50" />
           <p className="text-lg">No badges found</p>
           <p className="text-sm">Try selecting a different rarity</p>

@@ -91,7 +91,7 @@ export function Tooltip({
       {children}
       {isVisible && (
         <div className={`absolute z-50 ${getPositionClasses()}`}>
-          <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm px-3 py-2 rounded-lg shadow-lg max-w-xs whitespace-nowrap">
+          <div className="bg-gray-900 text-white text-sm px-3 py-2 rounded-lg shadow-lg max-w-xs whitespace-nowrap">
             {content}
             <div
               className={`absolute w-0 h-0 border-4 ${getArrowClasses()}`}

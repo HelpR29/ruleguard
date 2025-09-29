@@ -91,7 +91,7 @@ export default function SignIn() {
           <p className="text-sm text-gray-600 mt-1">Log in to continue your progress.</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           {/* Supabase Configuration Status */}
           {!isSupabaseConfigured() && (
             <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -134,7 +134,7 @@ export default function SignIn() {
                 required 
                 autoComplete="email"
                 aria-describedby={error ? "signin-error" : undefined}
-                className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-2 rounded"
+                className="w-full border border-gray-300 bg-white p-2 rounded"
               />
             </div>
             <div>
@@ -147,7 +147,7 @@ export default function SignIn() {
                 required 
                 autoComplete="current-password"
                 aria-describedby={error ? "signin-error" : undefined}
-                className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-2 rounded"
+                className="w-full border border-gray-300 bg-white p-2 rounded"
               />
             </div>
             {error && <p id="signin-error" className="text-sm text-red-600" role="alert">{error}</p>}

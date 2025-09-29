@@ -43,10 +43,10 @@ export default function Logo({ showText = false, subtitle, frame = 'card' }: Log
       {showText && (
         <div className="hidden sm:block">
           <h1 className="text-xl font-bold">
-            <span className="text-gray-900 dark:text-white">Lock</span>
+            <span className="text-gray-900">Lock</span>
             <span className="text-emerald-500">In</span>
           </h1>
-          <p className="text-xs text-gray-700 dark:text-gray-300" aria-label={`LockIn tagline: ${subtitle ?? 'Lock in your trading discipline'}`}>
+          <p className="text-xs text-gray-700" aria-label={`LockIn tagline: ${subtitle ?? 'Lock in your trading discipline'}`}>
             {subtitle ?? 'Lock in your trading discipline'}
           </p>
         </div>

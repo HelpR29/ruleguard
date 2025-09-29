@@ -51,7 +51,7 @@ export default function Dashboard() {
   }, [progress.completions, settings.targetCompletions]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Welcome Section */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
@@ -98,7 +98,7 @@ export default function Dashboard() {
             {/* Progress Tracker */}
             <div className="rounded-2xl p-6 shadow-sm card-surface">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Progress Tracker</h3>
+                <h3 className="text-xl font-bold text-gray-900">Progress Tracker</h3>
                 <div className="flex items-center gap-2">
                   <button className="text-xs accent-outline" onClick={() => setProgressView(v => v === 'icon' ? 'grid' : 'icon')}>Switch View</button>
                   {progress.completions < settings.targetCompletions ? (
@@ -118,23 +118,23 @@ export default function Dashboard() {
               {progressView === 'icon' ? (
                 <div className="flex flex-col items-center space-y-8">
                   <AnimatedProgressIcon />
-                    <div className="rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-600 card-surface">
-                      <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    <div className="rounded-2xl p-4 shadow-sm border border-gray-100 card-surface">
+                      <h3 className="text-3xl font-bold text-gray-900 mb-2">
                         {progress.completions.toFixed(2)}/{settings.targetCompletions}
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-3">
+                      <p className="text-gray-600 mb-3">
                         {progress.completions >= settings.targetCompletions 
                           ? `All ${settings.progressObject}s completed! 🎉`
                           : `${Math.max(0, settings.targetCompletions - progress.completions)} ${settings.progressObject}s remaining`
                         }
                       </p>
-                      <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
                           className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-500"
                           style={{ width: `${(progress.completions / settings.targetCompletions) * 100}%` }}
                         ></div>
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-gray-500">
                       Progress updates automatically based on your compliant trades
                     </p>
                   </div>
@@ -142,7 +142,7 @@ export default function Dashboard() {
               ) : (
                 <div className="flex flex-col items-center space-y-4">
                   <ProgressGrid />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-gray-500">
                     Progress updates automatically based on your compliant trades
                   </p>
                 </div>
@@ -150,10 +150,10 @@ export default function Dashboard() {
             </div>
 
             {/* Compounding Growth Chart */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Growth Projection</h3>
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                <h3 className="text-xl font-bold text-gray-900">Growth Projection</h3>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
                   <TrendingUp className="h-4 w-4" />
                   {settings.growthPerCompletion}% per completion
                 </div>
@@ -174,19 +174,19 @@ export default function Dashboard() {
             <AchievementsPanel />
 
             {/* Next Milestone */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Next Milestone</h3>
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Next Milestone</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-300">Target Balance</span>
+                  <span className="text-gray-600">Target Balance</span>
                   <span className="font-bold text-green-600">${Math.round(targetBalance)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-300">Remaining</span>
+                  <span className="text-gray-600">Remaining</span>
                   <span className={`font-bold ${
                     progress.completions >= settings.targetCompletions 
                       ? 'text-green-600' 
-                      : 'text-gray-900 dark:text-white'
+                      : 'text-gray-900'
                   }`}>
                     {progress.completions >= settings.targetCompletions 
                       ? 'Goal Achieved! 🎉' 
@@ -194,7 +194,7 @@ export default function Dashboard() {
                     }
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3">
+                <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
                     className="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-500"
                     style={{ width: `${Math.min(progressPercent, 100)}%` }}
@@ -203,7 +203,7 @@ export default function Dashboard() {
                 <p className={`text-sm ${
                   progress.completions >= settings.targetCompletions
                     ? 'text-green-600 font-semibold'
-                    : 'text-gray-600 dark:text-gray-300'
+                    : 'text-gray-600'
                 }`}>
                   {progress.completions >= settings.targetCompletions
                     ? 'Congratulations! You\'ve reached your goal!'
@@ -251,21 +251,21 @@ export default function Dashboard() {
       {/* Celebration Modal */}
       {showCelebration && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full text-center">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center">
             <div className="mb-6">
               <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Congratulations!</h2>
-              <p className="text-gray-600 dark:text-gray-300">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Congratulations!</h2>
+              <p className="text-gray-600">
                 You've completed your goal of {settings.targetCompletions} {settings.progressObject}s!
               </p>
             </div>
             
-            <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 mb-6">
-              <p className="text-sm text-green-600 dark:text-green-400 mb-1">Final Portfolio Value</p>
-              <p className="text-3xl font-bold text-green-700 dark:text-green-300">
+            <div className="bg-green-50/20 rounded-xl p-4 mb-6">
+              <p className="text-sm text-green-600 mb-1">Final Portfolio Value</p>
+              <p className="text-3xl font-bold text-green-700">
                 ${Math.round(targetBalance)}
               </p>
-              <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+              <p className="text-sm text-green-600 mt-1">
                 Growth: {(((targetBalance - settings.startingPortfolio) / settings.startingPortfolio) * 100).toFixed(1)}%
               </p>
             </div>
@@ -282,7 +282,7 @@ export default function Dashboard() {
               </button>
               <button 
                 onClick={() => setShowCelebration(false)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50:bg-gray-700"
               >
                 Continue Viewing
               </button>
@@ -294,14 +294,14 @@ export default function Dashboard() {
       {/* Next Goal Modal */}
       {showNextGoal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-lg w-full">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Set Your Next Goal</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Set Your Next Goal</h2>
+            <p className="text-gray-600 mb-6">
               Congratulations on completing your goal! What would you like to achieve next?
             </p>
             
             <div className="space-y-4 mb-6">
-              <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+              <div className="border border-gray-200 rounded-lg p-4">
                 <label className="flex items-center gap-3">
                   <input 
                     type="radio" 
@@ -312,15 +312,15 @@ export default function Dashboard() {
                     className="accent-radio"
                   />
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Same Goal Again</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <h3 className="font-semibold text-gray-900">Same Goal Again</h3>
+                    <p className="text-sm text-gray-600">
                       {settings.targetCompletions} {settings.progressObject}s with {settings.growthPerCompletion}% growth
                     </p>
                   </div>
                 </label>
               </div>
               
-              <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+              <div className="border border-gray-200 rounded-lg p-4">
                 <label className="flex items-center gap-3">
                   <input 
                     type="radio" 
@@ -331,15 +331,15 @@ export default function Dashboard() {
                     className="accent-radio"
                   />
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Increase Challenge</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <h3 className="font-semibold text-gray-900">Increase Challenge</h3>
+                    <p className="text-sm text-gray-600">
                       {Math.floor(settings.targetCompletions * 1.5)} {settings.progressObject}s with {settings.growthPerCompletion + 2}% growth
                     </p>
                   </div>
                 </label>
               </div>
               
-              <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+              <div className="border border-gray-200 rounded-lg p-4">
                 <label className="flex items-center gap-3">
                   <input 
                     type="radio" 
@@ -350,25 +350,25 @@ export default function Dashboard() {
                     className="accent-radio"
                   />
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Custom Goal</h3>
+                    <h3 className="font-semibold text-gray-900">Custom Goal</h3>
                     <div className="grid grid-cols-2 gap-3 mt-2">
                       <div>
-                        <label className="text-xs text-gray-600 dark:text-gray-300">Target</label>
+                        <label className="text-xs text-gray-600">Target</label>
                         <input 
                           type="number" 
                           value={customTarget}
                           onChange={(e) => setCustomTarget(Number(e.target.value))}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm"
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                           disabled={nextGoalType !== 'custom'}
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-600 dark:text-gray-300">Growth %</label>
+                        <label className="text-xs text-gray-600">Growth %</label>
                         <input 
                           type="number" 
                           value={customGrowth}
                           onChange={(e) => setCustomGrowth(Number(e.target.value))}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm"
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                           disabled={nextGoalType !== 'custom'}
                         />
                       </div>
@@ -384,7 +384,7 @@ export default function Dashboard() {
                   setShowNextGoal(false);
                   setShowCelebration(true);
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50:bg-gray-700"
               >
                 Back
               </button>
@@ -433,22 +433,22 @@ export default function Dashboard() {
       {/* Premium Trial Modal */}
       {showTrialModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Enter Invite Code</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Enter your invite code to unlock a free premium trial.</p>
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Enter Invite Code</h2>
+            <p className="text-sm text-gray-600 mb-4">Enter your invite code to unlock a free premium trial.</p>
             <div className="space-y-4">
               <input
                 type="text"
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value)}
                 placeholder="e.g. LOCKIN30"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
               />
               <p className="text-[11px] text-gray-500">Trials are limited to one per user/device; misuse may void eligibility.</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowTrialModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50:bg-gray-700"
                   disabled={activating}
                 >
                   Cancel

@@ -533,7 +533,7 @@ export default function AnalyticsDashboard({
       {/* Performance by Applied Rule */}
       <div className="rounded-2xl p-6 card-surface">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Performance by Applied Rule</h3>
+          <h3 className="text-lg font-bold text-gray-900">Performance by Applied Rule</h3>
           <span className="text-xs text-gray-500">From filtered trades</span>
         </div>
         {(() => {
@@ -561,7 +561,7 @@ export default function AnalyticsDashboard({
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead>
-                  <tr className="text-left text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
+                  <tr className="text-left text-gray-600 border-b border-gray-200">
                     <th className="py-2 pr-4">Rule</th>
                     <th className="py-2 pr-4">Trades</th>
                     <th className="py-2 pr-4">Win Rate</th>
@@ -571,8 +571,8 @@ export default function AnalyticsDashboard({
                 </thead>
                 <tbody>
                   {rows.map((row) => (
-                    <tr key={row.rule} className="border-b border-gray-100 dark:border-gray-800">
-                      <td className="py-2 pr-4 font-medium text-gray-900 dark:text-white">{row.rule}</td>
+                    <tr key={row.rule} className="border-b border-gray-100">
+                      <td className="py-2 pr-4 font-medium text-gray-900">{row.rule}</td>
                       <td className="py-2 pr-4">{row.count}</td>
                       <td className="py-2 pr-4">{row.winRate.toFixed(0)}%</td>
                       <td className={`py-2 pr-4 ${row.avgPnl>=0?'text-green-600':'text-red-600'}`}>{row.avgPnl>=0?'+':''}${row.avgPnl.toFixed(2)}</td>
@@ -747,12 +747,12 @@ export default function AnalyticsDashboard({
   }
 
   return (
-    <div className={`space-y-6 ${isFullscreen ? 'fixed inset-0 z-50 bg-white dark:bg-gray-900 p-6 overflow-auto' : ''}`}>
+    <div className={`space-y-6 ${isFullscreen ? 'fixed inset-0 z-50 bg-white p-6 overflow-auto' : ''}`}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Advanced Analytics</h2>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h2 className="text-2xl font-bold text-gray-900">Advanced Analytics</h2>
+          <p className="text-gray-600">
             Comprehensive trading performance analysis and insights
           </p>
         </div>
@@ -761,7 +761,7 @@ export default function AnalyticsDashboard({
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50:bg-gray-700 disabled:opacity-50"
           >
             <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
@@ -769,7 +769,7 @@ export default function AnalyticsDashboard({
 
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50:bg-gray-700"
           >
             {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             {isFullscreen ? 'Exit' : 'Fullscreen'}
@@ -805,8 +805,8 @@ export default function AnalyticsDashboard({
                     {card.icon}
                   </div>
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm">{card.title}</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-gray-600 text-sm">{card.title}</p>
+                    <p className="text-2xl font-bold text-gray-900">
                       {formatValue(card.value, card.format)}
                     </p>
                   </div>
@@ -825,25 +825,25 @@ export default function AnalyticsDashboard({
                       e.stopPropagation();
                       toggleKPI(card.id);
                     }}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="text-gray-400 hover:text-gray-600:text-gray-300"
                   >
                     <EyeOff className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
-              <p className="text-gray-600 dark:text-gray-400 text-sm">{card.description}</p>
+              <p className="text-gray-600 text-sm">{card.description}</p>
             </div>
           ))}
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+      <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
         <Filter className="h-5 w-5 text-gray-500" />
         <select
           value={filters.dateRange}
           onChange={(e) => handleFilterChange({ dateRange: e.target.value as AnalyticsFilters['dateRange'] })}
-          className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700"
+          className="px-3 py-1 border border-gray-300 rounded-md bg-white"
         >
           <option value="7d">Last 7 days</option>
           <option value="30d">Last 30 days</option>
@@ -853,7 +853,7 @@ export default function AnalyticsDashboard({
         </select>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600 dark:text-gray-400">Charts:</span>
+          <span className="text-sm text-gray-600">Charts:</span>
           {Object.keys(chartConfigs).map((chartId) => (
             <button
               key={chartId}
@@ -866,8 +866,8 @@ export default function AnalyticsDashboard({
               }}
               className={`px-2 py-1 text-xs rounded ${
                 selectedCharts.includes(chartId)
-                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                  : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-gray-100 text-gray-600'
               }`}
             >
               {chartId.replace('-', ' ')}
@@ -877,17 +877,17 @@ export default function AnalyticsDashboard({
 
         {/* Emotion mode toggle (only affects emotion-analysis) */}
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-sm text-gray-600 dark:text-gray-400">Emotions:</span>
-          <div className="relative inline-flex items-center bg-gray-100 dark:bg-gray-700 rounded-full p-1">
+          <span className="text-sm text-gray-600">Emotions:</span>
+          <div className="relative inline-flex items-center bg-gray-100 rounded-full p-1">
             <button
               type="button"
               onClick={() => setEmotionMode('percent')}
-              className={`px-2 py-0.5 text-xs rounded-full ${emotionMode==='percent' ? 'bg-white dark:bg-gray-800 shadow font-medium' : 'text-gray-600 dark:text-gray-300'}`}
+              className={`px-2 py-0.5 text-xs rounded-full ${emotionMode==='percent' ? 'bg-white shadow font-medium' : 'text-gray-600'}`}
             >%</button>
             <button
               type="button"
               onClick={() => setEmotionMode('count')}
-              className={`px-2 py-0.5 text-xs rounded-full ${emotionMode==='count' ? 'bg-white dark:bg-gray-800 shadow font-medium' : 'text-gray-600 dark:text-gray-300'}`}
+              className={`px-2 py-0.5 text-xs rounded-full ${emotionMode==='count' ? 'bg-white shadow font-medium' : 'text-gray-600'}`}
             >#</button>
           </div>
         </div>
@@ -899,10 +899,10 @@ export default function AnalyticsDashboard({
           <div key={chartId} className="rounded-2xl p-6 card-surface">
             <div className="mb-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white capitalize">
+                <h3 className="text-lg font-bold text-gray-900 capitalize">
                   {chartId.replace('-', ' ')}
                 </h3>
-                <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <button className="text-gray-400 hover:text-gray-600:text-gray-300">
                   <Settings className="h-4 w-4" />
                 </button>
               </div>
@@ -926,7 +926,7 @@ export default function AnalyticsDashboard({
       {/* Trades Table with Long/Short chip */}
       <div className="rounded-2xl p-6 card-surface">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Trades</h3>
+          <h3 className="text-lg font-bold text-gray-900">Trades</h3>
           <button
             onClick={() => {
               // Build CSV with direction/type column
@@ -958,7 +958,7 @@ export default function AnalyticsDashboard({
               a.href = url; a.download = `trades-${new Date().toISOString().slice(0,10)}.csv`; a.click();
               setTimeout(() => URL.revokeObjectURL(url), 500);
             }}
-            className="px-3 py-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="px-3 py-1.5 text-sm rounded border border-gray-300 hover:bg-gray-50:bg-gray-700"
           >
             Export Trades CSV
           </button>
@@ -969,7 +969,7 @@ export default function AnalyticsDashboard({
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
+                <tr className="text-left text-gray-600 border-b border-gray-200">
                   <th className="py-2 pr-4">Date</th>
                   <th className="py-2 pr-4">Symbol</th>
                   <th className="py-2 pr-4">Direction</th>
@@ -981,9 +981,9 @@ export default function AnalyticsDashboard({
               </thead>
               <tbody>
                 {filteredTrades.slice(0, 50).map((t: any) => (
-                  <tr key={t.id} className="border-b border-gray-100 dark:border-gray-800">
+                  <tr key={t.id} className="border-b border-gray-100">
                     <td className="py-2 pr-4">{String(t.date || t.entryDate || '').slice(0,10)}</td>
-                    <td className="py-2 pr-4 font-medium text-gray-900 dark:text-white">{t.symbol}</td>
+                    <td className="py-2 pr-4 font-medium text-gray-900">{t.symbol}</td>
                     <td className="py-2 pr-4">
                       <span className={`px-2 py-0.5 rounded-full text-[11px] border ${t.type === 'Long' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-sky-100 text-sky-800 border-sky-200'}`}>
                         {t.type}
@@ -1005,31 +1005,31 @@ export default function AnalyticsDashboard({
 
       {/* Summary Statistics */}
       <div className="rounded-2xl p-6 card-surface">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Summary Statistics</h3>
+        <h3 className="text-lg font-bold text-gray-900 mb-4">Summary Statistics</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center">
-            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <p className="text-2xl font-bold text-blue-600">
               {analyticsData.length}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Trading Days</p>
+            <p className="text-sm text-gray-600">Trading Days</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+            <p className="text-2xl font-bold text-green-600">
               {trades.length}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Total Trades</p>
+            <p className="text-sm text-gray-600">Total Trades</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+            <p className="text-2xl font-bold text-purple-600">
               {emotionChartData.length}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Emotion Types</p>
+            <p className="text-sm text-gray-600">Emotion Types</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+            <p className="text-2xl font-bold text-orange-600">
               {kpiCards.filter(kpi => kpi.changeType === 'positive').length}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Positive Metrics</p>
+            <p className="text-sm text-gray-600">Positive Metrics</p>
           </div>
         </div>
       </div>

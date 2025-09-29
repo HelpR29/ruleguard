@@ -279,7 +279,7 @@ export interface ThemeColors {
   danger: string;
   info: string;
   light: string;
-  dark: string;
+  darkMode: string;
   background: string;
   surface: string;
   text: {
@@ -291,7 +291,7 @@ export interface ThemeColors {
   border: {
     light: string;
     default: string;
-    dark: string;
+    darkMode: string;
   };
   shadow: {
     sm: string;

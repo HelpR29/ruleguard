@@ -291,7 +291,7 @@ export default function Rules() {
         <div className="space-y-4">
           {rules.length === 0 && (
             <div className="bg-white rounded-2xl p-12 shadow-sm text-center text-gray-600">
-              <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-500 dark:text-gray-300" />
+              <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-500" />
               <p className="text-lg mb-2">No rules yet!</p>
               <p className="mb-4">Start building your discipline framework with our categorized rule templates.</p>
               <button

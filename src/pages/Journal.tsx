@@ -1122,38 +1122,38 @@ function Journal() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Setup</label>
-                <input value={form.setup} onChange={(e)=>setForm({...form, setup: e.target.value})} placeholder="Breakout, Pullback..." className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800" />
+                <input value={form.setup} onChange={(e)=>setForm({...form, setup: e.target.value})} placeholder="Breakout, Pullback..." className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                <select value={form.type} onChange={(e)=>setForm({...form, type: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800">
+                <select value={form.type} onChange={(e)=>setForm({...form, type: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white">
                   <option>Long</option>
                   <option>Short</option>
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Size</label>
-                <input value={form.size} onChange={(e)=>setForm({...form, size: e.target.value})} placeholder="100" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800" />
+                <input value={form.size} onChange={(e)=>setForm({...form, size: e.target.value})} placeholder="100" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Entry</label>
-                <input value={form.entry} onChange={(e)=>setForm({...form, entry: e.target.value})} placeholder="150.25" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800" />
+                <input value={form.entry} onChange={(e)=>setForm({...form, entry: e.target.value})} placeholder="150.25" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Exit</label>
-                <input value={form.exit} onChange={(e)=>setForm({...form, exit: e.target.value})} placeholder="152.75" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800" />
+                <input value={form.exit} onChange={(e)=>setForm({...form, exit: e.target.value})} placeholder="152.75" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Target</label>
-                <input value={form.target} onChange={(e)=>setForm({...form, target: e.target.value})} placeholder="155.00" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800" />
+                <input value={form.target} onChange={(e)=>setForm({...form, target: e.target.value})} placeholder="155.00" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Stop Loss</label>
-                <input value={form.stop} onChange={(e)=>setForm({...form, stop: e.target.value})} placeholder="145.00" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800" />
+                <input value={form.stop} onChange={(e)=>setForm({...form, stop: e.target.value})} placeholder="145.00" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white" />
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Emotion</label>
-                <select value={form.emotion} onChange={(e)=>setForm({...form, emotion: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800">
+                <select value={form.emotion} onChange={(e)=>setForm({...form, emotion: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white">
                   <option>Confident</option>
                   <option>FOMO</option>
                   <option>Fear</option>
@@ -1163,7 +1163,7 @@ function Journal() {
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                <textarea rows={4} value={form.notes} onChange={(e)=>setForm({...form, notes: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800" placeholder="What happened? What did you learn?" />
+                <textarea rows={4} value={form.notes} onChange={(e)=>setForm({...form, notes: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white" placeholder="What happened? What did you learn?" />
               </div>
 
               {/* Applied Rules quick picker */}
@@ -1491,7 +1491,7 @@ function Journal() {
                     }
                   }}
                   placeholder="Breakout, Risk, Momentum"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white"
                 />
                 {/* Live chips preview */}
                 {(() => {
@@ -1519,7 +1519,7 @@ function Journal() {
               </div>
               {/* Rule compliance is now derived from per-rule outcomes (Followed/Broken). Checkbox removed intentionally. */}
               {/* R:R Preview */}
-              <div className="md:col-span-2 text-sm text-gray-700 dark:text-gray-300">
+              <div className="md:col-span-2 text-sm text-gray-700">
                 {(() => {
                   const e = Number(form.entry), t = Number(form.target), s = Number(form.stop);
                   if (!Number.isNaN(e) && !Number.isNaN(t) && !Number.isNaN(s)) {
@@ -1530,13 +1530,13 @@ function Journal() {
                       return <p>Planned R:R = <span className="font-semibold">1:{rr}</span> • Risk ${risk.toFixed(2)} • Reward ${reward.toFixed(2)} per share</p>;
                     }
                   }
-                  return <p className="text-gray-700 dark:text-gray-300">Provide Entry, Target, and Stop to preview R:R.</p>;
+                  return <p className="text-gray-700">Provide Entry, Target, and Stop to preview R:R.</p>;
                 })()}
               </div>
               {/* Chart Toggle */}
               <div className="md:col-span-2">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Chart Analysis</label>
+                  <label className="block text-sm font-medium text-gray-700">Chart Analysis</label>
                   <button
                     type="button"
                     onClick={() => setShowChart(!showChart)}
@@ -1580,7 +1580,7 @@ function Journal() {
                   resetForm();
                   setShowNewEntry(false);
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 dark:text-gray-300 dark:hover:bg-gray-700 dark:border-gray-600"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700:bg-gray-700"
               >
                 Cancel
               </button>

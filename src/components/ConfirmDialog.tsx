@@ -64,21 +64,21 @@ export function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full shadow-xl">
+      <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl">
         <div className="flex items-center gap-3 mb-4">
-          <div className={`w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center ${styles.iconColor}`}>
+          <div className={`w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center ${styles.iconColor}`}>
             <Icon className="h-5 w-5" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
         </div>
 
-        <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">{message}</p>
+        <p className="text-gray-600 mb-6 leading-relaxed">{message}</p>
 
         <div className="flex gap-3 justify-end">
           <button
             onClick={onCancel}
             disabled={isLoading}
-            className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50:bg-gray-700 transition-colors disabled:opacity-50"
           >
             {cancelText}
           </button>

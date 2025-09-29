@@ -68,40 +68,40 @@ export default function DataManager() {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+    <div className="bg-white rounded-xl shadow-lg p-6">
       <div className="flex items-center gap-3 mb-6">
         <Settings className="h-6 w-6 text-blue-600" />
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Data Manager</h2>
+        <h2 className="text-xl font-semibold text-gray-900">Data Manager</h2>
       </div>
 
       {/* Current Data Status */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-          <h3 className="font-medium text-gray-900 dark:text-white mb-2">Progress</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h3 className="font-medium text-gray-900 mb-2">Progress</h3>
+          <p className="text-sm text-gray-600">
             {progress.completions}/{settings.targetCompletions} completions
           </p>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
+          <p className="text-sm text-gray-600">
             ${progress.currentBalance} balance
           </p>
         </div>
         
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-          <h3 className="font-medium text-gray-900 dark:text-white mb-2">Settings</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h3 className="font-medium text-gray-900 mb-2">Settings</h3>
+          <p className="text-sm text-gray-600">
             ${settings.startingPortfolio} starting
           </p>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
+          <p className="text-sm text-gray-600">
             {settings.growthPerCompletion}% per completion
           </p>
         </div>
 
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-          <h3 className="font-medium text-gray-900 dark:text-white mb-2">Status</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h3 className="font-medium text-gray-900 mb-2">Status</h3>
+          <p className="text-sm text-gray-600">
             {progress.streak} day streak
           </p>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
+          <p className="text-sm text-gray-600">
             {progress.disciplineScore}% discipline
           </p>
         </div>
@@ -110,16 +110,16 @@ export default function DataManager() {
       {/* Actions */}
       <div className="space-y-4">
         {/* Validate Data */}
-        <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
           <div>
-            <h3 className="font-medium text-gray-900 dark:text-white">Validate Data Consistency</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <h3 className="font-medium text-gray-900">Validate Data Consistency</h3>
+            <p className="text-sm text-gray-600">
               Check for data inconsistencies and errors
             </p>
           </div>
           <button
             onClick={handleValidateData}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200:bg-blue-800 transition-colors"
           >
             <CheckCircle className="h-4 w-4" />
             Validate
@@ -130,19 +130,19 @@ export default function DataManager() {
         {validationResult && (
           <div className={`p-4 rounded-lg border ${
             validationResult.valid 
-              ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20' 
-              : 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20'
+              ? 'border-green-200 bg-green-50/20' 
+              : 'border-yellow-200 bg-yellow-50/20'
           }`}>
             <div className="flex items-center gap-2 mb-2">
               {validationResult.valid ? (
-                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <CheckCircle className="h-5 w-5 text-green-600" />
               ) : (
-                <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                <AlertTriangle className="h-5 w-5 text-yellow-600" />
               )}
               <h4 className={`font-medium ${
                 validationResult.valid 
-                  ? 'text-green-800 dark:text-green-200' 
-                  : 'text-yellow-800 dark:text-yellow-200'
+                  ? 'text-green-800' 
+                  : 'text-yellow-800'
               }`}>
                 {validationResult.valid ? 'Data is consistent' : 'Issues found'}
               </h4>
@@ -150,14 +150,14 @@ export default function DataManager() {
             
             {!validationResult.valid && validationResult.issues.length > 0 && (
               <div className="space-y-2">
-                <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+                <ul className="text-sm text-yellow-700 space-y-1">
                   {validationResult.issues.map((issue, index) => (
                     <li key={index}>• {issue}</li>
                   ))}
                 </ul>
                 <button
                   onClick={handleFixInconsistencies}
-                  className="mt-3 px-3 py-1 bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded text-sm hover:bg-yellow-300 dark:hover:bg-yellow-700 transition-colors"
+                  className="mt-3 px-3 py-1 bg-yellow-200 text-yellow-800 rounded text-sm hover:bg-yellow-300:bg-yellow-700 transition-colors"
                 >
                   Fix Issues
                 </button>
@@ -167,10 +167,10 @@ export default function DataManager() {
         )}
 
         {/* Reset Data */}
-        <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-800 rounded-lg">
+        <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg">
           <div>
-            <h3 className="font-medium text-gray-900 dark:text-white">Reset All Data</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <h3 className="font-medium text-gray-900">Reset All Data</h3>
+            <p className="text-sm text-gray-600">
               Clear all progress and start fresh (cannot be undone)
             </p>
           </div>
@@ -180,7 +180,7 @@ export default function DataManager() {
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
               showConfirmReset
                 ? 'bg-red-600 text-white hover:bg-red-700'
-                : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800'
+                : 'bg-red-100 text-red-700 hover:bg-red-200:bg-red-800'
             }`}
           >
             {isResetting ? (
@@ -193,14 +193,14 @@ export default function DataManager() {
         </div>
 
         {showConfirmReset && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-            <p className="text-sm text-red-800 dark:text-red-200 mb-3">
+          <div className="bg-red-50/20 border border-red-200 rounded-lg p-4">
+            <p className="text-sm text-red-800 mb-3">
               ⚠️ This will permanently delete all your progress, trades, rules, and settings. 
               This action cannot be undone.
             </p>
             <button
               onClick={() => setShowConfirmReset(false)}
-              className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              className="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300:bg-gray-600 transition-colors"
             >
               Cancel
             </button>
