@@ -1,6 +1,6 @@
 /**
  * PWA Install Prompt Component
- * Provides an interface for users to install the RuleGuard PWA
+ * Provides an interface for users to install the LockIn PWA
  */
 
 import React, { useState, useEffect } from 'react';
@@ -16,7 +16,7 @@ interface PWAInstallProps {
 /**
  * PWA Install Prompt Component
  *
- * Provides users with an interface to install the RuleGuard application
+ * Provides users with an interface to install the LockIn application
  * as a Progressive Web App on their device.
  *
  * @param variant - Display variant: 'banner', 'modal', or 'inline'
@@ -73,7 +73,7 @@ export default function PWAInstall({ variant = 'banner', className = '', onDismi
 
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-semibold text-gray-900">
-              Install RuleGuard
+              Install LockIn
             </h3>
             <p className="text-sm text-gray-600 mt-1">
               Get the full app experience with offline support and push notifications.
@@ -142,7 +142,7 @@ export default function PWAInstall({ variant = 'banner', className = '', onDismi
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900">
-                Install RuleGuard
+                Install LockIn
               </h2>
               <button
                 onClick={handleDismiss}

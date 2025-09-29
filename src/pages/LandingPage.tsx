@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { TrendingUp, Shield, Users, Award, CheckCircle, ArrowRight } from 'lucide-react';
+import { TrendingUp, Users, Award, CheckCircle, ArrowRight, Lock } from 'lucide-react';
 
 export default function LandingPage({ onGetStarted }: { onGetStarted?: () => void }) {
   return (
@@ -9,8 +9,8 @@ export default function LandingPage({ onGetStarted }: { onGetStarted?: () => voi
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center gap-2">
-              <Shield className="h-8 w-8 text-blue-600" />
-              <span className="text-2xl font-bold text-gray-900">RuleGuard</span>
+              <Lock className="h-8 w-8 text-blue-600" />
+              <span className="text-2xl font-bold text-gray-900">LockIn</span>
             </div>
             <div className="flex items-center gap-4">
               <Link
@@ -40,7 +40,7 @@ export default function LandingPage({ onGetStarted }: { onGetStarted?: () => voi
               <span className="text-blue-600 block">Discipline</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              RuleGuard helps traders build unbreakable habits, track performance, and achieve consistent results through intelligent rule enforcement and behavioral analytics.
+              LockIn helps traders build unbreakable habits, track performance, and achieve consistent results through intelligent rule enforcement and behavioral analytics.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -117,7 +117,7 @@ export default function LandingPage({ onGetStarted }: { onGetStarted?: () => voi
 
             <div className="text-center p-6">
               <div className="bg-indigo-100 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <Shield className="h-8 w-8 text-indigo-600" />
+                <Lock className="h-8 w-8 text-indigo-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Risk Management</h3>
               <p className="text-gray-600">
@@ -162,11 +162,11 @@ export default function LandingPage({ onGetStarted }: { onGetStarted?: () => voi
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Shield className="h-6 w-6 text-blue-400" />
-            <span className="text-xl font-bold">RuleGuard</span>
+            <Lock className="h-6 w-6 text-blue-400" />
+            <span className="text-xl font-bold">LockIn</span>
           </div>
           <p className="text-gray-400 text-center">
-            © 2024 RuleGuard. Built by traders, for traders.
+            © 2024 LockIn. Built by traders, for traders.
           </p>
         </div>
       </footer>
