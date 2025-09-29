@@ -1,8 +1,7 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp, Shield, Users, Award, CheckCircle, ArrowRight } from 'lucide-react';
 
-export default function LandingPage() {
+export default function LandingPage({ onGetStarted }: { onGetStarted?: () => void }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
@@ -22,6 +21,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 to="/signup"
+                onClick={onGetStarted}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Get Started
@@ -45,6 +45,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/signup"
+                onClick={onGetStarted}
                 className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors inline-flex items-center justify-center gap-2"
               >
                 Start Your Journey
@@ -148,6 +149,7 @@ export default function LandingPage() {
           </p>
           <Link
             to="/signup"
+            onClick={onGetStarted}
             className="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-50 transition-colors inline-flex items-center gap-2"
           >
             Start Free Today

@@ -73,6 +73,7 @@ const SignUp = React.lazy(() => import('./pages/SignUp'));
 const Reports = React.lazy(() => import('./pages/Reports'));
 const MobileNav = React.lazy(() => import('./components/MobileNav'));
 const PWAInstall = React.lazy(() => import('./components/PWAInstall'));
+const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 
 // Loading component for Suspense fallback
 const PageLoader = () => (
@@ -86,12 +87,39 @@ const PageLoader = () => (
 
 function App() {
   const [isOnboarded, setIsOnboarded] = useState(false);
+  const [hasSeenLanding, setHasSeenLanding] = useState(false);
 
   useEffect(() => {
     // Check if user has completed onboarding
     const onboardingComplete = localStorage.getItem('onboarding_complete');
     setIsOnboarded(!!onboardingComplete);
+
+    // Check if user has seen landing page (first-time visitor)
+    const seenLanding = localStorage.getItem('has_seen_landing');
+    setHasSeenLanding(!!seenLanding);
   }, []);
+
+  // Mark that user has seen the landing page
+  const markLandingSeen = () => {
+    localStorage.setItem('has_seen_landing', 'true');
+    setHasSeenLanding(true);
+  };
+
+  if (!hasSeenLanding) {
+    return (
+      <ErrorBoundary>
+        <ThemeProvider>
+          <Router>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="*" element={<LandingPage onGetStarted={markLandingSeen} />} />
+              </Routes>
+            </Suspense>
+          </Router>
+        </ThemeProvider>
+      </ErrorBoundary>
+    );
+  }
 
   if (!isOnboarded) {
     return (
