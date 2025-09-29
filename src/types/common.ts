@@ -1,5 +1,5 @@
 /**
- * Common utility types and interfaces used throughout the RuleGuard application
+ * Common utility types and interfaces used throughout the LockIn application
  * Provides reusable types for forms, components, and general application logic
  */
 
