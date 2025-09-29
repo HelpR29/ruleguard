@@ -24,13 +24,6 @@ export interface UserContextValue {
   refreshData: () => Promise<void>;
 }
 
-export interface ThemeContextValue {
-  theme: 'light' | 'dark' | 'system';
-  systemTheme: 'light' | 'dark';
-  setTheme: (theme: 'light' | 'dark' | 'system') => void;
-  toggleTheme: () => void;
-}
-
 export interface ToastContextValue {
   toasts: ToastMessage[];
   addToast: (toast: Omit<ToastMessage, 'id' | 'timestamp'>) => void;
