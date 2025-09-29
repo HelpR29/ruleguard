@@ -162,7 +162,7 @@ export default function PWAInstall({ variant = 'banner', className = '', onDismi
                 Get the Full Experience
               </h3>
               <p className="text-gray-600">
-                Install RuleGuard on your device for the best trading discipline experience.
+                Install LockIn on your device for the best trading discipline experience.
               </p>
             </div>
 
@@ -226,7 +226,7 @@ export default function PWAInstall({ variant = 'banner', className = '', onDismi
         <Smartphone className="h-8 w-8 text-blue-600 flex-shrink-0" />
         <div className="flex-1">
           <h3 className="font-semibold text-gray-900">
-            Install RuleGuard
+            Install LockIn
           </h3>
           <p className="text-sm text-gray-600">
             Get offline support and push notifications

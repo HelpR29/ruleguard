@@ -1,6 +1,6 @@
 /**
  * Supabase Configuration
- * Database client setup for RuleGuard trading application
+ * Database client setup for LockIn trading application
  */
 
 import { createClient } from '@supabase/supabase-js';
