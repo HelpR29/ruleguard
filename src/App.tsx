@@ -96,8 +96,7 @@ function App() {
   if (!isOnboarded) {
     return (
       <ErrorBoundary>
-        <ThemeProvider>
-          <ToastProvider>
+<ToastProvider>
             <AuthProvider>
               <Router>
                 {/* Show display-name prompt before onboarding, but not on auth routes */}
@@ -122,16 +121,14 @@ function App() {
               </Router>
             </AuthProvider>
           </ToastProvider>
-        </ThemeProvider>
-      </ErrorBoundary>
+</ErrorBoundary>
     );
   }
 
   return (
     <ErrorBoundary>
       <PWAProvider>
-        <ThemeProvider>
-          <ToastProvider>
+<ToastProvider>
             <AuthProvider>
             <UserProvider>
               <Router>
@@ -140,8 +137,7 @@ function App() {
             </UserProvider>
             </AuthProvider>
           </ToastProvider>
-        </ThemeProvider>
-      </PWAProvider>
+</PWAProvider>
     </ErrorBoundary>
   );
 }
