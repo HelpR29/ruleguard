@@ -45,7 +45,7 @@ function AppLayout() {
 }
 
 import React, { Suspense, useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
@@ -177,30 +177,44 @@ function App() {
 export default App;
 
 // Inline component to handle invite links
-function InviteAccept() {
-  // using window.location because simple handler; alternatively use useParams
-  const codeFromPath = window.location.pathname.split('/').pop() || '';
-  const code = decodeURIComponent(codeFromPath).toUpperCase();
-  try {
-    const raw = localStorage.getItem('friends');
-    const friends = raw ? JSON.parse(raw) : [];
-    const exists = friends.some((f: any) => f.code === code);
-    if (!exists && /^RG-[A-Z0-9]{6}$/.test(code)) {
-      const f = {
-        id: `${Date.now()}`,
-        code,
-        name: `Trader ${code.slice(-3)}`,
-        disciplineScore: Math.floor(60 + Math.random()*35),
-        badges: Math.random() > 0.5 ? ['Streak', 'Mindset'] : ['Risk Aware'],
-        premium: Math.random() > 0.7
-      };
-      friends.unshift(f);
-      localStorage.setItem('friends', JSON.stringify(friends));
+const InviteAccept = () => {
+  const { code } = useParams<{ code: string }>();
+  const navigate = useNavigate();
+  const inviteCode = code ? decodeURIComponent(code).toUpperCase() : '';
+
+  useEffect(() => {
+    if (inviteCode && /^RG-[A-Z0-9]{6}$/.test(inviteCode)) {
+      try {
+        const raw = localStorage.getItem('friends');
+        const friends = raw ? JSON.parse(raw) : [];
+        const exists = friends.some((f: any) => f.code === inviteCode);
+
+        if (!exists) {
+          const f = {
+            id: `${Date.now()}`,
+            code: inviteCode,
+            name: `Trader ${inviteCode.slice(-3)}`,
+            disciplineScore: Math.floor(60 + Math.random()*35),
+            badges: Math.random() > 0.5 ? ['Streak', 'Mindset'] : ['Risk Aware'],
+            premium: Math.random() > 0.7
+          };
+          friends.unshift(f);
+          localStorage.setItem('friends', JSON.stringify(friends));
+        }
+      } catch (error) {
+        console.error('Error processing invite:', error);
+      }
+
+      // Store in session for Friends page to read
+      try { sessionStorage.setItem('invite_added_code', inviteCode); } catch {}
+
+      // Redirect to friends page
+      navigate('/friends', { replace: true, state: { addedCode: inviteCode } });
+    } else {
+      // Invalid invite code, redirect to dashboard
+      navigate('/', { replace: true });
     }
-  } catch {}
-  // redirect to friends page with a small banner
-  window.history.replaceState({}, '', '/friends');
-  // Use a tiny delay so Friends can read state? We'll attach state through sessionStorage
-  try { sessionStorage.setItem('invite_added_code', code); } catch {}
-  return <Navigate to="/friends" replace state={{ addedCode: code }} />;
-}
+  }, [inviteCode, navigate]);
+
+  return <PageLoader />;
+};
