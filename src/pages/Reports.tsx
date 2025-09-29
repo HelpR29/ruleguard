@@ -610,16 +610,14 @@ export default function Reports() {
               </div>
 
               {/* Top Performing Rules */}
-              <div className="rounded-2xl p-6 card-surface md:col-span-2">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <p className="text-gray-600 text-sm">Top Performing Rules</p>
-                    <p className="text-lg font-bold text-gray-900">By Total P&L</p>
+              {topAppliedRules.length > 0 && (
+                <div className="rounded-2xl p-6 card-surface md:col-span-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="text-gray-600 text-sm">Top Performing Rules</p>
+                      <p className="text-lg font-bold text-gray-900">By Total P&L</p>
+                    </div>
                   </div>
-                </div>
-                {topAppliedRules.length === 0 ? (
-                  <p className="text-sm text-gray-500">No applied rules on trades yet.</p>
-                ) : (
                   <ul className="space-y-2">
                     {topAppliedRules.slice(0,3).map((r) => (
                       <li key={r.rule} className="flex items-center justify-between">
@@ -631,8 +629,8 @@ export default function Reports() {
                       </li>
                     ))}
                   </ul>
-                )}
-              </div>
+                </div>
+              )}
 
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
