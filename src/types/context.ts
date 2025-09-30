@@ -322,15 +322,17 @@ export interface SyncStatus {
   conflictCount: number;
 }
 
+export interface ValidationResult {
+  isValid: boolean;
+  errors: Record<string, string>;
+  warnings?: Record<string, string>;
+}
+
 // =============================================================================
 // IMPORTED TYPES FROM MAIN INDEX
 // =============================================================================
 
 export type {
-  User,
-  UserProgress,
-  AppSettings,
-  NotificationSettings,
   Trade,
   TradeType,
   TradeStatus,
@@ -372,7 +374,6 @@ export type {
   AnalyticsData,
   TrendData,
   OfflineQueueItem,
-  SyncStatus,
   PWAInstallPrompt,
   PatternRecognitionResult,
   IndicatorData,
