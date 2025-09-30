@@ -35,7 +35,7 @@ export const testConnection = async () => {
     }
 
     // Test with auth.users table which should always exist
-    const { data, error } = await supabase.auth.getSession();
+    const { error } = await supabase.auth.getSession();
     
     if (error) {
       return { success: false, error: error.message };

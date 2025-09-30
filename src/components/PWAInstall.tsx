@@ -24,7 +24,7 @@ interface PWAInstallProps {
  * @param onDismiss - Callback when user dismisses the prompt
  */
 export default function PWAInstall({ variant = 'banner', className = '', onDismiss }: PWAInstallProps) {
-  const { isInstallable, isInstalled, installPrompt, dismissInstallPrompt, isOnline } = usePWA();
+  const { isInstallable, isInstalled, installPrompt, dismissInstallPrompt } = usePWA();
   const [isVisible, setIsVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
