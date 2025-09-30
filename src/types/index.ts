@@ -400,15 +400,15 @@ export interface FormFieldOption {
   disabled?: boolean;
 }
 
+export type ValidationType =
+  | 'required' | 'min' | 'max' | 'minLength' | 'maxLength'
+  | 'email' | 'url' | 'pattern' | 'custom';
+
 export interface ValidationRule {
   type: ValidationType;
   value?: any;
   message: string;
 }
-
-export type ValidationType =
-  | 'required' | 'min' | 'max' | 'minLength' | 'maxLength'
-  | 'email' | 'url' | 'pattern' | 'custom';
 
 // =============================================================================
 // UTILITY TYPES
